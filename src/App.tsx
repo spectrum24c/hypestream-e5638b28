@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
 
+// Create a new QueryClient for React Query
 const queryClient = new QueryClient();
 
 const App = () => (

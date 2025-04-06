@@ -6,21 +6,14 @@ import Footer from '@/components/Footer';
 import MovieCard from '@/components/MovieCard';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
 
-interface Favorite {
-  id: string;
-  movie_id: string;
-  title: string;
-  poster_path: string | null;
-  release_date: string | null;
-  vote_average: number | null;
-  is_tv_show: boolean;
-}
+type Favorite = Database['public']['Tables']['favorites']['Row'];
 
 const Favorites = () => {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {

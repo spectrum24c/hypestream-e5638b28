@@ -6,19 +6,16 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
 
-interface Profile {
-  id: string;
-  username: string | null;
-  avatar_url: string | null;
-}
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -56,8 +53,10 @@ const Profile = () => {
       
       if (error) throw error;
       
-      setProfile(data);
-      setUsername(data.username || '');
+      if (data) {
+        setProfile(data);
+        setUsername(data.username || '');
+      }
     } catch (error) {
       console.error('Error fetching profile:', error);
       toast({

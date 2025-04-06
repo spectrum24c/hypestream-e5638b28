@@ -1,20 +1,25 @@
 
 import React, { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Star, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import MovieCard from './MovieCard';
+import { imgPath } from '@/services/tmdbApi';
 
-// Content item type
-interface ContentItem {
+// Movie item type
+interface Movie {
   id: string;
-  title: string;
-  image: string;
-  rating: string;
-  year: string;
-  type: string;
+  title?: string;
+  name?: string;
+  poster_path: string | null;
+  backdrop_path?: string | null;
+  release_date?: string;
+  first_air_date?: string;
+  vote_average?: number;
+  media_type?: string;
 }
 
 interface ContentSliderProps {
   title: string;
-  items: ContentItem[];
+  items: Movie[];
 }
 
 const ContentSlider: React.FC<ContentSliderProps> = ({ title, items }) => {
@@ -43,6 +48,11 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items }) => {
     }, 400);
   };
 
+  const handleMovieClick = (movie: Movie) => {
+    console.log("Movie clicked:", movie);
+    // For future implementation: show movie details or play movie
+  };
+
   return (
     <div className="py-6 px-4 md:px-8">
       {/* Section Title */}
@@ -69,7 +79,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items }) => {
         {/* Slider */}
         <div
           ref={sliderRef}
-          className="carousel-container flex space-x-4 overflow-x-auto"
+          className="flex space-x-4 overflow-x-auto pb-4 hide-scrollbar"
           onScroll={() => {
             if (sliderRef.current && sliderRef.current.scrollLeft > 20) {
               setShowLeftArrow(true);
@@ -79,30 +89,16 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items }) => {
           }}
         >
           {items.map((item) => (
-            <div key={item.id} className="content-card min-w-[180px] md:min-w-[200px]">
-              <img
-                src={item.image}
-                alt={item.title}
-                className="content-card-img"
-              />
-              <div className="content-card-overlay"></div>
-              <div className="content-card-info">
-                <div className="flex items-center mb-1">
-                  <Star className="h-3 w-3 text-hype-orange mr-1" fill="currentColor" />
-                  <span className="text-xs text-white">{item.rating}</span>
-                </div>
-                <h3 className="text-sm font-medium text-white truncate">{item.title}</h3>
-                <div className="flex items-center justify-between mt-2">
-                  <div className="flex space-x-2 text-xs text-gray-300">
-                    <span>{item.year}</span>
-                    <span>{item.type}</span>
-                  </div>
-                  <button className="play-button h-7 w-7">
-                    <Play className="h-3 w-3" fill="currentColor" />
-                  </button>
-                </div>
-              </div>
-            </div>
+            <MovieCard
+              key={item.id}
+              id={item.id}
+              title={item.title || item.name || 'Unknown Title'}
+              posterPath={item.poster_path}
+              releaseDate={item.release_date || item.first_air_date}
+              voteAverage={item.vote_average}
+              isTVShow={item.media_type === 'tv' || !!item.first_air_date}
+              onClick={() => handleMovieClick(item)}
+            />
           ))}
         </div>
 

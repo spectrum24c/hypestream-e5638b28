@@ -134,6 +134,11 @@ const Index = () => {
     setViewingCategory(null);
   };
 
+  // Add the handleViewAll function to fix build errors
+  const handleViewAll = (categoryId: string) => {
+    navigate(`/?category=${categoryId}`);
+  };
+
   const getCategoryDisplayName = () => {
     if (searchQueryFromState) {
       return `Search Results for "${searchQueryFromState}"`;

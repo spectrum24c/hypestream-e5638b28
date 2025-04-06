@@ -33,7 +33,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
   return (
     <div 
-      className="flex-shrink-0 w-[180px] md:w-[220px] bg-gray-800 rounded-lg overflow-hidden hover:scale-105 transition duration-200 cursor-pointer"
+      className="flex-shrink-0 w-[150px] sm:w-[180px] md:w-[200px] bg-gray-800 rounded-lg overflow-hidden hover:scale-105 transition duration-200 cursor-pointer"
       onClick={onClick}
     >
       <div className="relative aspect-[2/3] w-full">
@@ -44,8 +44,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
           loading="lazy"
         />
       </div>
-      <div className="p-4">
-        <h3 className="font-bold text-base mb-1 truncate">{title}</h3>
+      <div className="p-2 md:p-4">
+        <h3 className="font-bold text-sm md:text-base mb-1 truncate">{title}</h3>
         <div className="flex justify-between text-gray-400 text-xs">
           <span>{year}</span>
           <span>★ {rating}</span>

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, User, Menu, X, ChevronDown, LogOut } from 'lucide-react';
+import { Search, Bell, User, Menu, X, ChevronDown, LogOut, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -13,6 +13,10 @@ const Navbar = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [session, setSession] = useState(null);
+  const [notifications, setNotifications] = useState([
+    { id: 1, title: "New movies available!", message: "Check out the latest releases this week!" }
+  ]);
+  const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -56,16 +60,62 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) throw error;
+      
+      setSession(null);
       toast({
         title: "Signed out successfully",
       });
+      navigate('/auth');
     } catch (error) {
       console.error('Error signing out:', error);
       toast({
         title: "Error signing out",
         variant: "destructive"
       });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!session) return;
+    
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    
+    if (confirmDelete) {
+      try {
+        // Delete user data from profiles
+        await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', session.user.id);
+        
+        // Delete user's favorites
+        await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', session.user.id);
+        
+        // Sign out and delete the user
+        await supabase.auth.signOut();
+        
+        toast({
+          title: "Account deleted",
+          description: "Your account has been permanently deleted",
+        });
+        
+        navigate('/auth');
+      } catch (error) {
+        console.error('Error deleting account:', error);
+        toast({
+          title: "Error deleting account",
+          description: "There was a problem deleting your account",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -76,6 +126,18 @@ const Navbar = () => {
       navigate('/', { state: { searchQuery: searchQuery.trim() } });
       setSearchQuery('');
       setSearchOpen(false);
+    }
+  };
+
+  const handleNewMovies = () => {
+    navigate('/?category=new');
+  };
+
+  const handleViewAll = (categoryId, genreId = null) => {
+    if (genreId) {
+      navigate(`/?category=${categoryId}&genre=${genreId}`);
+    } else {
+      navigate(`/?category=${categoryId}`);
     }
   };
 
@@ -94,25 +156,39 @@ const Navbar = () => {
           <nav className="hidden md:flex items-center space-x-1">
             {categories.map((category) => (
               <div key={category.name} className="relative group">
-                <button className="nav-link group flex items-center">
-                  {category.name}
-                  {category.subcategories.length > 0 && <ChevronDown className="ml-1 h-4 w-4" />}
-                </button>
-                
-                {category.subcategories.length > 0 && (
-                  <div className="absolute left-0 top-full z-10 mt-2 w-48 origin-top-left rounded-md bg-card border border-border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block">
-                    <div className="py-1">
-                      {category.subcategories.map((sub) => (
-                        <Link
-                          key={sub.name}
-                          to={`/?category=${category.id}&genre=${sub.id}`}
-                          className="block px-4 py-2 text-sm text-foreground hover:bg-muted"
-                        >
-                          {sub.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
+                {category.id === 'new' ? (
+                  <button 
+                    className="nav-link group flex items-center"
+                    onClick={handleNewMovies}
+                  >
+                    {category.name}
+                  </button>
+                ) : (
+                  <>
+                    <button 
+                      className="nav-link group flex items-center"
+                      onClick={() => handleViewAll(category.id)}
+                    >
+                      {category.name}
+                      {category.subcategories.length > 0 && <ChevronDown className="ml-1 h-4 w-4" />}
+                    </button>
+                    
+                    {category.subcategories.length > 0 && (
+                      <div className="absolute left-0 top-full z-10 mt-2 w-48 origin-top-left rounded-md bg-card border border-border shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden group-hover:block">
+                        <div className="py-1">
+                          {category.subcategories.map((sub) => (
+                            <Link
+                              key={sub.name}
+                              to={`/?category=${category.id}&genre=${sub.id}`}
+                              className="block px-4 py-2 text-sm text-foreground hover:bg-muted"
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ))}
@@ -121,7 +197,7 @@ const Navbar = () => {
           {/* Right Section: Search + User Actions */}
           <div className="flex items-center space-x-4">
             {/* Search Bar (hidden by default on mobile) */}
-            <form onSubmit={handleSearch} className={`${searchOpen ? 'flex' : 'hidden'} md:flex items-center relative`}>
+            <form onSubmit={handleSearch} className={`${searchOpen ? 'flex absolute left-0 right-0 mx-auto top-16 w-[90%] md:static md:w-auto md:mx-0' : 'hidden'} md:flex items-center relative z-20`}>
               <input
                 type="text"
                 placeholder="Search titles..."
@@ -143,9 +219,41 @@ const Navbar = () => {
             </button>
 
             {/* Notifications */}
-            <button className="p-2 text-muted-foreground hover:text-foreground">
-              <Bell className="h-5 w-5" />
-            </button>
+            <Popover open={showNotifications} onOpenChange={setShowNotifications}>
+              <PopoverTrigger asChild>
+                <button className="p-2 text-muted-foreground hover:text-foreground relative">
+                  <Bell className="h-5 w-5" />
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-2 h-2"></span>
+                  )}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="space-y-4">
+                  <div className="font-medium flex justify-between items-center">
+                    <span>Notifications</span>
+                    {notifications.length > 0 && (
+                      <Button variant="ghost" size="sm" className="text-xs">Mark all as read</Button>
+                    )}
+                  </div>
+                  
+                  {notifications.length === 0 ? (
+                    <div className="text-center py-4 text-muted-foreground">
+                      No notifications
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-border">
+                      {notifications.map(notification => (
+                        <div key={notification.id} className="py-3">
+                          <h4 className="text-sm font-medium">{notification.title}</h4>
+                          <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
 
             {/* User Profile / Auth */}
             {session ? (
@@ -175,6 +283,15 @@ const Navbar = () => {
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       Sign Out
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      className="flex items-center" 
+                      onClick={handleDeleteAccount}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Account
                     </Button>
                   </div>
                 </PopoverContent>
@@ -220,7 +337,21 @@ const Navbar = () => {
                     {categories.map((category) => (
                       <div key={category.name} className="space-y-2">
                         <div className="text-foreground text-lg font-medium">
-                          {category.name}
+                          {category.id === 'new' ? (
+                            <button 
+                              className="text-foreground hover:text-hype-purple"
+                              onClick={handleNewMovies}
+                            >
+                              {category.name}
+                            </button>
+                          ) : (
+                            <button 
+                              className="text-foreground hover:text-hype-purple"
+                              onClick={() => handleViewAll(category.id)}
+                            >
+                              {category.name}
+                            </button>
+                          )}
                         </div>
                         {category.subcategories.length > 0 && (
                           <div className="ml-4 space-y-2 border-l border-border pl-4">
@@ -258,6 +389,15 @@ const Navbar = () => {
                           >
                             <LogOut className="mr-2 h-4 w-4" />
                             Sign Out
+                          </Button>
+                          <Button 
+                            variant="destructive" 
+                            size="sm" 
+                            className="flex items-center mt-2 w-full" 
+                            onClick={handleDeleteAccount}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Account
                           </Button>
                         </div>
                       </div>

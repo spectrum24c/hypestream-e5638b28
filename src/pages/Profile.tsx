@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 import { FileEdit } from 'lucide-react';
 
@@ -20,6 +20,7 @@ const Profile = () => {
   const [session, setSession] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check for existing session
@@ -75,7 +76,7 @@ const Profile = () => {
 
   const updateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session) return;
+    if (!session?.user) return;
     
     setUpdating(true);
     try {
@@ -114,41 +115,49 @@ const Profile = () => {
   };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) {
+    if (!e.target.files || e.target.files.length === 0 || !session?.user?.id) {
       return;
     }
 
     const file = e.target.files[0];
     const fileExt = file.name.split('.').pop();
-    const fileName = `${session?.user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-    const filePath = `avatars/${fileName}`;
+    const fileName = `${session.user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `${fileName}`;
 
     try {
       setUpdating(true);
       
       // Upload the file to Supabase Storage
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data } = await supabase.storage
         .from('avatars')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       // Get the public URL
-      const { data } = supabase.storage
+      const { data: urlData } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
 
-      setAvatarUrl(data.publicUrl);
+      setAvatarUrl(urlData.publicUrl);
+      
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: urlData.publicUrl })
+        .eq('id', session.user.id);
+      
+      if (updateError) throw updateError;
       
       toast({
         title: "Avatar uploaded",
         description: "Your avatar has been uploaded successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading avatar:', error);
       toast({
         title: "Error uploading avatar",
-        description: "There was a problem uploading your avatar",
+        description: error.message || "There was a problem uploading your avatar",
         variant: "destructive"
       });
     } finally {
@@ -186,7 +195,7 @@ const Profile = () => {
                         <AvatarImage src={avatarUrl} alt="Profile" />
                       ) : (
                         <AvatarFallback className="text-4xl bg-hype-purple text-white">
-                          {username.charAt(0) || session?.user.email.charAt(0).toUpperCase() || '?'}
+                          {username.charAt(0) || (session?.user?.email?.charAt(0).toUpperCase() || '?')}
                         </AvatarFallback>
                       )}
                     </Avatar>

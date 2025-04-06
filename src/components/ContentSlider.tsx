@@ -3,7 +3,8 @@ import React, { useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import MovieCard from './MovieCard';
 import MoviePlayer from './MoviePlayer';
-import { imgPath } from '@/services/tmdbApi';
+import { Button } from './ui/button';
+import { useNavigate } from 'react-router-dom';
 
 // Movie item type
 interface Movie {
@@ -22,12 +23,14 @@ interface Movie {
 interface ContentSliderProps {
   title: string;
   items: Movie[];
+  onViewAll?: () => void;
 }
 
-const ContentSlider: React.FC<ContentSliderProps> = ({ title, items }) => {
+const ContentSlider: React.FC<ContentSliderProps> = ({ title, items, onViewAll }) => {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const navigate = useNavigate();
 
   const scroll = (direction: 'left' | 'right') => {
     if (!sliderRef.current) return;
@@ -59,14 +62,29 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items }) => {
     setSelectedMovie(null);
   };
 
+  const handleViewAll = () => {
+    if (onViewAll) {
+      onViewAll();
+    } else {
+      const category = title.toLowerCase().includes('movie') ? 'movie' : 
+                      title.toLowerCase().includes('show') || title.toLowerCase().includes('tv') ? 'tv' : 
+                      title.toLowerCase().includes('new') ? 'new' : 'trending';
+      navigate(`/?category=${category}`);
+    }
+  };
+
   return (
     <div className="py-6 px-4 md:px-8">
       {/* Section Title */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl md:text-2xl font-bold text-white">{title}</h2>
-        <a href="#" className="text-sm text-hype-purple hover:text-hype-purple/80">
+        <Button 
+          variant="ghost" 
+          onClick={handleViewAll} 
+          className="text-sm text-hype-purple hover:text-hype-purple/80"
+        >
           View All
-        </a>
+        </Button>
       </div>
 
       {/* Carousel Container */}

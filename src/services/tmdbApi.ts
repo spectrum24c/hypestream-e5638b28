@@ -12,6 +12,8 @@ export const apiPaths = {
   fetchMoviesList: (id: number) => `${tmdbApiEndpoint}/discover/movie?api_key=${apiKeys.tmdb}&with_genres=${id}`,
   fetchTrending: `${tmdbApiEndpoint}/trending/all/day?api_key=${apiKeys.tmdb}&language=en-US`,
   fetchPopularMovies: `${tmdbApiEndpoint}/movie/popular?api_key=${apiKeys.tmdb}&language=en-US`,
+  fetchLatestMovies: `${tmdbApiEndpoint}/movie/now_playing?api_key=${apiKeys.tmdb}&language=en-US`,
+  fetchUpcomingMovies: `${tmdbApiEndpoint}/movie/upcoming?api_key=${apiKeys.tmdb}&language=en-US`,
   fetchTVList: (id: number) => `${tmdbApiEndpoint}/discover/tv?api_key=${apiKeys.tmdb}&with_genres=${id}`,
   fetchPopularTV: `${tmdbApiEndpoint}/tv/popular?api_key=${apiKeys.tmdb}&language=en-US`,
   fetchMovieDetails: (movieId: string) => `${tmdbApiEndpoint}/movie/${movieId}?api_key=${apiKeys.tmdb}&language=en-US`,
@@ -53,6 +55,8 @@ export const fetchContentByCategory = async (category: string, genreId: number) 
       url = apiPaths.fetchMoviesList(genreId);
     } else if (category === 'tv') {
       url = apiPaths.fetchTVList(genreId);
+    } else if (category === 'new') {
+      url = apiPaths.fetchLatestMovies;
     } else {
       url = apiPaths.fetchTrending;
     }

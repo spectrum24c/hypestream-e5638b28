@@ -4,7 +4,6 @@ import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import ContentSlider from '@/components/ContentSlider';
-import CategorySection from '@/components/CategorySection';
 import Footer from '@/components/Footer';
 import { apiPaths, fetchFromTMDB, searchContent, fetchContentByCategory } from '@/services/tmdbApi';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,6 +35,8 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [viewAllContent, setViewAllContent] = useState<Movie[]>([]);
+  const [viewingCategory, setViewingCategory] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -66,17 +67,41 @@ const Index = () => {
           const data = await searchContent(searchQueryFromState);
           setSearchResults(data.results || []);
           setIsSearching(true);
+          setViewingCategory(null);
         } 
-        else if (categoryFromParams && genreFromParams) {
-          const data = await fetchContentByCategory(
-            categoryFromParams, 
-            parseInt(genreFromParams)
-          );
-          setSearchResults(data);
+        else if (categoryFromParams) {
           setIsSearching(true);
+          setViewingCategory(categoryFromParams);
+          
+          if (categoryFromParams === 'new') {
+            // Fetch new releases specifically
+            const data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
+            setViewAllContent(data.results || []);
+          }
+          else if (genreFromParams) {
+            // Fetch by category and genre
+            const data = await fetchContentByCategory(
+              categoryFromParams, 
+              parseInt(genreFromParams)
+            );
+            setViewAllContent(data);
+          } 
+          else {
+            // Fetch all from the category
+            let data;
+            if (categoryFromParams === 'movie') {
+              data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
+            } else if (categoryFromParams === 'tv') {
+              data = await fetchFromTMDB(apiPaths.fetchPopularTV);
+            } else {
+              data = await fetchFromTMDB(apiPaths.fetchTrending);
+            }
+            setViewAllContent(data.results || []);
+          }
         }
         else {
           setIsSearching(false);
+          setViewingCategory(null);
           const [trendingData, newReleasesData, popularMoviesData, topRatedShowsData] = await Promise.all([
             fetchFromTMDB(apiPaths.fetchTrending),
             fetchFromTMDB(apiPaths.fetchPopularMovies),
@@ -105,7 +130,31 @@ const Index = () => {
 
   const clearSearchAndFilters = () => {
     navigate('/', { replace: true });
-    window.location.reload(); // Simple way to reset all states
+    setIsSearching(false);
+    setViewingCategory(null);
+  };
+
+  const getCategoryDisplayName = () => {
+    if (searchQueryFromState) {
+      return `Search Results for "${searchQueryFromState}"`;
+    }
+    
+    if (categoryFromParams === 'new') {
+      return 'New Releases';
+    }
+    
+    if (categoryFromParams && genreFromParams) {
+      const genreName = genreFromParams;
+      return `${categoryFromParams === 'movie' ? 'Movies' : 'TV Shows'} - ${genreName}`;
+    }
+    
+    if (categoryFromParams) {
+      return categoryFromParams === 'movie' ? 'Movies' : 
+             categoryFromParams === 'tv' ? 'TV Shows' : 
+             'Trending Content';
+    }
+    
+    return '';
   };
 
   return (
@@ -114,7 +163,7 @@ const Index = () => {
       <main className="pb-8 pt-16">
         {!isSearching && <HeroSection />}
         
-        <div className="container mx-auto px-4 mt-8">
+        <div className="container mx-auto px-4 mt-4">
           {isSearching ? (
             <div className="my-8">
               <div className="flex items-center mb-6">
@@ -126,9 +175,7 @@ const Index = () => {
                   <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
                 </Button>
                 <h2 className="text-2xl font-bold">
-                  {categoryFromParams && genreFromParams 
-                    ? `${categoryFromParams === 'movie' ? 'Movies' : 'TV Shows'} - ${genreFromParams}` 
-                    : `Search Results for "${searchQueryFromState}"`}
+                  {getCategoryDisplayName()}
                 </h2>
               </div>
               
@@ -136,11 +183,9 @@ const Index = () => {
                 <div className="flex justify-center items-center h-64">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hype-purple"></div>
                 </div>
-              ) : searchResults.length === 0 ? (
-                <p className="text-center text-muted-foreground py-10">No results found</p>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-                  {searchResults.map((item) => (
+                  {(searchQueryFromState ? searchResults : viewAllContent).map((item) => (
                     <MovieCard
                       key={item.id}
                       id={item.id}
@@ -157,14 +202,12 @@ const Index = () => {
             </div>
           ) : (
             <>
-              <CategorySection />
-              
               {!loading && (
                 <>
-                  <ContentSlider title="Trending Now" items={trendingContent} />
-                  <ContentSlider title="New Releases" items={newReleases} />
-                  <ContentSlider title="Popular Movies" items={popularMovies} />
-                  <ContentSlider title="Top Rated Shows" items={topRatedShows} />
+                  <ContentSlider title="Trending Now" items={trendingContent} onViewAll={() => handleViewAll('trending')} />
+                  <ContentSlider title="New Releases" items={newReleases} onViewAll={() => handleViewAll('new')} />
+                  <ContentSlider title="Popular Movies" items={popularMovies} onViewAll={() => handleViewAll('movie')} />
+                  <ContentSlider title="Top Rated Shows" items={topRatedShows} onViewAll={() => handleViewAll('tv')} />
                 </>
               )}
             </>

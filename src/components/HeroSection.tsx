@@ -1,28 +1,70 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Play, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { apiPaths, fetchFromTMDB, imgPath } from '@/services/tmdbApi';
+
+interface FeaturedMovie {
+  id: string;
+  title?: string;
+  name?: string;
+  overview?: string;
+  backdrop_path: string | null;
+  poster_path: string | null;
+  release_date?: string;
+  first_air_date?: string;
+  vote_average: number;
+  media_type?: string;
+}
 
 const HeroSection = () => {
-  // This would normally be fetched from an API
-  const featuredContent = {
-    title: "Demon Slayer: Kimetsu no Yaiba",
-    description: "Tanjiro Kamado's peaceful life is shattered after demons slaughter his family. Now, he's on a quest to cure his sister and avenge his family.",
-    image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop",
-    rating: "8.7",
-    year: "2019",
-    category: "Anime",
-    duration: "24m",
-  };
+  const [featuredContent, setFeaturedContent] = useState<FeaturedMovie | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeaturedContent = async () => {
+      try {
+        const data = await fetchFromTMDB(apiPaths.fetchTrending);
+        
+        if (data.results && data.results.length > 0) {
+          // Find a trending item with a backdrop image
+          const featuredItem = data.results.find(item => item.backdrop_path) || data.results[0];
+          setFeaturedContent(featuredItem);
+        }
+      } catch (error) {
+        console.error("Error fetching featured content:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedContent();
+  }, []);
+
+  if (loading || !featuredContent) {
+    return (
+      <div className="h-[50vh] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hype-purple"></div>
+      </div>
+    );
+  }
+
+  const title = featuredContent.title || featuredContent.name || 'Featured Content';
+  const year = (featuredContent.release_date || featuredContent.first_air_date || '').split('-')[0] || 'N/A';
+  const rating = featuredContent.vote_average.toFixed(1);
+  const category = featuredContent.media_type === 'tv' ? 'TV Show' : 'Movie';
+  const backdropUrl = featuredContent.backdrop_path 
+    ? `${imgPath}${featuredContent.backdrop_path}`
+    : 'https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop';
 
   return (
-    <div className="relative h-[80vh] min-h-[600px] w-full overflow-hidden mt-16">
+    <div className="relative h-[70vh] min-h-[500px] w-full overflow-hidden mt-0">
       {/* Background Image */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-black/40"></div>
         <img
-          src={featuredContent.image}
-          alt={featuredContent.title}
+          src={backdropUrl}
+          alt={title}
           className="h-full w-full object-cover object-center"
         />
       </div>
@@ -38,12 +80,12 @@ const HeroSection = () => {
               FEATURED
             </span>
             <div className="flex items-center text-hype-teal">
-              <span className="text-sm font-medium mr-2">{featuredContent.rating}</span>
+              <span className="text-sm font-medium mr-2">{rating}</span>
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <svg 
                     key={star} 
-                    className={`h-4 w-4 ${star <= Math.floor(parseFloat(featuredContent.rating)) / 2 
+                    className={`h-4 w-4 ${star <= Math.floor(parseFloat(rating)) / 2 
                       ? 'text-hype-teal' 
                       : 'text-gray-500'}`}
                     fill="currentColor" 
@@ -57,19 +99,17 @@ const HeroSection = () => {
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-            {featuredContent.title}
+            {title}
           </h1>
 
           <div className="flex items-center space-x-4 mb-5 text-sm text-muted-foreground">
-            <span>{featuredContent.year}</span>
+            <span>{year}</span>
             <span className="h-1 w-1 rounded-full bg-muted-foreground"></span>
-            <span>{featuredContent.category}</span>
-            <span className="h-1 w-1 rounded-full bg-muted-foreground"></span>
-            <span>{featuredContent.duration}</span>
+            <span>{category}</span>
           </div>
 
           <p className="text-lg text-gray-300 mb-8 max-w-xl">
-            {featuredContent.description}
+            {featuredContent.overview || 'No description available.'}
           </p>
 
           <div className="flex items-center space-x-4">

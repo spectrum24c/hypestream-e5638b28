@@ -54,6 +54,11 @@
   body {
     @apply bg-hype-dark text-foreground antialiased;
   }
+  
+  *::-webkit-scrollbar {
+    display: none;
+    scroll-behavior: smooth;
+  }
 }
 
 @layer components {

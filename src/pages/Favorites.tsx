@@ -3,53 +3,74 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import MovieCard from '@/components/MovieCard';
 import { supabase } from '@/integrations/supabase/client';
+import MovieCard from '@/components/MovieCard';
+import MoviePlayer from '@/components/MoviePlayer';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
-import { Database } from '@/integrations/supabase/types';
 
-type Favorite = Database['public']['Tables']['favorites']['Row'];
+interface Favorite {
+  id: string;
+  movie_id: string;
+  title: string;
+  poster_path: string | null;
+  release_date: string | null;
+  vote_average: number | null;
+  is_tv_show: boolean;
+}
+
+interface MovieDetails {
+  id: string;
+  title?: string;
+  name?: string;
+  poster_path: string | null;
+  backdrop_path?: string | null;
+  release_date?: string;
+  first_air_date?: string;
+  vote_average?: number;
+  media_type?: string;
+  overview?: string;
+}
 
 const Favorites = () => {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
-  const [session, setSession] = useState<any>(null);
+  const [selectedMovie, setSelectedMovie] = useState<MovieDetails | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      if (!currentSession) {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         navigate('/auth');
-      } else {
-        fetchFavorites(currentSession.user.id);
+        return;
       }
-    });
+      
+      fetchFavorites();
 
-    // Set up auth listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
-        setSession(newSession);
-        if (!newSession && event === 'SIGNED_OUT') {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+        if (event === 'SIGNED_OUT') {
           navigate('/auth');
         }
-      }
-    );
+      });
 
-    return () => subscription.unsubscribe();
+      return () => subscription.unsubscribe();
+    };
+
+    checkSession();
   }, [navigate]);
 
-  const fetchFavorites = async (userId: string) => {
+  const fetchFavorites = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('favorites')
         .select('*')
-        .eq('user_id', userId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
+      
       setFavorites(data || []);
     } catch (error) {
       console.error('Error fetching favorites:', error);
@@ -63,31 +84,40 @@ const Favorites = () => {
     }
   };
 
-  const handleRemoveFavorite = async (favoriteId: string) => {
+  const removeFavorite = async (id: string) => {
     try {
       const { error } = await supabase
         .from('favorites')
         .delete()
-        .eq('id', favoriteId);
+        .eq('id', id);
       
       if (error) throw error;
       
-      setFavorites(favorites.filter(fav => fav.id !== favoriteId));
+      setFavorites(favorites.filter(fav => fav.id !== id));
       toast({
         title: "Removed from favorites",
+        description: "The item has been removed from your favorites"
       });
     } catch (error) {
       console.error('Error removing favorite:', error);
       toast({
-        title: "Error removing favorite",
+        title: "Error",
+        description: "There was a problem removing the item from favorites",
         variant: "destructive"
       });
     }
   };
 
   const handleMovieClick = (favorite: Favorite) => {
-    // For future implementation: show movie details or play movie
-    console.log("Favorite clicked:", favorite);
+    const movie: MovieDetails = {
+      id: favorite.movie_id,
+      title: favorite.title,
+      poster_path: favorite.poster_path,
+      release_date: favorite.release_date || undefined,
+      vote_average: favorite.vote_average || undefined,
+      media_type: favorite.is_tv_show ? 'tv' : 'movie'
+    };
+    setSelectedMovie(movie);
   };
 
   return (
@@ -95,7 +125,16 @@ const Favorites = () => {
       <Navbar />
       <main className="pb-8 pt-24">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold mb-8">My Favorites</h1>
+          <div className="flex items-center mb-8">
+            <Button 
+              onClick={() => navigate('/')} 
+              variant="ghost" 
+              className="mr-2"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
+            </Button>
+            <h1 className="text-3xl font-bold">My Favorites</h1>
+          </div>
           
           {loading ? (
             <div className="flex justify-center items-center h-64">
@@ -103,16 +142,17 @@ const Favorites = () => {
             </div>
           ) : favorites.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">You haven't added any favorites yet</p>
-              <button 
-                onClick={() => navigate('/')}
-                className="px-4 py-2 bg-hype-purple hover:bg-hype-purple/90 rounded-md"
+              <h2 className="text-2xl font-semibold mb-4">No favorites yet</h2>
+              <p className="text-muted-foreground">Movies and shows you favorite will appear here</p>
+              <Button 
+                onClick={() => navigate('/')} 
+                className="mt-6 bg-hype-purple hover:bg-hype-purple/90"
               >
-                Discover Content
-              </button>
+                Browse Content
+              </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
               {favorites.map((favorite) => (
                 <div key={favorite.id} className="relative group">
                   <MovieCard
@@ -124,15 +164,15 @@ const Favorites = () => {
                     isTVShow={favorite.is_tv_show}
                     onClick={() => handleMovieClick(favorite)}
                   />
-                  <button
-                    className="absolute top-2 right-2 bg-black/70 hover:bg-black text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  <div 
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleRemoveFavorite(favorite.id);
+                      removeFavorite(favorite.id);
                     }}
                   >
                     ✕
-                  </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -140,6 +180,10 @@ const Favorites = () => {
         </div>
       </main>
       <Footer />
+
+      {selectedMovie && (
+        <MoviePlayer movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
+      )}
     </div>
   );
 };

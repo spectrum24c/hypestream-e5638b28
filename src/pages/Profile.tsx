@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
+import { FileEdit } from 'lucide-react';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -16,6 +18,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [session, setSession] = useState<any>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -56,6 +59,7 @@ const Profile = () => {
       if (data) {
         setProfile(data);
         setUsername(data.username || '');
+        setAvatarUrl(data.avatar_url);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -79,6 +83,7 @@ const Profile = () => {
         .from('profiles')
         .update({
           username: username.trim() || null,
+          avatar_url: avatarUrl
         })
         .eq('id', session.user.id);
       
@@ -92,7 +97,8 @@ const Profile = () => {
       if (profile) {
         setProfile({
           ...profile,
-          username: username.trim() || null
+          username: username.trim() || null,
+          avatar_url: avatarUrl
         });
       }
     } catch (error) {
@@ -107,12 +113,64 @@ const Profile = () => {
     }
   };
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      return;
+    }
+
+    const file = e.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${session?.user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `avatars/${fileName}`;
+
+    try {
+      setUpdating(true);
+      
+      // Upload the file to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get the public URL
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      setAvatarUrl(data.publicUrl);
+      
+      toast({
+        title: "Avatar uploaded",
+        description: "Your avatar has been uploaded successfully",
+      });
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast({
+        title: "Error uploading avatar",
+        description: "There was a problem uploading your avatar",
+        variant: "destructive"
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-hype-dark text-foreground">
       <Navbar />
       <main className="pb-8 pt-24">
         <div className="container mx-auto px-4 max-w-3xl">
-          <h1 className="text-3xl font-bold mb-8">My Profile</h1>
+          <div className="flex items-center mb-8">
+            <Button 
+              onClick={() => navigate('/')} 
+              variant="ghost" 
+              className="mr-2"
+            >
+              ← Back to Home
+            </Button>
+            <h1 className="text-3xl font-bold">My Profile</h1>
+          </div>
           
           {loading ? (
             <div className="flex justify-center items-center h-64">
@@ -122,16 +180,26 @@ const Profile = () => {
             <div className="bg-card border border-border rounded-xl p-6">
               <div className="flex flex-col md:flex-row gap-8">
                 <div className="md:w-1/3">
-                  <div className="bg-muted rounded-full w-32 h-32 mx-auto flex items-center justify-center">
-                    {profile?.avatar_url ? (
-                      <img 
-                        src={profile.avatar_url} 
-                        alt="Profile" 
-                        className="w-full h-full object-cover rounded-full"
+                  <div className="relative mx-auto">
+                    <Avatar className="w-32 h-32 mx-auto">
+                      {avatarUrl ? (
+                        <AvatarImage src={avatarUrl} alt="Profile" />
+                      ) : (
+                        <AvatarFallback className="text-4xl bg-hype-purple text-white">
+                          {username.charAt(0) || session?.user.email.charAt(0).toUpperCase() || '?'}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-hype-purple text-white rounded-full p-2 cursor-pointer">
+                      <FileEdit className="h-4 w-4" />
+                      <input 
+                        id="avatar-upload" 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleAvatarChange} 
+                        className="hidden" 
                       />
-                    ) : (
-                      <span className="text-4xl">👤</span>
-                    )}
+                    </label>
                   </div>
                 </div>
                 

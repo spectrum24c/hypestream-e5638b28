@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import MovieCard from './MovieCard';
+import MoviePlayer from './MoviePlayer';
 import { imgPath } from '@/services/tmdbApi';
 
 // Movie item type
@@ -15,6 +16,7 @@ interface Movie {
   first_air_date?: string;
   vote_average?: number;
   media_type?: string;
+  overview?: string;
 }
 
 interface ContentSliderProps {
@@ -25,6 +27,7 @@ interface ContentSliderProps {
 const ContentSlider: React.FC<ContentSliderProps> = ({ title, items }) => {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
   const scroll = (direction: 'left' | 'right') => {
     if (!sliderRef.current) return;
@@ -49,8 +52,11 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items }) => {
   };
 
   const handleMovieClick = (movie: Movie) => {
-    console.log("Movie clicked:", movie);
-    // For future implementation: show movie details or play movie
+    setSelectedMovie(movie);
+  };
+
+  const closeMoviePlayer = () => {
+    setSelectedMovie(null);
   };
 
   return (
@@ -111,6 +117,11 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items }) => {
           <ChevronRight className="h-6 w-6 text-white" />
         </button>
       </div>
+
+      {/* Movie Player Modal */}
+      {selectedMovie && (
+        <MoviePlayer movie={selectedMovie} onClose={closeMoviePlayer} />
+      )}
     </div>
   );
 };

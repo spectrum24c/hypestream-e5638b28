@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import ContentSlider from '@/components/ContentSlider';
@@ -8,6 +9,9 @@ import Footer from '@/components/Footer';
 import { apiPaths, fetchFromTMDB, searchContent, fetchContentByCategory } from '@/services/tmdbApi';
 import { supabase } from '@/integrations/supabase/client';
 import MovieCard from '@/components/MovieCard';
+import MoviePlayer from '@/components/MoviePlayer';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 interface Movie {
   id: string;
@@ -19,6 +23,7 @@ interface Movie {
   first_air_date?: string;
   vote_average?: number;
   media_type?: string;
+  overview?: string;
 }
 
 const Index = () => {
@@ -30,7 +35,9 @@ const Index = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const searchQueryFromState = location.state?.searchQuery || '';
@@ -93,7 +100,12 @@ const Index = () => {
   }, [searchQueryFromState, categoryFromParams, genreFromParams]);
 
   const handleMovieClick = (movie: Movie) => {
-    console.log("Movie clicked:", movie);
+    setSelectedMovie(movie);
+  };
+
+  const clearSearchAndFilters = () => {
+    navigate('/', { replace: true });
+    window.location.reload(); // Simple way to reset all states
   };
 
   return (
@@ -105,11 +117,20 @@ const Index = () => {
         <div className="container mx-auto px-4 mt-8">
           {isSearching ? (
             <div className="my-8">
-              <h2 className="text-2xl font-bold mb-6">
-                {categoryFromParams && genreFromParams 
-                  ? `${categoryFromParams === 'movie' ? 'Movies' : 'TV Shows'} - ${genreFromParams}` 
-                  : `Search Results for "${searchQueryFromState}"`}
-              </h2>
+              <div className="flex items-center mb-6">
+                <Button
+                  variant="ghost"
+                  onClick={clearSearchAndFilters}
+                  className="mr-2"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
+                </Button>
+                <h2 className="text-2xl font-bold">
+                  {categoryFromParams && genreFromParams 
+                    ? `${categoryFromParams === 'movie' ? 'Movies' : 'TV Shows'} - ${genreFromParams}` 
+                    : `Search Results for "${searchQueryFromState}"`}
+                </h2>
+              </div>
               
               {loading ? (
                 <div className="flex justify-center items-center h-64">
@@ -118,7 +139,7 @@ const Index = () => {
               ) : searchResults.length === 0 ? (
                 <p className="text-center text-muted-foreground py-10">No results found</p>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
                   {searchResults.map((item) => (
                     <MovieCard
                       key={item.id}
@@ -151,6 +172,10 @@ const Index = () => {
         </div>
       </main>
       <Footer />
+
+      {selectedMovie && (
+        <MoviePlayer movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
+      )}
     </div>
   );
 };

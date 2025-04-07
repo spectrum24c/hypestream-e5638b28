@@ -8,12 +8,22 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { imgPath } from '@/services/tmdbApi';
 
+interface Notification {
+  id: number;
+  title: string;
+  message: string;
+  poster_path?: string;
+  movie?: {
+    id: string;
+  };
+}
+
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [session, setSession] = useState(null);
-  const [notifications, setNotifications] = useState([
+  const [session, setSession] = useState<any>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([
     { id: 1, title: "New movies available!", message: "Check out the latest releases this week!", poster_path: "/example-poster.jpg" }
   ]);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
@@ -147,7 +157,7 @@ const Navbar = () => {
     setNotifications([]);
   };
   
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: Notification) => {
     if (notification.movie) {
       setShowNotifications(false);
       navigate('/', { state: { selectedMovieId: notification.movie.id } });

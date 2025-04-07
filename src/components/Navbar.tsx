@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { supabase } from '@/integrations/supabase/client';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { imgPath } from '@/services/tmdbApi';
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -43,14 +44,12 @@ const Navbar = () => {
   ];
 
   useEffect(() => {
-    // Set up auth listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, newSession) => {
         setSession(newSession);
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
     });
@@ -87,23 +86,18 @@ const Navbar = () => {
     
     if (confirmDelete) {
       try {
-        // Delete user's favorites
         await supabase
           .from('favorites')
           .delete()
           .eq('user_id', session.user.id);
         
-        // Delete user data from profiles
         await supabase
           .from('profiles')
           .delete()
           .eq('id', session.user.id);
         
-        // Sign out the user
         await supabase.auth.signOut();
         
-        // Try to delete the user (this requires admin privileges in production)
-        // You might need to use an edge function for this in a real app
         const { error } = await supabase.rpc('delete_user');
         
         if (error) {
@@ -127,10 +121,9 @@ const Navbar = () => {
     }
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Navigate to home with search query
       navigate('/', { state: { searchQuery: searchQuery.trim() } });
       setSearchQuery('');
       setSearchOpen(false);
@@ -141,7 +134,7 @@ const Navbar = () => {
     navigate('/?category=new');
   };
 
-  const handleViewAll = (categoryId, genreId = null) => {
+  const handleViewAll = (categoryId: string, genreId: number | string | null = null) => {
     if (genreId) {
       navigate(`/?category=${categoryId}&genre=${genreId}`);
     } else {
@@ -154,12 +147,9 @@ const Navbar = () => {
     setNotifications([]);
   };
   
-  const handleNotificationClick = (notification) => {
-    // If there's a movie associated with the notification, show its details
+  const handleNotificationClick = (notification: any) => {
     if (notification.movie) {
-      // Set selected movie and close notification popover
       setShowNotifications(false);
-      // Navigate to movie details or trigger movie player
       navigate('/', { state: { selectedMovieId: notification.movie.id } });
     }
   };
@@ -168,14 +158,12 @@ const Navbar = () => {
     <header className="fixed top-0 left-0 z-50 w-full bg-hype-dark/95 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
               <span className="text-2xl font-bold text-white">HYPE<span className="text-hype-orange">STREAM</span></span>
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
             {categories.map((category) => (
               <div key={category.name} className="relative group">
@@ -216,9 +204,7 @@ const Navbar = () => {
             ))}
           </nav>
 
-          {/* Right Section: Search + User Actions */}
           <div className="flex items-center space-x-4">
-            {/* Search Bar (hidden by default on mobile) */}
             <form onSubmit={handleSearch} className={`${searchOpen ? 'flex absolute left-0 right-0 mx-auto top-16 w-[90%] md:static md:w-auto md:mx-0' : 'hidden'} md:flex items-center relative z-20`}>
               <input
                 type="text"
@@ -232,7 +218,6 @@ const Navbar = () => {
               </button>
             </form>
 
-            {/* Mobile search toggle */}
             <button
               onClick={() => setSearchOpen(!searchOpen)}
               className="md:hidden p-2 text-muted-foreground hover:text-foreground"
@@ -240,7 +225,6 @@ const Navbar = () => {
               <Search className="h-5 w-5" />
             </button>
 
-            {/* Notifications */}
             <Popover open={showNotifications} onOpenChange={setShowNotifications}>
               <PopoverTrigger asChild>
                 <button className="p-2 text-muted-foreground hover:text-foreground relative">
@@ -299,7 +283,6 @@ const Navbar = () => {
               </PopoverContent>
             </Popover>
 
-            {/* User Profile / Auth */}
             {session ? (
               <Popover>
                 <PopoverTrigger asChild>
@@ -365,7 +348,6 @@ const Navbar = () => {
               </Popover>
             )}
 
-            {/* Mobile menu button */}
             <Sheet>
               <SheetTrigger asChild>
                 <Button 

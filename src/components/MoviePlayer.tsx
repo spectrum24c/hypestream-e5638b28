@@ -197,7 +197,9 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
           <div className="stream aspect-video w-full bg-black flex items-center justify-center flex-1">
             <iframe
               className="w-full h-full"
-              src={`https://vidsrc.to/embed/movie/${movie.id}`}
+              src={isTVShow 
+                ? `https://vidsrc.xyz/embed/tv?tmdb=${movie.id}` 
+                : `https://vidsrc.in/embed/${movie.id}`}
               title={`${title} Stream`}
               frameBorder="0"
               allowFullScreen

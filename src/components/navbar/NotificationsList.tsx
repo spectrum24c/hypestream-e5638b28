@@ -47,8 +47,8 @@ const NotificationsList: React.FC<NotificationsListProps> = ({
                 {notification.poster_path && (
                   <img 
                     src={`${imgPath}${notification.poster_path}`} 
-                    alt="" 
-                    className="w-10 h-10 rounded object-cover"
+                    alt="Movie poster" 
+                    className="w-12 h-16 rounded object-cover"
                   />
                 )}
                 <div className="flex-1">
@@ -59,6 +59,9 @@ const NotificationsList: React.FC<NotificationsListProps> = ({
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() : ''}
+                  </p>
                 </div>
               </div>
             </div>

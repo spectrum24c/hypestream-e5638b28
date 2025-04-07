@@ -13,6 +13,12 @@ import MobileNavigation from './navbar/MobileNavigation';
 import UserMenu from './navbar/UserMenu';
 import NotificationsMenu from './navbar/NotificationsMenu';
 
+interface Category {
+  id: string;
+  label: string; 
+  genreId?: number;
+}
+
 const Navbar = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [session, setSession] = useState<any>(null);
@@ -135,6 +141,10 @@ const Navbar = () => {
 
   const handleNewMovies = () => {
     navigate('/?category=new');
+  };
+
+  const handleViewAll = (categoryId: string) => {
+    navigate(`/?category=${categoryId}`);
   };
 
   const handleMarkAllAsRead = () => {

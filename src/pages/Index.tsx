@@ -42,6 +42,7 @@ const Index = () => {
   const [searchParams] = useSearchParams();
 
   const searchQueryFromState = location.state?.searchQuery || '';
+  const selectedMovieIdFromState = location.state?.selectedMovieId;
   const categoryFromParams = searchParams.get('category');
   const genreFromParams = searchParams.get('genre');
 
@@ -58,6 +59,31 @@ const Index = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (selectedMovieIdFromState) {
+      // Fetch movie details and open player
+      const fetchMovieDetails = async () => {
+        try {
+          // First try as a movie
+          let data = await fetchFromTMDB(apiPaths.fetchMovieDetails(selectedMovieIdFromState));
+          
+          // If no title found, try as a TV show
+          if (!data.title) {
+            data = await fetchFromTMDB(apiPaths.fetchTVDetails(selectedMovieIdFromState));
+          }
+          
+          if (data) {
+            setSelectedMovie(data);
+          }
+        } catch (error) {
+          console.error("Error fetching movie details:", error);
+        }
+      };
+      
+      fetchMovieDetails();
+    }
+  }, [selectedMovieIdFromState]);
 
   useEffect(() => {
     const fetchMovieData = async () => {
@@ -134,7 +160,7 @@ const Index = () => {
     setViewingCategory(null);
   };
 
-  // Add the handleViewAll function to fix build errors
+  // Function to handle viewing all items in a category
   const handleViewAll = (categoryId: string) => {
     navigate(`/?category=${categoryId}`);
   };

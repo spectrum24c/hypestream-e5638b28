@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { categories } from '@/data/categories';
 import { Notification } from '@/types/notification';
+import { fetchFromTMDB, apiPaths } from '@/services/tmdbApi';
 import SearchBar from './navbar/SearchBar';
 import DesktopNavigation from './navbar/DesktopNavigation';
 import MobileNavigation from './navbar/MobileNavigation';
@@ -15,10 +16,8 @@ import NotificationsMenu from './navbar/NotificationsMenu';
 const Navbar = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [session, setSession] = useState<any>(null);
-  const [notifications, setNotifications] = useState<Notification[]>([
-    { id: 1, title: "New movies available!", message: "Check out the latest releases this week!", poster_path: "/example-poster.jpg" }
-  ]);
-  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -35,6 +34,39 @@ const Navbar = () => {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    // Fetch latest movies for notifications
+    const fetchLatestMovies = async () => {
+      try {
+        const data = await fetchFromTMDB(apiPaths.fetchLatestMovies);
+        if (data.results && data.results.length > 0) {
+          // Get the first 3 latest movies
+          const latestMovies = data.results.slice(0, 3);
+          
+          // Create notifications from these movies
+          const newNotifications = latestMovies.map((movie: any, index: number) => ({
+            id: index + 1,
+            title: "New Release!",
+            message: `${movie.title || 'A new movie'} is now available to stream!`,
+            poster_path: movie.poster_path,
+            movie: {
+              id: movie.id
+            },
+            read: false,
+            createdAt: new Date().toISOString()
+          }));
+          
+          setNotifications(newNotifications);
+          setHasUnreadNotifications(true);
+        }
+      } catch (error) {
+        console.error("Error fetching latest movies for notifications:", error);
+      }
+    };
+    
+    fetchLatestMovies();
   }, []);
 
   const handleSignOut = async () => {
@@ -107,13 +139,30 @@ const Navbar = () => {
 
   const handleMarkAllAsRead = () => {
     setHasUnreadNotifications(false);
-    setNotifications([]);
+    // Mark all notifications as read rather than clearing them
+    setNotifications(prevNotifications => 
+      prevNotifications.map(notification => ({
+        ...notification,
+        read: true
+      }))
+    );
   };
   
   const handleNotificationClick = (notification: Notification) => {
     if (notification.movie) {
       setShowNotifications(false);
       navigate('/', { state: { selectedMovieId: notification.movie.id } });
+      
+      // Mark this notification as read
+      setNotifications(prevNotifications => 
+        prevNotifications.map(n => 
+          n.id === notification.id ? { ...n, read: true } : n
+        )
+      );
+      
+      // Check if there are still unread notifications
+      const stillHasUnread = notifications.some(n => n.id !== notification.id && !n.read);
+      setHasUnreadNotifications(stillHasUnread);
     }
   };
 

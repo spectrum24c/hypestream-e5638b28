@@ -40,7 +40,7 @@ const NotificationsList: React.FC<NotificationsListProps> = ({
           {notifications.map(notification => (
             <div 
               key={notification.id} 
-              className="py-3 cursor-pointer hover:bg-muted/50 rounded-md px-2"
+              className={`py-3 cursor-pointer hover:bg-muted/50 rounded-md px-2 ${!notification.read ? 'bg-muted/30' : ''}`}
               onClick={() => onNotificationClick(notification)}
             >
               <div className="flex items-center gap-3">
@@ -51,8 +51,13 @@ const NotificationsList: React.FC<NotificationsListProps> = ({
                     className="w-10 h-10 rounded object-cover"
                   />
                 )}
-                <div>
-                  <h4 className="text-sm font-medium">{notification.title}</h4>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium">{notification.title}</h4>
+                    {!notification.read && (
+                      <span className="w-2 h-2 bg-hype-purple rounded-full"></span>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
                 </div>
               </div>

@@ -195,18 +195,18 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
         
         {showStream && (
           <div className="stream aspect-video w-full bg-black flex items-center justify-center flex-1">
-            <div className="text-center p-8">
-              <h3 className="text-xl font-bold mb-2">Streaming {title}</h3>
-              <p className="text-gray-400 mb-4">This is a demo. In a real application, the streaming content would appear here.</p>
-              <Button onClick={() => setShowStream(false)} variant="outline">
-                Back to Details
-              </Button>
-            </div>
+            <iframe
+              className="w-full h-full"
+              src={`https://vidsrc.to/embed/movie/${movie.id}`}
+              title={`${title} Stream`}
+              frameBorder="0"
+              allowFullScreen
+            ></iframe>
           </div>
         )}
         
         {showTrailer && trailerKey && (
-          <div className="trailer-cont aspect-video w-full bg-black flex-1">
+          <div className="trailer-cont aspect-video w-full bg-black flex-1 fixed inset-0 z-60">
             <iframe
               className="w-full h-full"
               src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&hd=1`}

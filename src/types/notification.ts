@@ -7,4 +7,6 @@ export interface Notification {
   movie?: {
     id: string;
   };
+  read?: boolean;
+  createdAt?: string;
 }

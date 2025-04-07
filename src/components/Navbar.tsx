@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Bell, User, Menu, X, ChevronDown, LogOut, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,8 +13,9 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [session, setSession] = useState(null);
   const [notifications, setNotifications] = useState([
-    { id: 1, title: "New movies available!", message: "Check out the latest releases this week!" }
+    { id: 1, title: "New movies available!", message: "Check out the latest releases this week!", poster_path: "/example-poster.jpg" }
   ]);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
   const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -87,20 +87,28 @@ const Navbar = () => {
     
     if (confirmDelete) {
       try {
-        // Delete user data from profiles
-        await supabase
-          .from('profiles')
-          .delete()
-          .eq('id', session.user.id);
-        
         // Delete user's favorites
         await supabase
           .from('favorites')
           .delete()
           .eq('user_id', session.user.id);
         
-        // Sign out and delete the user
+        // Delete user data from profiles
+        await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', session.user.id);
+        
+        // Sign out the user
         await supabase.auth.signOut();
+        
+        // Try to delete the user (this requires admin privileges in production)
+        // You might need to use an edge function for this in a real app
+        const { error } = await supabase.rpc('delete_user');
+        
+        if (error) {
+          console.error('Error deleting user account:', error);
+        }
         
         toast({
           title: "Account deleted",
@@ -140,6 +148,21 @@ const Navbar = () => {
       navigate(`/?category=${categoryId}`);
     }
   };
+  
+  const handleMarkAllAsRead = () => {
+    setHasUnreadNotifications(false);
+    setNotifications([]);
+  };
+  
+  const handleNotificationClick = (notification) => {
+    // If there's a movie associated with the notification, show its details
+    if (notification.movie) {
+      // Set selected movie and close notification popover
+      setShowNotifications(false);
+      // Navigate to movie details or trigger movie player
+      navigate('/', { state: { selectedMovieId: notification.movie.id } });
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 z-50 w-full bg-hype-dark/95 backdrop-blur-sm border-b border-border">
@@ -167,7 +190,6 @@ const Navbar = () => {
                   <>
                     <button 
                       className="nav-link group flex items-center"
-                      onClick={() => handleViewAll(category.id)}
                     >
                       {category.name}
                       {category.subcategories.length > 0 && <ChevronDown className="ml-1 h-4 w-4" />}
@@ -203,7 +225,7 @@ const Navbar = () => {
                 placeholder="Search titles..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-muted rounded-full py-2 px-4 pr-10 text-sm border border-border focus:border-hype-purple focus:outline-none w-full md:w-auto"
+                className="bg-muted rounded-full py-2 px-4 pr-10 text-sm border border-border w-full min-w-[300px] focus:border-hype-purple focus:outline-none"
               />
               <button type="submit" className="absolute right-3">
                 <Search className="h-4 w-4 text-muted-foreground" />
@@ -223,7 +245,7 @@ const Navbar = () => {
               <PopoverTrigger asChild>
                 <button className="p-2 text-muted-foreground hover:text-foreground relative">
                   <Bell className="h-5 w-5" />
-                  {notifications.length > 0 && (
+                  {hasUnreadNotifications && notifications.length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-2 h-2"></span>
                   )}
                 </button>
@@ -233,7 +255,14 @@ const Navbar = () => {
                   <div className="font-medium flex justify-between items-center">
                     <span>Notifications</span>
                     {notifications.length > 0 && (
-                      <Button variant="ghost" size="sm" className="text-xs">Mark all as read</Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-xs"
+                        onClick={handleMarkAllAsRead}
+                      >
+                        Mark all as read
+                      </Button>
                     )}
                   </div>
                   
@@ -244,9 +273,24 @@ const Navbar = () => {
                   ) : (
                     <div className="divide-y divide-border">
                       {notifications.map(notification => (
-                        <div key={notification.id} className="py-3">
-                          <h4 className="text-sm font-medium">{notification.title}</h4>
-                          <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
+                        <div 
+                          key={notification.id} 
+                          className="py-3 cursor-pointer hover:bg-muted/50 rounded-md px-2"
+                          onClick={() => handleNotificationClick(notification)}
+                        >
+                          <div className="flex items-center gap-3">
+                            {notification.poster_path && (
+                              <img 
+                                src={`${imgPath}${notification.poster_path}`} 
+                                alt="" 
+                                className="w-10 h-10 rounded object-cover"
+                              />
+                            )}
+                            <div>
+                              <h4 className="text-sm font-medium">{notification.title}</h4>
+                              <p className="text-xs text-muted-foreground mt-1">{notification.message}</p>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -331,7 +375,7 @@ const Navbar = () => {
                   <Menu className="h-6 w-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-hype-dark border-border">
+              <SheetContent side="right" className="bg-hype-dark border-border overflow-y-auto max-h-screen">
                 <div className="py-4">
                   <nav className="flex flex-col space-y-4">
                     {categories.map((category) => (
@@ -347,7 +391,6 @@ const Navbar = () => {
                           ) : (
                             <button 
                               className="text-foreground hover:text-hype-purple"
-                              onClick={() => handleViewAll(category.id)}
                             >
                               {category.name}
                             </button>

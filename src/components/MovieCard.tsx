@@ -33,7 +33,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
   return (
     <div 
-      className="flex-shrink-0 w-[140px] sm:w-[160px] md:w-[180px] bg-gray-800 rounded-lg overflow-hidden hover:scale-105 transition duration-200 cursor-pointer shadow-lg"
+      className="flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] bg-gray-800 rounded-lg overflow-hidden hover:scale-105 transition duration-200 cursor-pointer shadow-lg"
       onClick={onClick}
     >
       <div className="relative aspect-[2/3] w-full">

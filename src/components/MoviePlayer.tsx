@@ -30,9 +30,15 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
   const [showStream, setShowStream] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
+  const [session, setSession] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
+    // Get auth session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+    });
+    
     // Check if movie is in favorites
     const checkFavorite = async () => {
       if (!movie) return;
@@ -162,13 +168,23 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
   };
 
   const watchNow = () => {
+    // Check if user is signed in
+    if (!session) {
+      toast({
+        title: "Authentication required",
+        description: "Please login to watch content",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setShowStream(true);
     setShowTrailer(false);
   };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 player-cont">
-      <div className="relative bg-card w-full max-w-4xl rounded-xl overflow-hidden">
+      <div className="relative bg-card w-full max-w-4xl rounded-xl overflow-hidden max-h-[95vh] md:max-h-[90vh] flex flex-col">
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 z-10 bg-black/50 rounded-full p-2 text-white hover:bg-black/70 transition"
@@ -178,7 +194,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
         </button>
         
         {showStream && (
-          <div className="stream aspect-video w-full bg-black flex items-center justify-center">
+          <div className="stream aspect-video w-full bg-black flex items-center justify-center flex-1">
             <div className="text-center p-8">
               <h3 className="text-xl font-bold mb-2">Streaming {title}</h3>
               <p className="text-gray-400 mb-4">This is a demo. In a real application, the streaming content would appear here.</p>
@@ -190,13 +206,13 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
         )}
         
         {showTrailer && trailerKey && (
-          <div className="trailer-cont aspect-video w-full bg-black">
+          <div className="trailer-cont aspect-video w-full bg-black flex-1">
             <iframe
               className="w-full h-full"
-              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1`}
+              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&hd=1`}
               title={`${title} Trailer`}
               frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
             ></iframe>
             <div className="absolute bottom-4 left-4">
@@ -208,16 +224,16 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
         )}
         
         {!showStream && !showTrailer && (
-          <div className="p-6">
+          <div className="p-6 overflow-y-auto">
             <div className="flex flex-col md:flex-row gap-6">
               <img 
                 src={posterPath} 
                 alt={title} 
-                className="w-full md:w-1/3 rounded-lg object-cover h-[350px]"
+                className="w-full md:w-1/3 rounded-lg object-cover h-auto md:h-[350px]"
               />
               <div className="flex-1">
                 <h2 className="text-2xl font-bold mb-2">{title}</h2>
-                <div className="flex gap-4 mb-4 text-gray-300">
+                <div className="flex gap-4 mb-4 text-gray-300 flex-wrap">
                   <span>{year}</span>
                   <span>★ {rating}</span>
                   <span>{runtime}</span>

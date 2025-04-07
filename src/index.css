@@ -83,3 +83,15 @@
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out;
 }
+
+/* Player Container */
+.player-cont {
+  z-index: 9999;
+}
+
+/* Content responsiveness */
+@media (max-width: 640px) {
+  .stream, .trailer-cont {
+    max-height: 60vh;
+  }
+}

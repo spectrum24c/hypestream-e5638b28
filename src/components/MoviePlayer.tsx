@@ -194,7 +194,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
         </button>
         
         {showStream && (
-          <div className="stream aspect-video w-full bg-black flex items-center justify-center flex-1">
+          <div className="stream aspect-video w-full bg-black flex items-center justify-center flex-1 relative">
             <iframe
               className="w-full h-full"
               src={isTVShow 
@@ -204,11 +204,17 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
               frameBorder="0"
               allowFullScreen
             ></iframe>
+            <Button 
+              onClick={() => setShowStream(false)} 
+              className="absolute bottom-4 left-4 bg-black/50 hover:bg-black/70"
+            >
+              <X className="mr-2 h-4 w-4" /> Close Stream
+            </Button>
           </div>
         )}
         
         {showTrailer && trailerKey && (
-          <div className="trailer-cont aspect-video w-full bg-black flex-1 fixed inset-0 z-60">
+          <div className="trailer-cont w-full h-full bg-black flex-1 fixed inset-0 z-60 flex items-center justify-center">
             <iframe
               className="w-full h-full"
               src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&hd=1`}
@@ -217,11 +223,12 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
             ></iframe>
-            <div className="absolute bottom-4 left-4">
-              <Button onClick={() => setShowTrailer(false)} variant="outline" className="bg-black/50">
-                Back to Details
-              </Button>
-            </div>
+            <Button 
+              onClick={() => setShowTrailer(false)} 
+              className="absolute bottom-4 left-4 bg-black/50 hover:bg-black/70"
+            >
+              <X className="mr-2 h-4 w-4" /> Close Trailer
+            </Button>
           </div>
         )}
         

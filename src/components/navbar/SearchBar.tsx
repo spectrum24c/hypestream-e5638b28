@@ -30,7 +30,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <>
       <form 
         onSubmit={handleSearch} 
-        className={`${isOpen ? 'flex fixed left-0 right-0 mx-auto top-16 w-[90%] max-w-md md:static md:w-auto md:mx-0 md:relative' : 'hidden'} md:flex items-center z-20 ${className}`}
+        className={`${isOpen ? 'flex fixed left-0 right-0 mx-auto top-16 w-[80%] max-w-md md:static md:w-auto md:mx-0 md:relative' : 'hidden'} md:flex items-center z-20 ${className}`}
       >
         <input
           type="text"

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Search, Bell, User, Menu, X, ChevronDown, LogOut, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -144,7 +145,8 @@ const Navbar = () => {
     navigate('/?category=new');
   };
 
-  const handleViewAll = (categoryId: string, genreId: number | string | null = null) => {
+  // Fix the function signature to accept string or number for genreId
+  const handleViewAll = (categoryId: string, genreId?: string | number) => {
     if (genreId) {
       navigate(`/?category=${categoryId}&genre=${genreId}`);
     } else {

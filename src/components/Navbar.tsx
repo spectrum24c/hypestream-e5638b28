@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Search, Bell, User, Menu, X, ChevronDown, LogOut, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +18,17 @@ interface Notification {
   };
 }
 
+interface Subcategory {
+  name: string;
+  id: string | number;
+}
+
+interface Category {
+  name: string;
+  id: string;
+  subcategories: Subcategory[];
+}
+
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -32,7 +42,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const categories = [
+  const categories: Category[] = [
     { name: 'Movies', id: 'movie', subcategories: [
       { name: 'Action', id: 28 },
       { name: 'Comedy', id: 35 },
@@ -145,7 +155,6 @@ const Navbar = () => {
     navigate('/?category=new');
   };
 
-  // Fix the function signature to accept string or number for genreId
   const handleViewAll = (categoryId: string, genreId?: string | number) => {
     if (genreId) {
       navigate(`/?category=${categoryId}&genre=${genreId}`);

@@ -35,6 +35,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [shouldPlayMovie, setShouldPlayMovie] = useState(false);
   const [viewAllContent, setViewAllContent] = useState<Movie[]>([]);
   const [viewingCategory, setViewingCategory] = useState<string | null>(null);
   const location = useLocation();
@@ -152,6 +153,17 @@ const Index = () => {
 
   const handleMovieClick = (movie: Movie) => {
     setSelectedMovie(movie);
+    setShouldPlayMovie(false);
+  };
+
+  const handleHeroWatchNow = (movie: Movie) => {
+    setSelectedMovie(movie);
+    setShouldPlayMovie(true);
+  };
+
+  const handleHeroMoreInfo = (movie: Movie) => {
+    setSelectedMovie(movie);
+    setShouldPlayMovie(false);
   };
 
   const clearSearchAndFilters = () => {
@@ -188,11 +200,21 @@ const Index = () => {
     return '';
   };
 
+  const handleMoviePlayerClose = () => {
+    setSelectedMovie(null);
+    setShouldPlayMovie(false);
+  };
+
   return (
     <div className="min-h-screen bg-hype-dark text-foreground">
       <Navbar />
       <main className="pb-8 pt-16">
-        {!isSearching && <HeroSection />}
+        {!isSearching && (
+          <HeroSection 
+            onWatchNow={handleHeroWatchNow}
+            onMoreInfo={handleHeroMoreInfo}
+          />
+        )}
         
         <div className="container mx-auto px-4 mt-4">
           {isSearching ? (
@@ -248,7 +270,10 @@ const Index = () => {
       <Footer />
 
       {selectedMovie && (
-        <MoviePlayer movie={selectedMovie} onClose={() => setSelectedMovie(null)} />
+        <MoviePlayer 
+          movie={selectedMovie} 
+          onClose={handleMoviePlayerClose} 
+        />
       )}
     </div>
   );

@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Play, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiPaths, fetchFromTMDB, imgPath } from '@/services/tmdbApi';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FeaturedMovie {
   id: string;
@@ -17,11 +19,23 @@ interface FeaturedMovie {
   media_type?: string;
 }
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  onWatchNow?: (movie: FeaturedMovie) => void;
+  onMoreInfo?: (movie: FeaturedMovie) => void;
+}
+
+const HeroSection: React.FC<HeroSectionProps> = ({ onWatchNow, onMoreInfo }) => {
   const [featuredContent, setFeaturedContent] = useState<FeaturedMovie | null>(null);
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<any>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
+    // Get auth session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+    });
+    
     const fetchFeaturedContent = async () => {
       try {
         const data = await fetchFromTMDB(apiPaths.fetchTrending);
@@ -40,6 +54,32 @@ const HeroSection = () => {
 
     fetchFeaturedContent();
   }, []);
+
+  const handleWatchNow = () => {
+    if (!featuredContent) return;
+    
+    // Check if user is signed in
+    if (!session) {
+      toast({
+        title: "Authentication required",
+        description: "Please login to watch content",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (onWatchNow) {
+      onWatchNow(featuredContent);
+    }
+  };
+
+  const handleMoreInfo = () => {
+    if (!featuredContent) return;
+    
+    if (onMoreInfo) {
+      onMoreInfo(featuredContent);
+    }
+  };
 
   if (loading || !featuredContent) {
     return (
@@ -116,10 +156,16 @@ const HeroSection = () => {
             <Button 
               className="bg-hype-orange hover:bg-hype-orange/90 text-white px-8 py-6" 
               size="lg"
+              onClick={handleWatchNow}
             >
               <Play className="mr-2 h-5 w-5" /> Watch Now
             </Button>
-            <Button variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="border-white/20 text-white hover:bg-white/10"
+              onClick={handleMoreInfo}
+            >
               <Info className="mr-2 h-5 w-5" /> More Info
             </Button>
           </div>

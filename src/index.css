@@ -89,9 +89,21 @@
   z-index: 9999;
 }
 
-/* Content responsiveness */
+/* Stream and Trailer styles */
+.stream iframe, .trailer-cont iframe {
+  width: 100% !important;
+  height: 100vh !important;
+}
+
+/* Mobile optimizations */
 @media (max-width: 640px) {
   .stream, .trailer-cont {
-    max-height: 60vh;
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+  
+  .stream iframe, .trailer-cont iframe {
+    height: 100vh !important;
+    max-height: 100vh !important;
   }
 }

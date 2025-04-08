@@ -195,6 +195,12 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
         
         {showStream && (
           <div className="stream w-full h-screen bg-black flex items-center justify-center flex-1 relative">
+            <Button 
+              onClick={() => setShowStream(false)} 
+              className="absolute top-4 right-14 z-50 bg-black/50 hover:bg-black/70"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
+            </Button>
             <iframe
               className="w-full h-full"
               src={isTVShow 
@@ -203,18 +209,19 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
               title={`${title} Stream`}
               frameBorder="0"
               allowFullScreen
+              style={{ height: '100vh', width: '100%' }}
             ></iframe>
-            <Button 
-              onClick={() => setShowStream(false)} 
-              className="absolute top-4 right-14 bg-black/50 hover:bg-black/70"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
-            </Button>
           </div>
         )}
         
         {showTrailer && trailerKey && (
           <div className="trailer-cont w-full h-screen bg-black flex-1 fixed inset-0 z-60 flex items-center justify-center">
+            <Button 
+              onClick={() => setShowTrailer(false)} 
+              className="absolute top-4 right-14 z-50 bg-black/50 hover:bg-black/70"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
+            </Button>
             <iframe
               className="w-full h-full"
               src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&hd=1`}
@@ -222,13 +229,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
+              style={{ height: '100vh', width: '100%' }}
             ></iframe>
-            <Button 
-              onClick={() => setShowTrailer(false)} 
-              className="absolute top-4 right-14 bg-black/50 hover:bg-black/70"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
-            </Button>
           </div>
         )}
         

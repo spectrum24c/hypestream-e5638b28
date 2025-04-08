@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -37,37 +36,50 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    // Fetch latest movies for notifications
-    const fetchLatestMovies = async () => {
-      try {
-        const data = await fetchFromTMDB(apiPaths.fetchLatestMovies);
-        if (data.results && data.results.length > 0) {
-          // Get the first 3 latest movies
-          const latestMovies = data.results.slice(0, 3);
-          
-          // Create notifications from these movies
-          const newNotifications = latestMovies.map((movie: any, index: number) => ({
-            id: index + 1,
-            title: "New Release!",
-            message: `${movie.title || 'A new movie'} is now available to stream!`,
-            poster_path: movie.poster_path,
-            movie: {
-              id: movie.id
-            },
-            read: false,
-            createdAt: new Date().toISOString()
-          }));
-          
-          setNotifications(newNotifications);
-          setHasUnreadNotifications(true);
-        }
-      } catch (error) {
-        console.error("Error fetching latest movies for notifications:", error);
-      }
-    };
-    
     fetchLatestMovies();
+    
+    const interval = setInterval(() => {
+      fetchLatestMovies();
+    }, 5 * 60 * 1000); // 5 minutes
+    
+    return () => clearInterval(interval);
   }, []);
+
+  const fetchLatestMovies = async () => {
+    try {
+      const data = await fetchFromTMDB(apiPaths.fetchLatestMovies);
+      if (data.results && data.results.length > 0) {
+        const latestMovies = data.results.slice(0, 3);
+        
+        const newNotifications = latestMovies.map((movie: any, index: number) => ({
+          id: `${movie.id}-${Date.now()}`,
+          title: "New Release!",
+          message: `${movie.title || 'A new movie'} is now available to stream!`,
+          poster_path: movie.poster_path,
+          movie: {
+            id: movie.id
+          },
+          read: false,
+          createdAt: new Date().toISOString()
+        }));
+        
+        setNotifications(prevNotifications => {
+          const existingMovieIds = prevNotifications.map(n => n.movie?.id);
+          const uniqueNewNotifications = newNotifications.filter(
+            n => !existingMovieIds.includes(n.movie?.id)
+          );
+          
+          if (uniqueNewNotifications.length > 0) {
+            setHasUnreadNotifications(true);
+          }
+          
+          return [...uniqueNewNotifications, ...prevNotifications].slice(0, 6);
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching latest movies for notifications:", error);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -143,7 +155,6 @@ const Navbar = () => {
 
   const handleMarkAllAsRead = () => {
     setHasUnreadNotifications(false);
-    // Mark all notifications as read rather than clearing them
     setNotifications(prevNotifications => 
       prevNotifications.map(notification => ({
         ...notification,
@@ -157,14 +168,12 @@ const Navbar = () => {
       setShowNotifications(false);
       navigate('/', { state: { selectedMovieId: notification.movie.id } });
       
-      // Mark this notification as read
       setNotifications(prevNotifications => 
         prevNotifications.map(n => 
           n.id === notification.id ? { ...n, read: true } : n
         )
       );
       
-      // Check if there are still unread notifications
       const stillHasUnread = notifications.some(n => n.id !== notification.id && !n.read);
       setHasUnreadNotifications(stillHasUnread);
     }

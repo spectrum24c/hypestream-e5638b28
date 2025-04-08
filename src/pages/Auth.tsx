@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -85,7 +84,6 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        // For sign up, we'll send a one-time password via email
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
@@ -101,7 +99,6 @@ const Auth = () => {
           description: "Please check your email for a verification code",
         });
       } else {
-        // For sign in, we use password authentication
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -126,7 +123,6 @@ const Auth = () => {
   const verifyCode = async (values: z.infer<typeof verificationSchema>) => {
     setLoading(true);
     try {
-      // Verify the OTP
       const { data, error } = await supabase.auth.verifyOtp({
         email,
         token: values.code,
@@ -136,7 +132,6 @@ const Auth = () => {
       if (error) throw error;
 
       if (data.session) {
-        // If session exists, move to password setup
         setPasswordSetupStep(true);
         setVerificationStep(false);
         toast({
@@ -165,7 +160,6 @@ const Auth = () => {
   const setupPassword = async (values: z.infer<typeof passwordSchema>) => {
     setLoading(true);
     try {
-      // Update the user's password
       const { error } = await supabase.auth.updateUser({
         password: values.password
       });
@@ -372,7 +366,7 @@ const Auth = () => {
                   </form>
                 </Form>
               </>
-            )}
+            ) : null}
 
             <div className="mt-6 text-center">
               <button

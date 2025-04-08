@@ -137,7 +137,7 @@ const Navbar = () => {
     navigate('/?category=new');
   };
 
-  const handleViewAll = (categoryId: number) => {
+  const handleViewAll = (categoryId: string) => {
     navigate(`/?category=${categoryId}`);
   };
 

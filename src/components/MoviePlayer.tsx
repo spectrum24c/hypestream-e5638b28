@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { imgPath, apiPaths, fetchFromTMDB } from '@/services/tmdbApi';
-import { Heart, Play, Film, X } from 'lucide-react';
+import { Heart, Play, Film, X, ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -183,8 +183,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 player-cont">
-      <div className="relative bg-card w-full max-w-4xl rounded-xl overflow-hidden max-h-[95vh] md:max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-0 player-cont">
+      <div className={`relative ${!showStream && !showTrailer ? 'bg-card w-full max-w-4xl rounded-xl overflow-hidden max-h-[95vh] md:max-h-[90vh]' : 'w-full h-full'} flex flex-col`}>
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 z-10 bg-black/50 rounded-full p-2 text-white hover:bg-black/70 transition"
@@ -194,7 +194,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
         </button>
         
         {showStream && (
-          <div className="stream aspect-video w-full bg-black flex items-center justify-center flex-1 relative">
+          <div className="stream w-full h-screen bg-black flex items-center justify-center flex-1 relative">
             <iframe
               className="w-full h-full"
               src={isTVShow 
@@ -206,15 +206,15 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
             ></iframe>
             <Button 
               onClick={() => setShowStream(false)} 
-              className="absolute bottom-4 left-4 bg-black/50 hover:bg-black/70"
+              className="absolute top-4 right-14 bg-black/50 hover:bg-black/70"
             >
-              <X className="mr-2 h-4 w-4" /> Close Stream
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
           </div>
         )}
         
         {showTrailer && trailerKey && (
-          <div className="trailer-cont w-full h-full bg-black flex-1 fixed inset-0 z-60 flex items-center justify-center">
+          <div className="trailer-cont w-full h-screen bg-black flex-1 fixed inset-0 z-60 flex items-center justify-center">
             <iframe
               className="w-full h-full"
               src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&hd=1`}
@@ -225,9 +225,9 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
             ></iframe>
             <Button 
               onClick={() => setShowTrailer(false)} 
-              className="absolute bottom-4 left-4 bg-black/50 hover:bg-black/70"
+              className="absolute top-4 right-14 bg-black/50 hover:bg-black/70"
             >
-              <X className="mr-2 h-4 w-4" /> Close Trailer
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
           </div>
         )}

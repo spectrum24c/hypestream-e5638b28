@@ -19,6 +19,7 @@ const Navbar = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [processedMovieIds, setProcessedMovieIds] = useState<Set<number>>(new Set());
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -39,50 +40,61 @@ const Navbar = () => {
   useEffect(() => {
     fetchLatestMovies();
     
-    // Run immediately and then set interval to run every 3 minutes
+    // Run immediately and then set interval to run every 2 minutes
     const interval = setInterval(() => {
       fetchLatestMovies();
-    }, 3 * 60 * 1000); // 3 minutes
+    }, 2 * 60 * 1000); // 2 minutes
     
     return () => clearInterval(interval);
-  }, []);
+  }, [processedMovieIds]);
 
   const fetchLatestMovies = async () => {
     try {
-      const data = await fetchFromTMDB(apiPaths.fetchLatestMovies);
+      // Get the last page number to fetch different movies
+      const page = Math.floor(Math.random() * 5) + 1; // Random page between 1-5
+      
+      const data = await fetchFromTMDB(`${apiPaths.fetchLatestMovies}&page=${page}`);
       if (data.results && data.results.length > 0) {
-        const latestMovies = data.results.slice(0, 3);
+        const latestMovies = data.results
+          .filter((movie: any) => !processedMovieIds.has(movie.id))
+          .slice(0, 3);
         
-        const newNotifications = latestMovies.map((movie: any) => ({
-          id: `${movie.id}-${Date.now()}`,
-          title: "New Release!",
-          message: `${movie.title || 'A new movie'} is now available to stream!`,
-          poster_path: movie.poster_path,
-          movie: {
-            id: movie.id
-          },
-          read: false,
-          createdAt: new Date().toISOString()
-        }));
+        if (latestMovies.length === 0) return; // No new movies to show
         
-        setNotifications(prevNotifications => {
-          const existingMovieIds = prevNotifications.map(n => n.movie?.id);
-          const uniqueNewNotifications = newNotifications.filter(
-            n => !existingMovieIds.includes(n.movie?.id)
-          );
-          
-          if (uniqueNewNotifications.length > 0) {
+        const newMovieIds = new Set(processedMovieIds);
+        const newNotifications: Notification[] = [];
+        
+        latestMovies.forEach((movie: any) => {
+          newMovieIds.add(movie.id);
+          newNotifications.push({
+            id: `${movie.id}-${Date.now()}`,
+            title: "New Release!",
+            message: `${movie.title || 'A new movie'} is now available to stream!`,
+            poster_path: movie.poster_path,
+            movie: {
+              id: movie.id
+            },
+            read: false,
+            createdAt: new Date().toISOString()
+          });
+        });
+        
+        setProcessedMovieIds(newMovieIds);
+        
+        if (newNotifications.length > 0) {
+          setNotifications(prevNotifications => {
+            const combined = [...newNotifications, ...prevNotifications].slice(0, 10);
             setHasUnreadNotifications(true);
             
             // Show toast for new movies
             toast({
               title: "New movies available!",
-              description: `${uniqueNewNotifications.length} new movie(s) just added`,
+              description: `${newNotifications.length} new movie(s) just added`,
             });
-          }
-          
-          return [...uniqueNewNotifications, ...prevNotifications].slice(0, 6);
-        });
+            
+            return combined;
+          });
+        }
       }
     } catch (error) {
       console.error("Error fetching latest movies for notifications:", error);

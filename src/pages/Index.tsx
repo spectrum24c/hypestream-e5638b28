@@ -92,9 +92,11 @@ const Index = () => {
       try {
         if (searchQueryFromState) {
           const data = await searchContent(searchQueryFromState);
-          setSearchResults(data.results || []);
-          setIsSearching(true);
-          setViewingCategory(null);
+          if (data && typeof data === 'object') {
+            setSearchResults(data.results || []);
+            setIsSearching(true);
+            setViewingCategory(null);
+          }
         } 
         else if (categoryFromParams) {
           setIsSearching(true);
@@ -103,7 +105,9 @@ const Index = () => {
           if (categoryFromParams === 'new') {
             // Fetch new releases specifically
             const data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
-            setViewAllContent(data.results || []);
+            if (data && typeof data === 'object') {
+              setViewAllContent(data.results || []);
+            }
           }
           else if (genreFromParams) {
             // Fetch by category and genre
@@ -123,7 +127,9 @@ const Index = () => {
             } else {
               data = await fetchFromTMDB(apiPaths.fetchTrending);
             }
-            setViewAllContent(data.results || []);
+            if (data && typeof data === 'object') {
+              setViewAllContent(data.results || []);
+            }
           }
         }
         else {
@@ -136,10 +142,10 @@ const Index = () => {
             fetchFromTMDB(apiPaths.fetchTVList(18)),
           ]);
           
-          setTrendingContent(trendingData.results || []);
-          setNewReleases(newReleasesData.results || []);
-          setPopularMovies(popularMoviesData.results || []);
-          setTopRatedShows(topRatedShowsData.results || []);
+          if (trendingData && typeof trendingData === 'object') setTrendingContent(trendingData.results || []);
+          if (newReleasesData && typeof newReleasesData === 'object') setNewReleases(newReleasesData.results || []);
+          if (popularMoviesData && typeof popularMoviesData === 'object') setPopularMovies(popularMoviesData.results || []);
+          if (topRatedShowsData && typeof topRatedShowsData === 'object') setTopRatedShows(topRatedShowsData.results || []);
         }
       } catch (error) {
         console.error("Error fetching content:", error);
@@ -273,6 +279,7 @@ const Index = () => {
         <MoviePlayer 
           movie={selectedMovie} 
           onClose={handleMoviePlayerClose} 
+          autoPlayTrailer={shouldPlayMovie}
         />
       )}
     </div>

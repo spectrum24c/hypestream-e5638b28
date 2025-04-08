@@ -1,3 +1,4 @@
+
 const apiKeys = {
   tmdb: "62c59007d93c96aa3cca9f3422d51af5",
   youtube: "AIzaSyDXm-Wl4rlMXXhS0hWxoJDMdsc3mllh_ok"
@@ -43,7 +44,12 @@ export const fetchFromTMDB = async (url: string) => {
       headers: {
         'Accept': 'application/json',
       },
+      cache: 'force-cache', // Use HTTP caching when possible
     });
+    
+    if (!response.ok) {
+      throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
+    }
     
     const data = await response.json();
     
@@ -86,6 +92,14 @@ export const getOptimizedImagePath = (path: string | null, size = 'original') =>
   const optimizedSize = sizeType[size as keyof typeof sizeType] || 'original';
   
   return `https://image.tmdb.org/t/p/${optimizedSize}${path}`;
+};
+
+// Preload images for smoother user experience
+export const preloadImage = (src: string | null) => {
+  if (!src) return;
+  
+  const img = new Image();
+  img.src = src;
 };
 
 // Search content with debouncing for performance

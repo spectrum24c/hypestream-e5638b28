@@ -98,8 +98,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
   const rating = movie.vote_average?.toFixed(1) || 'N/A';
   const isTVShow = movie.media_type === 'tv' || !!movie.first_air_date;
   const runtime = isTVShow 
-    ? `${movie.number_of_seasons || 'Unknown'} Season(s)` 
-    : movie.runtime ? `${movie.runtime} min` : 'N/A';
+    ? `${movie.number_of_seasons} Season(s)` 
+    : `${movie.runtime} min`;
 
   const handleAddToFavorites = async () => {
     const session = await supabase.auth.getSession();

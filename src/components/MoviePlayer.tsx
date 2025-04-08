@@ -208,6 +208,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
                 : `https://vidsrc.in/embed/${movie.id}`}
               title={`${title} Stream`}
               frameBorder="0"
+               referrerpolicy="origin"
               allowFullScreen
               style={{ height: '100vh', width: '100%' }}
               loading="lazy"

@@ -197,7 +197,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
           <div className="stream w-full h-screen bg-black flex items-center justify-center flex-1 relative">
             <Button 
               onClick={() => setShowStream(false)} 
-              className="absolute top-4 right-14 z-50 bg-black/50 hover:bg-black/70"
+              className="absolute top-4 right-14 z-50 bg-hype-purple hover:bg-hype-purple/90 text-white font-bold"
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
@@ -210,6 +210,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
               frameBorder="0"
               allowFullScreen
               style={{ height: '100vh', width: '100%' }}
+              loading="lazy"
             ></iframe>
           </div>
         )}
@@ -218,7 +219,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
           <div className="trailer-cont w-full h-screen bg-black flex-1 fixed inset-0 z-60 flex items-center justify-center">
             <Button 
               onClick={() => setShowTrailer(false)} 
-              className="absolute top-4 right-14 z-50 bg-black/50 hover:bg-black/70"
+              className="absolute top-4 right-14 z-50 bg-hype-purple hover:bg-hype-purple/90 text-white font-bold"
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
@@ -230,6 +231,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
               style={{ height: '100vh', width: '100%' }}
+              loading="lazy"
             ></iframe>
           </div>
         )}

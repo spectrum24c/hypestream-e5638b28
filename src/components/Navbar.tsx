@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -38,9 +39,10 @@ const Navbar = () => {
   useEffect(() => {
     fetchLatestMovies();
     
+    // Run immediately and then set interval to run every 3 minutes
     const interval = setInterval(() => {
       fetchLatestMovies();
-    }, 5 * 60 * 1000); // 5 minutes
+    }, 3 * 60 * 1000); // 3 minutes
     
     return () => clearInterval(interval);
   }, []);
@@ -51,7 +53,7 @@ const Navbar = () => {
       if (data.results && data.results.length > 0) {
         const latestMovies = data.results.slice(0, 3);
         
-        const newNotifications = latestMovies.map((movie: any, index: number) => ({
+        const newNotifications = latestMovies.map((movie: any) => ({
           id: `${movie.id}-${Date.now()}`,
           title: "New Release!",
           message: `${movie.title || 'A new movie'} is now available to stream!`,
@@ -71,6 +73,12 @@ const Navbar = () => {
           
           if (uniqueNewNotifications.length > 0) {
             setHasUnreadNotifications(true);
+            
+            // Show toast for new movies
+            toast({
+              title: "New movies available!",
+              description: `${uniqueNewNotifications.length} new movie(s) just added`,
+            });
           }
           
           return [...uniqueNewNotifications, ...prevNotifications].slice(0, 6);

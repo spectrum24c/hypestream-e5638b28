@@ -1,4 +1,3 @@
-
 const apiKeys = {
   tmdb: "62c59007d93c96aa3cca9f3422d51af5",
   youtube: "AIzaSyDXm-Wl4rlMXXhS0hWxoJDMdsc3mllh_ok"
@@ -6,6 +5,10 @@ const apiKeys = {
 
 const tmdbApiEndpoint = "https://api.themoviedb.org/3";
 export const imgPath = "https://image.tmdb.org/t/p/original";
+
+// Cache for API responses
+const apiCache = new Map();
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes in milliseconds
 
 export const apiPaths = {
   fetchAllCategories: `${tmdbApiEndpoint}/genre/movie/list?api_key=${apiKeys.tmdb}`,
@@ -23,11 +26,33 @@ export const apiPaths = {
   fetchTVTrailer: (tvId: string) => `${tmdbApiEndpoint}/tv/${tvId}/videos?api_key=${apiKeys.tmdb}&language=en-US`
 };
 
-// Fetch data from TMDB API
+// Fetch data from TMDB API with caching
 export const fetchFromTMDB = async (url: string) => {
   try {
-    const response = await fetch(url);
+    // Check if we have a valid cached response
+    const cachedData = apiCache.get(url);
+    const now = Date.now();
+    
+    if (cachedData && now - cachedData.timestamp < CACHE_DURATION) {
+      console.log('Using cached data for:', url);
+      return cachedData.data;
+    }
+    
+    console.log('Fetching fresh data for:', url);
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    
     const data = await response.json();
+    
+    // Cache the response
+    apiCache.set(url, {
+      data,
+      timestamp: now
+    });
+    
     return data;
   } catch (error) {
     console.error("Error fetching from TMDB:", error);
@@ -35,16 +60,55 @@ export const fetchFromTMDB = async (url: string) => {
   }
 };
 
-// Search movies and TV shows
+// Optimize image loading by using the appropriate size
+export const getOptimizedImagePath = (path: string | null, size = 'original') => {
+  if (!path) return null;
+  
+  // Map of available TMDb image sizes
+  const sizes = {
+    poster: {
+      small: 'w185',
+      medium: 'w342',
+      large: 'w500',
+      original: 'original'
+    },
+    backdrop: {
+      small: 'w300',
+      medium: 'w780',
+      large: 'w1280',
+      original: 'original'
+    }
+  };
+  
+  // Determine if this is a poster or backdrop based on aspect ratio
+  const isBackdrop = path.includes('backdrop');
+  const sizeType = isBackdrop ? sizes.backdrop : sizes.poster;
+  const optimizedSize = sizeType[size as keyof typeof sizeType] || 'original';
+  
+  return `https://image.tmdb.org/t/p/${optimizedSize}${path}`;
+};
+
+// Search content with debouncing for performance
+let searchTimeout: NodeJS.Timeout;
 export const searchContent = async (query: string) => {
   if (!query || query.trim() === '') return { results: [] };
-  try {
-    const data = await fetchFromTMDB(apiPaths.searchMulti(query));
-    return data;
-  } catch (error) {
-    console.error("Error searching content:", error);
-    return { results: [] };
+  
+  // Clear previous timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
   }
+  
+  return new Promise((resolve) => {
+    searchTimeout = setTimeout(async () => {
+      try {
+        const data = await fetchFromTMDB(apiPaths.searchMulti(query));
+        resolve(data);
+      } catch (error) {
+        console.error("Error searching content:", error);
+        resolve({ results: [] });
+      }
+    }, 300); // 300ms debounce
+  });
 };
 
 // Fetch content by category and genre

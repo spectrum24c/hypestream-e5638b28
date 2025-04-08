@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { Play, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiPaths, fetchFromTMDB, imgPath } from '@/services/tmdbApi';
@@ -24,7 +24,8 @@ interface HeroSectionProps {
   onMoreInfo?: (movie: FeaturedMovie) => void;
 }
 
-const HeroSection: React.FC<HeroSectionProps> = ({ onWatchNow, onMoreInfo }) => {
+// Use memo to prevent unnecessary re-renders
+const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo }) => {
   const [featuredContent, setFeaturedContent] = useState<FeaturedMovie | null>(null);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
@@ -99,13 +100,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onWatchNow, onMoreInfo }) => 
 
   return (
     <div className="relative h-[70vh] min-h-[500px] w-full overflow-hidden mt-0">
-      {/* Background Image */}
+      {/* Background Image - Add loading="lazy" for performance */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-black/40"></div>
         <img
           src={backdropUrl}
           alt={title}
           className="h-full w-full object-cover object-center"
+          loading="lazy"
         />
       </div>
 
@@ -173,6 +175,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onWatchNow, onMoreInfo }) => 
       </div>
     </div>
   );
-};
+});
+
+HeroSection.displayName = "HeroSection";
 
 export default HeroSection;

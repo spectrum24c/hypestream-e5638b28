@@ -33,7 +33,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const year = releaseDate?.split('-')[0] || 'N/A';
   
   // Format vote average to one decimal place
-  const rating = voteAverage?.toFixed(1) || 'N/A';
+  const rating = voteAverage !== undefined ? voteAverage.toFixed(1) : 'N/A';
   
   // Format runtime or seasons display
   const durationInfo = isTVShow 

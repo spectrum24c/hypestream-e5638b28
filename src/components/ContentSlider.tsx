@@ -5,20 +5,7 @@ import MovieCard from './MovieCard';
 import MoviePlayer from './MoviePlayer';
 import { Button } from './ui/button';
 import { useNavigate } from 'react-router-dom';
-
-// Movie item type
-interface Movie {
-  id: string;
-  title?: string;
-  name?: string;
-  poster_path: string | null;
-  backdrop_path?: string | null;
-  release_date?: string;
-  first_air_date?: string;
-  vote_average?: number;
-  media_type?: string;
-  overview?: string;
-}
+import { Movie } from '@/types/movie';
 
 interface ContentSliderProps {
   title: string;
@@ -121,6 +108,8 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items, onViewAll }
               releaseDate={item.release_date || item.first_air_date}
               voteAverage={item.vote_average}
               isTVShow={item.media_type === 'tv' || !!item.first_air_date}
+              runtime={item.runtime}
+              numberOfSeasons={item.number_of_seasons}
               onClick={() => handleMovieClick(item)}
             />
           ))}

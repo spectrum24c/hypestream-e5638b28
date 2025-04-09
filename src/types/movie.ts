@@ -1,0 +1,23 @@
+
+export interface Movie {
+  id: string;
+  title?: string;
+  name?: string;
+  poster_path: string | null;
+  backdrop_path?: string | null;
+  release_date?: string;
+  first_air_date?: string;
+  vote_average?: number;
+  media_type?: string;
+  overview?: string;
+  runtime?: number | null;
+  number_of_seasons?: number | null;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  image: string;
+  timestamp: number;
+  isNew?: boolean;
+}

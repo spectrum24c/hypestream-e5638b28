@@ -6,7 +6,7 @@ import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound';
 import Favorites from '@/pages/Favorites';
 import FAQs from '@/pages/FAQs'; // Import the new FAQs page
-import 'src/App.css';
+import './App.css'; // Fixed import path
 import { Toaster } from "@/components/ui/toaster";
 
 function App() {

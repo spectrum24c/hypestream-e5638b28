@@ -29,6 +29,42 @@ html, body, #root {
   min-height: 100vh;
 }
 
+/* CSS for hiding scrollbars but allowing scrolling */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Banner overlay gradient */
+.banner-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(0deg, rgba(10, 10, 20, 1) 0%, rgba(10, 10, 20, 0) 100%);
+}
+
+/* Mobile optimization for footer */
+@media (max-width: 640px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .newsletter-container {
+    flex-direction: row;
+  }
+  
+  .newsletter-input {
+    max-width: none;
+  }
+}
+
 /* Keep the rest of the existing styles */
 .logo {
   height: 6em;

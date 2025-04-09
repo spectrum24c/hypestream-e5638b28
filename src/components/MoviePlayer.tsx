@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { imgPath, apiPaths, fetchFromTMDB } from '@/services/tmdbApi';
 import { Heart, Play, Film, X, ArrowLeft } from 'lucide-react';
@@ -31,6 +32,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
   const [showTrailer, setShowTrailer] = useState(false);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [session, setSession] = useState(null);
+  const [movieDetails, setMovieDetails] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -71,7 +73,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
         if (data.results && data.results.length > 0) {
           // Find official trailer or use first video
           const officialTrailer = data.results.find(
-            video => video.type === 'Trailer' && video.official
+            (video: any) => video.type === 'Trailer' && video.official
           ) || data.results[0];
           
           if (officialTrailer) {
@@ -88,8 +90,26 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
       }
     };
     
+    // Fetch complete movie/TV details
+    const fetchDetails = async () => {
+      if (!movie) return;
+      
+      try {
+        const isTVShow = movie.media_type === 'tv' || !!movie.first_air_date;
+        const detailsEndpoint = isTVShow 
+          ? apiPaths.fetchTVDetails(movie.id)
+          : apiPaths.fetchMovieDetails(movie.id);
+        
+        const details = await fetchFromTMDB(detailsEndpoint);
+        setMovieDetails(details);
+      } catch (error) {
+        console.error('Error fetching details:', error);
+      }
+    };
+    
     checkFavorite();
     loadTrailer();
+    fetchDetails();
   }, [movie, autoPlayTrailer]);
 
   if (!movie) return null;
@@ -102,9 +122,24 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
   const year = releaseDate?.split('-')[0] || 'N/A';
   const rating = movie.vote_average?.toFixed(1) || 'N/A';
   const isTVShow = movie.media_type === 'tv' || !!movie.first_air_date;
-  const runtime = isTVShow 
-    ? `${movie.number_of_seasons} Season(s)` 
-    : `${movie.runtime} min`;
+  
+  // Use detailed information if available, otherwise use basic info
+  const runtime = movieDetails?.runtime || movie.runtime;
+  const numberOfSeasons = movieDetails?.number_of_seasons || movie.number_of_seasons;
+  const status = movieDetails?.status;
+  
+  let durationInfo;
+  if (isTVShow) {
+    durationInfo = numberOfSeasons ? `${numberOfSeasons} Season${numberOfSeasons !== 1 ? 's' : ''}` : '';
+  } else {
+    if (runtime) {
+      durationInfo = `${runtime} min`;
+    } else if (status === 'Upcoming' || status === 'In Production') {
+      durationInfo = `Release date: ${releaseDate || 'TBA'}`;
+    } else {
+      durationInfo = '';
+    }
+  }
 
   const handleAddToFavorites = async () => {
     const session = await supabase.auth.getSession();
@@ -257,7 +292,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
                 <div className="flex gap-4 mb-4 text-gray-300 flex-wrap">
                   <span>{year}</span>
                   <span>★ {rating}</span>
-                  <span>{runtime}</span>
+                  {durationInfo && <span>{durationInfo}</span>}
                 </div>
                 <p className="text-gray-300 mb-6">{movie.overview || 'No description available'}</p>
                 <div className="flex flex-wrap gap-3">

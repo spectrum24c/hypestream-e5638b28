@@ -37,8 +37,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
   
   // Format runtime or seasons display
   const durationInfo = isTVShow 
-    ? `${numberOfSeasons || '?'} Season${numberOfSeasons !== 1 ? 's' : ''}` 
-    : runtime ? `${runtime} min` : 'Coming soon';
+    ? numberOfSeasons ? `${numberOfSeasons} Season${numberOfSeasons !== 1 ? 's' : ''}` : ''
+    : runtime ? `${runtime} min` : '';
 
   return (
     <div 

@@ -37,6 +37,12 @@ const Footer = () => {
     };
     setDeviceInfo(device);
 
+    // Check if already subscribed from localStorage
+    const subscribedEmail = localStorage.getItem('newsletter_email');
+    if (subscribedEmail) {
+      setIsSubscribed(true);
+    }
+
     return () => subscription.unsubscribe();
   }, []);
 
@@ -93,7 +99,8 @@ const Footer = () => {
 
   const handleDevicesClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    setShowDevices(!showDevices);
+    navigate('/devices');
+    window.scrollTo(0, 0);
   };
 
   const handleFAQsClick = () => {
@@ -121,8 +128,18 @@ const Footer = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call with delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // If user is logged in, save to their profile
+      if (session) {
+        const { error } = await supabase
+          .from('newsletter_subscribers')
+          .upsert({
+            user_id: session.user.id,
+            email: email,
+            subscribed_at: new Date().toISOString()
+          });
+
+        if (error) throw error;
+      }
       
       // Store email in localStorage to remember subscription
       localStorage.setItem('newsletter_email', email);
@@ -149,7 +166,7 @@ const Footer = () => {
   return (
     <footer className="bg-hype-dark border-t border-border">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 footer-grid">
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-white">HYPE<span className="text-hype-orange">STREAM</span></h3>
             <p className="text-sm text-muted-foreground">
@@ -232,6 +249,7 @@ const Footer = () => {
                 <button 
                   onClick={handleAccountClick} 
                   className={`${session ? 'text-muted-foreground hover:text-white' : 'text-gray-600 cursor-not-allowed'} transition-colors`}
+                  disabled={!session}
                 >
                   Account
                 </button>
@@ -252,15 +270,6 @@ const Footer = () => {
                   Devices
                 </button>
               </li>
-              {showDevices && deviceInfo && (
-                <li className="pl-4 pt-2 border-l border-gray-700">
-                  <div className="bg-gray-800 p-3 rounded-md text-xs">
-                    <p><span className="text-hype-purple">Current Device:</span> {deviceInfo.name}</p>
-                    <p><span className="text-hype-purple">Device Type:</span> {deviceInfo.type}</p>
-                    <p><span className="text-hype-purple">Last Active:</span> {deviceInfo.lastActive}</p>
-                  </div>
-                </li>
-              )}
               <li>
                 <a href="#" 
                   className="text-muted-foreground hover:text-white transition-colors opacity-70 cursor-not-allowed" 
@@ -283,23 +292,26 @@ const Footer = () => {
               </div>
             ) : (
               <form onSubmit={handleSubscribe} className="space-y-4">
-                <div className="flex">
+                <div className="flex newsletter-container">
                   <input
                     type="email"
                     placeholder="Your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="flex-1 rounded-l-md bg-muted px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-hype-purple"
+                    className="flex-1 rounded-l-md bg-muted px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-hype-purple newsletter-input"
                   />
                   <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="rounded-r-md bg-hype-purple px-4 py-2 text-white hover:bg-hype-purple/90 disabled:opacity-50"
+                    className="rounded-r-md bg-hype-purple px-4 py-2 text-white hover:bg-hype-purple/90 disabled:opacity-50 whitespace-nowrap"
                   >
                     {isSubmitting ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                     ) : (
-                      <Mail className="h-4 w-4" />
+                      <>
+                        <Mail className="h-4 w-4 sm:hidden" />
+                        <span className="hidden sm:inline">Subscribe</span>
+                      </>
                     )}
                   </button>
                 </div>

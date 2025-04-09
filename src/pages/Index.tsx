@@ -97,7 +97,7 @@ const Index = () => {
           
           if (categoryFromParams === 'new') {
             const data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
-            if (data && typeof data === 'object') {
+            if (data && typeof data === 'object' && 'results' in data) {
               setViewAllContent(data.results || []);
             }
           }
@@ -106,7 +106,7 @@ const Index = () => {
               categoryFromParams, 
               parseInt(genreFromParams)
             );
-            setViewAllContent(data);
+            setViewAllContent(data as Movie[]);
           } 
           else {
             let data;
@@ -204,7 +204,7 @@ const Index = () => {
             description: "You've reached the end of the list",
           });
         } else {
-          setViewAllContent(prevContent => [...prevContent, ...newResults]);
+          setViewAllContent(prevContent => [...prevContent, ...newResults as Movie[]]);
           setCurrentPage(nextPage);
         }
       } else {
@@ -231,13 +231,13 @@ const Index = () => {
     setShouldPlayMovie(false);
   };
 
-  const handleHeroWatchNow = (movie: Movie) => {
-    setSelectedMovie(movie);
+  const handleHeroWatchNow = (movie: any) => {
+    setSelectedMovie(movie as Movie);
     setShouldPlayMovie(true);
   };
 
-  const handleHeroMoreInfo = (movie: Movie) => {
-    setSelectedMovie(movie);
+  const handleHeroMoreInfo = (movie: any) => {
+    setSelectedMovie(movie as Movie);
     setShouldPlayMovie(false);
   };
 

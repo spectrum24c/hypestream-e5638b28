@@ -47,7 +47,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
         
         if (data.results && data.results.length > 0) {
           // Find a trending item with a backdrop image
-          const featuredItem = data.results.find(item => item.backdrop_path) || data.results[0];
+          const featuredItem = data.results.find((item: any) => item.backdrop_path) || data.results[0];
           setFeaturedContent(featuredItem);
         }
       } catch (error) {

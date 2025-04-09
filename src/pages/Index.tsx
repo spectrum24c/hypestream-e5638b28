@@ -295,7 +295,6 @@ const Index = () => {
           <HeroSection 
             onWatchNow={handleHeroWatchNow}
             onMoreInfo={handleHeroMoreInfo}
-            useFixedImage={true}
           />
         )}
         

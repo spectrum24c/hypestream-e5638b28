@@ -25,9 +25,6 @@ interface HeroSectionProps {
   useFixedImage?: boolean;
 }
 
-// Fixed hero background image
-const FIXED_HERO_BACKDROP = "/lovable-uploads/8eee155a-5511-42f0-83bb-7ef906513992.png";
-
 // Use memo to prevent unnecessary re-renders
 const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, useFixedImage = false }) => {
   const [featuredContent, setFeaturedContent] = useState<FeaturedMovie | null>(null);
@@ -98,11 +95,10 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
   const year = (featuredContent.release_date || featuredContent.first_air_date || '').split('-')[0] || 'N/A';
   const rating = featuredContent.vote_average.toFixed(1);
   const category = featuredContent.media_type === 'tv' ? 'TV Show' : 'Movie';
-  const backdropUrl = useFixedImage 
-    ? FIXED_HERO_BACKDROP
-    : featuredContent.backdrop_path 
-      ? `${imgPath}${featuredContent.backdrop_path}`
-      : 'https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop';
+  // Always use the backdrop from the API now
+  const backdropUrl = featuredContent.backdrop_path 
+    ? `${imgPath}${featuredContent.backdrop_path}`
+    : 'https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop';
 
   return (
     <div className="relative h-[70vh] min-h-[500px] w-full overflow-hidden mt-0">

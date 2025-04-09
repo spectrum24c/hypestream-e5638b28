@@ -36,9 +36,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const rating = voteAverage !== undefined ? voteAverage.toFixed(1) : 'N/A';
   
   // Format runtime or seasons display
-  const durationInfo = isTVShow 
-    ? numberOfSeasons ? `${numberOfSeasons} Season${numberOfSeasons !== 1 ? 's' : ''}` : ''
-    : runtime ? `${runtime} min` : '';
+  let durationInfo = '';
+  if (isTVShow) {
+    durationInfo = numberOfSeasons ? `${numberOfSeasons} Season${numberOfSeasons !== 1 ? 's' : ''}` : '';
+  } else {
+    durationInfo = runtime ? `${runtime} min` : '';
+  }
 
   return (
     <div 

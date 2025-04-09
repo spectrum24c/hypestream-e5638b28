@@ -17,7 +17,14 @@ export interface Movie {
 export interface Notification {
   id: string;
   title: string;
-  image: string;
-  timestamp: number;
+  message?: string;
+  poster_path?: string | null;
+  image?: string;
+  timestamp?: number;
+  createdAt?: string;
+  read?: boolean;
+  movie?: {
+    id: string;
+  };
   isNew?: boolean;
 }

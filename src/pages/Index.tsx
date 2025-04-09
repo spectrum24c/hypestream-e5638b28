@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -11,21 +10,7 @@ import MovieCard from '@/components/MovieCard';
 import MoviePlayer from '@/components/MoviePlayer';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-
-interface Movie {
-  id: string;
-  title?: string;
-  name?: string;
-  poster_path: string | null;
-  backdrop_path: string | null;
-  release_date?: string;
-  first_air_date?: string;
-  vote_average?: number;
-  media_type?: string;
-  overview?: string;
-  runtime?: number;
-  number_of_seasons?: number;
-}
+import { Movie } from '@/types/movie';
 
 const Index = () => {
   const [trendingContent, setTrendingContent] = useState<Movie[]>([]);
@@ -77,7 +62,7 @@ const Index = () => {
           }
           
           if (data) {
-            setSelectedMovie(data);
+            setSelectedMovie(data as Movie);
           }
         } catch (error) {
           console.error("Error fetching movie details:", error);
@@ -180,7 +165,6 @@ const Index = () => {
     setViewingCategory(null);
   };
 
-  // Function to handle viewing all items in a category
   const handleViewAll = (categoryId: string) => {
     navigate(`/?category=${categoryId}`);
   };
@@ -255,6 +239,8 @@ const Index = () => {
                       releaseDate={item.release_date || item.first_air_date}
                       voteAverage={item.vote_average}
                       isTVShow={item.media_type === 'tv' || !!item.first_air_date}
+                      runtime={item.runtime}
+                      numberOfSeasons={item.number_of_seasons}
                       onClick={() => handleMovieClick(item)}
                     />
                   ))}

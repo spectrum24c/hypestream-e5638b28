@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { categories } from '@/data/categories';
-import { Notification } from '@/types/notification';
+import { Notification } from '@/types/movie';
 import { fetchFromTMDB, apiPaths } from '@/services/tmdbApi';
 import SearchBar from './navbar/SearchBar';
 import DesktopNavigation from './navbar/DesktopNavigation';
@@ -69,8 +69,12 @@ const Navbar = () => {
         
         latestMovies.forEach((movie: any) => {
           newMovieIds.add(movie.id);
+          
+          // Fixed timestamp type to be a number
+          const timestamp = Date.now();
+          
           newNotifications.push({
-            id: `${movie.id}-${Date.now()}`,
+            id: `${movie.id}-${timestamp}`,
             title: "New Release!",
             message: `${movie.title || 'A new movie'} is now available to stream!`,
             poster_path: movie.poster_path,
@@ -78,7 +82,8 @@ const Navbar = () => {
               id: movie.id.toString() // Convert to string to match expected type
             },
             read: false,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            timestamp // Added numeric timestamp
           });
         });
         
@@ -86,6 +91,7 @@ const Navbar = () => {
         
         if (newNotifications.length > 0) {
           setNotifications(prevNotifications => {
+            // Fixed type issue by properly typing the combined array
             const combined = [...newNotifications, ...prevNotifications].slice(0, 10);
             setHasUnreadNotifications(true);
             

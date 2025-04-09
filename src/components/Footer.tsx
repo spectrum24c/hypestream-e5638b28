@@ -35,6 +35,11 @@ const Footer = () => {
     window.scrollTo(0, 0);
   };
 
+  const handleFAQsClick = () => {
+    navigate('/faqs');
+    window.scrollTo(0, 0);
+  };
+
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -155,12 +160,12 @@ const Footer = () => {
                 </button>
               </li>
               <li>
-                <a href="#" 
-                  className="text-muted-foreground hover:text-white transition-colors opacity-70 cursor-not-allowed" 
-                  onClick={handleDisabledLink}
+                <button 
+                  onClick={handleFAQsClick}
+                  className="text-muted-foreground hover:text-white transition-colors"
                 >
                   FAQs
-                </a>
+                </button>
               </li>
               <li>
                 <a href="#" 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { imgPath, apiPaths, fetchFromTMDB } from '@/services/tmdbApi';
 import { Heart, Play, Film, X, ArrowLeft } from 'lucide-react';
@@ -22,9 +21,10 @@ interface MoviePlayerProps {
     number_of_seasons?: number;
   } | null;
   onClose: () => void;
+  autoPlayTrailer?: boolean;
 }
 
-const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
+const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrailer = false }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showStream, setShowStream] = useState(false);
@@ -76,6 +76,11 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
           
           if (officialTrailer) {
             setTrailerKey(officialTrailer.key);
+            
+            // Auto-play trailer if requested
+            if (autoPlayTrailer) {
+              setShowTrailer(true);
+            }
           }
         }
       } catch (error) {
@@ -85,7 +90,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
     
     checkFavorite();
     loadTrailer();
-  }, [movie]);
+  }, [movie, autoPlayTrailer]);
 
   if (!movie) return null;
 
@@ -198,6 +203,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
             <Button 
               onClick={() => setShowStream(false)} 
               className="absolute top-4 right-14 z-50 bg-hype-purple hover:bg-hype-purple/90 text-white font-bold"
+              style={{ backgroundColor: '#8941ff' }}
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
@@ -208,7 +214,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
                 : `https://vidsrc.in/embed/${movie.id}`}
               title={`${title} Stream`}
               frameBorder="0"
-               referrerpolicy="origin"
+              referrerPolicy="origin"
               allowFullScreen
               style={{ height: '100vh', width: '100%' }}
               loading="lazy"
@@ -220,7 +226,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose }) => {
           <div className="trailer-cont w-full h-screen bg-black flex-1 fixed inset-0 z-60 flex items-center justify-center">
             <Button 
               onClick={() => setShowTrailer(false)} 
-              className="absolute top-4 right-14 z-50 bg-hype-purple hover:bg-hype-purple/90 text-white font-bold"
+              className="absolute top-4 right-14 z-50 text-white font-bold"
+              style={{ backgroundColor: '#8941ff' }}
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>

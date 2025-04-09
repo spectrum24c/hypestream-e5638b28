@@ -9,6 +9,8 @@ interface MovieCardProps {
   releaseDate?: string | null;
   voteAverage?: number;
   isTVShow?: boolean;
+  runtime?: number | null;
+  numberOfSeasons?: number | null;
   onClick: () => void;
 }
 
@@ -19,6 +21,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
   releaseDate,
   voteAverage,
   isTVShow = false,
+  runtime,
+  numberOfSeasons,
   onClick
 }) => {
   const posterUrl = posterPath 
@@ -30,6 +34,11 @@ const MovieCard: React.FC<MovieCardProps> = ({
   
   // Format vote average to one decimal place
   const rating = voteAverage?.toFixed(1) || 'N/A';
+  
+  // Format runtime or seasons display
+  const durationInfo = isTVShow 
+    ? `${numberOfSeasons || '?'} Season${numberOfSeasons !== 1 ? 's' : ''}` 
+    : runtime ? `${runtime} min` : '';
 
   return (
     <div 
@@ -50,6 +59,11 @@ const MovieCard: React.FC<MovieCardProps> = ({
           <span>{year}</span>
           <span>★ {rating}</span>
         </div>
+        {durationInfo && (
+          <div className="text-gray-400 text-xs mt-1">
+            {durationInfo}
+          </div>
+        )}
       </div>
     </div>
   );

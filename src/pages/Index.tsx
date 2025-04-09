@@ -23,6 +23,8 @@ interface Movie {
   vote_average?: number;
   media_type?: string;
   overview?: string;
+  runtime?: number;
+  number_of_seasons?: number;
 }
 
 const Index = () => {
@@ -92,7 +94,7 @@ const Index = () => {
       try {
         if (searchQueryFromState) {
           const data = await searchContent(searchQueryFromState);
-          if (data && typeof data === 'object') {
+          if (data && typeof data === 'object' && 'results' in data) {
             setSearchResults(data.results || []);
             setIsSearching(true);
             setViewingCategory(null);

@@ -50,16 +50,19 @@ const Navbar = () => {
 
   const fetchLatestMovies = async () => {
     try {
-      // Get the last page number to fetch different movies
-      const page = Math.floor(Math.random() * 5) + 1; // Random page between 1-5
+      // Get a random page number between 1-5 for more variety
+      const page = Math.floor(Math.random() * 5) + 1;
       
       const data = await fetchFromTMDB(`${apiPaths.fetchLatestMovies}&page=${page}`);
-      if (data.results && data.results.length > 0) {
-        const latestMovies = data.results
-          .filter((movie: any) => !processedMovieIds.has(movie.id))
-          .slice(0, 3);
+      
+      if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results) && data.results.length > 0) {
+        // Filter out movies we've already processed
+        const newMovies = data.results.filter((movie: any) => !processedMovieIds.has(movie.id));
         
-        if (latestMovies.length === 0) return; // No new movies to show
+        if (newMovies.length === 0) return; // No new movies to show
+        
+        // Take just 3 new movies
+        const latestMovies = newMovies.slice(0, 3);
         
         const newMovieIds = new Set(processedMovieIds);
         const newNotifications: Notification[] = [];
@@ -72,7 +75,7 @@ const Navbar = () => {
             message: `${movie.title || 'A new movie'} is now available to stream!`,
             poster_path: movie.poster_path,
             movie: {
-              id: movie.id
+              id: movie.id.toString() // Convert to string to match expected type
             },
             read: false,
             createdAt: new Date().toISOString()

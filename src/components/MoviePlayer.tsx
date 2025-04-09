@@ -251,7 +251,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
               frameBorder="0"
               referrerPolicy="origin"
               allowFullScreen
-              style={{ height: '100vh', width: '40%' }}
+              style={{ height: '70vh', width: '40%' }}
               loading="lazy"
             ></iframe>
           </div>

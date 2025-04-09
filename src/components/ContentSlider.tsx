@@ -55,15 +55,17 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items, onViewAll }
     } else {
       const category = title.toLowerCase().includes('movie') ? 'movie' : 
                       title.toLowerCase().includes('show') || title.toLowerCase().includes('tv') ? 'tv' : 
+                      title.toLowerCase().includes('horror') ? 'horror' :
+                      title.toLowerCase().includes('comedy') ? 'comedy' :
                       title.toLowerCase().includes('new') ? 'new' : 'trending';
       navigate(`/?category=${category}`);
     }
   };
 
   return (
-    <div className="py-6 px-4 md:px-8">
+    <div className="py-6 px-0 md:px-2">
       {/* Section Title */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 px-4">
         <h2 className="text-xl md:text-2xl font-bold text-white">{title}</h2>
         <Button 
           variant="ghost" 
@@ -90,7 +92,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items, onViewAll }
         {/* Slider */}
         <div
           ref={sliderRef}
-          className="flex space-x-4 overflow-x-auto pb-4 hide-scrollbar"
+          className="flex space-x-4 overflow-x-auto pb-4 px-4 hide-scrollbar"
           onScroll={() => {
             if (sliderRef.current && sliderRef.current.scrollLeft > 20) {
               setShowLeftArrow(true);

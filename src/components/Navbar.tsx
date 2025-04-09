@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -85,7 +86,7 @@ const Navbar = () => {
         
         if (newNotifications.length > 0) {
           setNotifications(prevNotifications => {
-            const combined = [...newNotifications, ...prevNotifications].slice(0, 10) as Notification[];
+            const combined = [...newNotifications, ...prevNotifications].slice(0, 10);
             setHasUnreadNotifications(true);
             
             toast({
@@ -226,12 +227,12 @@ const Navbar = () => {
             />
 
             <NotificationsMenu 
-              notifications={notifications as any}
+              notifications={notifications}
               hasUnreadNotifications={hasUnreadNotifications}
               showNotifications={showNotifications}
               onToggleNotifications={setShowNotifications}
               onMarkAllAsRead={handleMarkAllAsRead}
-              onNotificationClick={handleNotificationClick as any}
+              onNotificationClick={handleNotificationClick}
             />
 
             <UserMenu 

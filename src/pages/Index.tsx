@@ -9,17 +9,23 @@ import { supabase } from '@/integrations/supabase/client';
 import MovieCard from '@/components/MovieCard';
 import MoviePlayer from '@/components/MoviePlayer';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowDown } from 'lucide-react';
 import { Movie } from '@/types/movie';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [trendingContent, setTrendingContent] = useState<Movie[]>([]);
   const [newReleases, setNewReleases] = useState<Movie[]>([]);
   const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
   const [topRatedShows, setTopRatedShows] = useState<Movie[]>([]);
+  const [horrorMovies, setHorrorMovies] = useState<Movie[]>([]);
+  const [comedyMovies, setComedyMovies] = useState<Movie[]>([]);
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [session, setSession] = useState(null);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [shouldPlayMovie, setShouldPlayMovie] = useState(false);
@@ -28,6 +34,7 @@ const Index = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { toast } = useToast();
 
   const searchQueryFromState = location.state?.searchQuery || '';
   const selectedMovieIdFromState = location.state?.selectedMovieId;
@@ -73,6 +80,8 @@ const Index = () => {
   useEffect(() => {
     const fetchMovieData = async () => {
       setLoading(true);
+      setCurrentPage(1);
+      setHasMore(true);
       try {
         if (searchQueryFromState) {
           const data = await searchContent(searchQueryFromState);
@@ -105,10 +114,14 @@ const Index = () => {
               data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
             } else if (categoryFromParams === 'tv') {
               data = await fetchFromTMDB(apiPaths.fetchPopularTV);
+            } else if (categoryFromParams === 'horror') {
+              data = await fetchFromTMDB(apiPaths.fetchMoviesList(27));
+            } else if (categoryFromParams === 'comedy') {
+              data = await fetchFromTMDB(apiPaths.fetchMoviesList(35));
             } else {
               data = await fetchFromTMDB(apiPaths.fetchTrending);
             }
-            if (data && typeof data === 'object') {
+            if (data && typeof data === 'object' && 'results' in data) {
               setViewAllContent(data.results || []);
             }
           }
@@ -116,11 +129,13 @@ const Index = () => {
         else {
           setIsSearching(false);
           setViewingCategory(null);
-          const [trendingData, newReleasesData, popularMoviesData, topRatedShowsData] = await Promise.all([
+          const [trendingData, newReleasesData, popularMoviesData, topRatedShowsData, horrorMoviesData, comedyMoviesData] = await Promise.all([
             fetchFromTMDB(apiPaths.fetchTrending),
             fetchFromTMDB(apiPaths.fetchPopularMovies),
             fetchFromTMDB(apiPaths.fetchMoviesList(28)),
             fetchFromTMDB(apiPaths.fetchTVList(18)),
+            fetchFromTMDB(apiPaths.fetchMoviesList(27)),
+            fetchFromTMDB(apiPaths.fetchMoviesList(35)),
           ]);
           
           if (trendingData && typeof trendingData === 'object' && 'results' in trendingData) {
@@ -135,6 +150,12 @@ const Index = () => {
           if (topRatedShowsData && typeof topRatedShowsData === 'object' && 'results' in topRatedShowsData) {
             setTopRatedShows(topRatedShowsData.results || []);
           }
+          if (horrorMoviesData && typeof horrorMoviesData === 'object' && 'results' in horrorMoviesData) {
+            setHorrorMovies(horrorMoviesData.results || []);
+          }
+          if (comedyMoviesData && typeof comedyMoviesData === 'object' && 'results' in comedyMoviesData) {
+            setComedyMovies(comedyMoviesData.results || []);
+          }
         }
       } catch (error) {
         console.error("Error fetching content:", error);
@@ -145,6 +166,65 @@ const Index = () => {
 
     fetchMovieData();
   }, [searchQueryFromState, categoryFromParams, genreFromParams]);
+
+  const loadMoreContent = async () => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    const nextPage = currentPage + 1;
+    
+    try {
+      let url;
+      
+      if (categoryFromParams === 'new') {
+        url = `${apiPaths.fetchPopularMovies}&page=${nextPage}`;
+      } else if (categoryFromParams === 'movie') {
+        url = `${apiPaths.fetchPopularMovies}&page=${nextPage}`;
+      } else if (categoryFromParams === 'tv') {
+        url = `${apiPaths.fetchPopularTV}&page=${nextPage}`;
+      } else if (categoryFromParams === 'horror') {
+        url = `${apiPaths.fetchMoviesList(27)}&page=${nextPage}`;
+      } else if (categoryFromParams === 'comedy') {
+        url = `${apiPaths.fetchMoviesList(35)}&page=${nextPage}`;
+      } else if (genreFromParams) {
+        url = `${categoryFromParams === 'movie' ? apiPaths.fetchMoviesList(parseInt(genreFromParams)) : apiPaths.fetchTVList(parseInt(genreFromParams))}&page=${nextPage}`;
+      } else {
+        url = `${apiPaths.fetchTrending}&page=${nextPage}`;
+      }
+      
+      const data = await fetchFromTMDB(url);
+      
+      if (data && typeof data === 'object' && 'results' in data) {
+        const newResults = data.results || [];
+        
+        if (newResults.length === 0) {
+          setHasMore(false);
+          toast({
+            title: "No more results",
+            description: "You've reached the end of the list",
+          });
+        } else {
+          setViewAllContent(prevContent => [...prevContent, ...newResults]);
+          setCurrentPage(nextPage);
+        }
+      } else {
+        setHasMore(false);
+        toast({
+          title: "No more results",
+          description: "You've reached the end of the list",
+        });
+      }
+    } catch (error) {
+      console.error("Error loading more content:", error);
+      toast({
+        title: "Error loading content",
+        description: "There was a problem loading more content",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const handleMovieClick = (movie: Movie) => {
     setSelectedMovie(movie);
@@ -180,6 +260,14 @@ const Index = () => {
       return 'New Releases';
     }
     
+    if (categoryFromParams === 'horror') {
+      return 'Horror Movies';
+    }
+    
+    if (categoryFromParams === 'comedy') {
+      return 'Comedy Movies';
+    }
+    
     if (categoryFromParams && genreFromParams) {
       const genreName = genreFromParams;
       return `${categoryFromParams === 'movie' ? 'Movies' : 'TV Shows'} - ${genreName}`;
@@ -207,6 +295,7 @@ const Index = () => {
           <HeroSection 
             onWatchNow={handleHeroWatchNow}
             onMoreInfo={handleHeroMoreInfo}
+            useFixedImage={true}
           />
         )}
         
@@ -231,33 +320,54 @@ const Index = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hype-purple"></div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-                  {(searchQueryFromState ? searchResults : viewAllContent).map((item) => (
-                    <MovieCard
-                      key={item.id}
-                      id={item.id}
-                      title={item.title || item.name || 'Unknown Title'}
-                      posterPath={item.poster_path}
-                      releaseDate={item.release_date || item.first_air_date}
-                      voteAverage={item.vote_average}
-                      isTVShow={item.media_type === 'tv' || !!item.first_air_date}
-                      runtime={item.runtime}
-                      numberOfSeasons={item.number_of_seasons}
-                      onClick={() => handleMovieClick(item)}
-                    />
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 px-1">
+                    {(searchQueryFromState ? searchResults : viewAllContent).map((item) => (
+                      <MovieCard
+                        key={item.id}
+                        id={item.id}
+                        title={item.title || item.name || 'Unknown Title'}
+                        posterPath={item.poster_path}
+                        releaseDate={item.release_date || item.first_air_date}
+                        voteAverage={item.vote_average}
+                        isTVShow={item.media_type === 'tv' || !!item.first_air_date}
+                        runtime={item.runtime}
+                        numberOfSeasons={item.number_of_seasons}
+                        onClick={() => handleMovieClick(item)}
+                      />
+                    ))}
+                  </div>
+                  
+                  {hasMore && (
+                    <div className="mt-8 text-center">
+                      <Button 
+                        onClick={loadMoreContent} 
+                        disabled={loadingMore}
+                        className="bg-hype-purple hover:bg-hype-purple/90"
+                      >
+                        {loadingMore ? (
+                          <div className="animate-spin h-5 w-5 border-t-2 border-b-2 border-white rounded-full mr-2"></div>
+                        ) : (
+                          <ArrowDown className="mr-2 h-4 w-4" />
+                        )}
+                        Load More
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ) : (
             <>
               {!loading && (
-                <>
+                <div className="space-y-6 px-0 sm:px-0">
                   <ContentSlider title="Trending Now" items={trendingContent} onViewAll={() => handleViewAll('trending')} />
                   <ContentSlider title="New Releases" items={newReleases} onViewAll={() => handleViewAll('new')} />
                   <ContentSlider title="Popular Movies" items={popularMovies} onViewAll={() => handleViewAll('movie')} />
                   <ContentSlider title="Top Rated Shows" items={topRatedShows} onViewAll={() => handleViewAll('tv')} />
-                </>
+                  <ContentSlider title="Horror Movies" items={horrorMovies} onViewAll={() => handleViewAll('horror')} />
+                  <ContentSlider title="Comedy Movies" items={comedyMovies} onViewAll={() => handleViewAll('comedy')} />
+                </div>
               )}
             </>
           )}

@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -111,6 +112,13 @@ html, body, #root {
 .notifications-list {
   max-height: 70vh;
   overflow-y: auto;
+}
+
+/* Fix footer stacking on mobile view */
+@media (max-width: 640px) {
+  footer .grid-cols-1 {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* Mobile optimizations */

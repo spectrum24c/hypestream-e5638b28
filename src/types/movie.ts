@@ -28,3 +28,9 @@ export interface Notification {
   };
   isNew?: boolean;
 }
+
+export interface DeviceInfo {
+  name: string;
+  type: string;
+  lastActive: string;
+}

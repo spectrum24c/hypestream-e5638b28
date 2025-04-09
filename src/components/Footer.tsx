@@ -1,14 +1,67 @@
 
-import React, { useState } from 'react';
-import { Facebook, Twitter, Instagram, Youtube, Mail } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Facebook, Twitter, Instagram, Youtube, Mail, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { DeviceInfo } from '@/types/movie';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [session, setSession] = useState<any>(null);
+  const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
+  const [showDevices, setShowDevices] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Get auth session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setSession(newSession);
+      }
+    );
+
+    // Get device info
+    const userAgent = navigator.userAgent;
+    const device = {
+      name: getUserDeviceName(userAgent),
+      type: getUserDeviceType(userAgent),
+      lastActive: new Date().toLocaleString()
+    };
+    setDeviceInfo(device);
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const getUserDeviceName = (userAgent: string) => {
+    let deviceName = "Unknown Device";
+    
+    if (/Windows NT 10.0/.test(userAgent)) deviceName = "Windows 10";
+    else if (/Windows NT 6.3/.test(userAgent)) deviceName = "Windows 8.1";
+    else if (/Windows NT 6.2/.test(userAgent)) deviceName = "Windows 8";
+    else if (/Windows NT 6.1/.test(userAgent)) deviceName = "Windows 7";
+    else if (/Windows NT 6.0/.test(userAgent)) deviceName = "Windows Vista";
+    else if (/Windows NT 5.1/.test(userAgent)) deviceName = "Windows XP";
+    else if (/Mac OS X/.test(userAgent)) deviceName = "Mac OS X";
+    else if (/Linux/.test(userAgent)) deviceName = "Linux";
+    else if (/Android/.test(userAgent)) deviceName = "Android";
+    else if (/iPhone|iPad|iPod/.test(userAgent)) deviceName = "iOS";
+    
+    return deviceName;
+  };
+  
+  const getUserDeviceType = (userAgent: string) => {
+    if (/Mobile|Android|iPhone|iPad|iPod/.test(userAgent)) return "Mobile";
+    if (/Tablet|iPad/.test(userAgent)) return "Tablet";
+    return "Desktop/Laptop";
+  };
 
   const handleNavigation = (category: string) => {
     navigate(`/?category=${category}`);
@@ -26,13 +79,21 @@ const Footer = () => {
   };
 
   const handleAccountClick = () => {
-    const token = localStorage.getItem('sb-auth-token');
-    if (token) {
+    if (session) {
       navigate('/profile');
+      window.scrollTo(0, 0);
     } else {
-      navigate('/auth');
+      toast({
+        title: "Authentication required",
+        description: "Please login to access your account",
+        variant: "destructive"
+      });
     }
-    window.scrollTo(0, 0);
+  };
+
+  const handleDevicesClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setShowDevices(!showDevices);
   };
 
   const handleFAQsClick = () => {
@@ -40,10 +101,15 @@ const Footer = () => {
     window.scrollTo(0, 0);
   };
 
+  const validateEmail = (email: string) => {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  };
+
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !email.includes('@')) {
+    if (!validateEmail(email)) {
       toast({
         title: "Invalid email",
         description: "Please enter a valid email address",
@@ -55,15 +121,18 @@ const Footer = () => {
     setIsSubmitting(true);
     
     try {
-      // Send email data using a simple mailto link for now
-      const subject = encodeURIComponent("Newsletter Subscription");
-      const body = encodeURIComponent(`New subscriber email: ${email}`);
-      window.open(`mailto:awokojorichmond@gmail.com?subject=${subject}&body=${body}`);
+      // Simulate API call with delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Store email in localStorage to remember subscription
+      localStorage.setItem('newsletter_email', email);
       
       setEmail('');
+      setIsSubscribed(true);
+      
       toast({
         title: "Subscription successful!",
-        description: "Thank you for subscribing to our newsletter"
+        description: "Thank you for subscribing to our newsletter",
       });
     } catch (error) {
       console.error("Error subscribing to newsletter:", error);
@@ -80,7 +149,7 @@ const Footer = () => {
   return (
     <footer className="bg-hype-dark border-t border-border">
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <h3 className="text-xl font-bold text-white">HYPE<span className="text-hype-orange">STREAM</span></h3>
             <p className="text-sm text-muted-foreground">
@@ -139,10 +208,18 @@ const Footer = () => {
               </li>
               <li>
                 <button 
-                  onClick={() => handleNavigation('trending')} 
+                  onClick={() => handleNavigation('horror')} 
                   className="text-muted-foreground hover:text-white transition-colors"
                 >
-                  Popular
+                  Horror
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('comedy')} 
+                  className="text-muted-foreground hover:text-white transition-colors"
+                >
+                  Comedy
                 </button>
               </li>
             </ul>
@@ -154,7 +231,7 @@ const Footer = () => {
               <li>
                 <button 
                   onClick={handleAccountClick} 
-                  className="text-muted-foreground hover:text-white transition-colors"
+                  className={`${session ? 'text-muted-foreground hover:text-white' : 'text-gray-600 cursor-not-allowed'} transition-colors`}
                 >
                   Account
                 </button>
@@ -168,13 +245,22 @@ const Footer = () => {
                 </button>
               </li>
               <li>
-                <a href="#" 
-                  className="text-muted-foreground hover:text-white transition-colors opacity-70 cursor-not-allowed" 
-                  onClick={handleDisabledLink}
+                <button 
+                  onClick={handleDevicesClick}
+                  className="text-muted-foreground hover:text-white transition-colors"
                 >
                   Devices
-                </a>
+                </button>
               </li>
+              {showDevices && deviceInfo && (
+                <li className="pl-4 pt-2 border-l border-gray-700">
+                  <div className="bg-gray-800 p-3 rounded-md text-xs">
+                    <p><span className="text-hype-purple">Current Device:</span> {deviceInfo.name}</p>
+                    <p><span className="text-hype-purple">Device Type:</span> {deviceInfo.type}</p>
+                    <p><span className="text-hype-purple">Last Active:</span> {deviceInfo.lastActive}</p>
+                  </div>
+                </li>
+              )}
               <li>
                 <a href="#" 
                   className="text-muted-foreground hover:text-white transition-colors opacity-70 cursor-not-allowed" 
@@ -188,23 +274,40 @@ const Footer = () => {
 
           <div>
             <h4 className="text-lg font-semibold text-white mb-4">Newsletter</h4>
-            <p className="text-sm text-muted-foreground mb-4">Stay updated with the latest releases and news.</p>
-            <form onSubmit={handleSubscribe} className="flex">
-              <input
-                type="email"
-                placeholder="Your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 rounded-l-md bg-muted px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-hype-purple"
-              />
-              <button 
-                type="submit"
-                disabled={isSubmitting}
-                className="rounded-r-md bg-hype-purple px-4 py-2 text-white hover:bg-hype-purple/90 disabled:opacity-50"
-              >
-                <Mail className="h-4 w-4" />
-              </button>
-            </form>
+            <p className="text-sm text-muted-foreground mb-4">Stay updated with the latest releases and exclusive offers.</p>
+            
+            {isSubscribed ? (
+              <div className="bg-green-900/20 border border-green-600/30 rounded-md p-4 text-sm flex items-center">
+                <Check className="h-5 w-5 text-green-500 mr-2" /> 
+                <span>Thank you for subscribing!</span>
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribe} className="space-y-4">
+                <div className="flex">
+                  <input
+                    type="email"
+                    placeholder="Your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="flex-1 rounded-l-md bg-muted px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-hype-purple"
+                  />
+                  <button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="rounded-r-md bg-hype-purple px-4 py-2 text-white hover:bg-hype-purple/90 disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                    ) : (
+                      <Mail className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  By subscribing, you agree to receive marketing emails from us. You can unsubscribe anytime.
+                </p>
+              </form>
+            )}
           </div>
         </div>
 

@@ -1,7 +1,14 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
 
 *::-webkit-scrollbar {
   display: none;
@@ -11,6 +18,7 @@
 * {
   -ms-overflow-style: none;  /* Internet Explorer and Edge */
   scrollbar-width: none;  /* Firefox */
+  box-sizing: border-box;
 }
 
 /* Base styles */
@@ -55,6 +63,10 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    min-height: 100vh;
+    position: relative;
+    margin: 0;
+    padding: 0;
   }
 }
 
@@ -95,6 +107,12 @@
   height: 100vh !important;
 }
 
+/* Notification list styles */
+.notifications-list {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
 /* Mobile optimizations */
 @media (max-width: 640px) {
   .stream, .trailer-cont {
@@ -105,5 +123,13 @@
   .stream iframe, .trailer-cont iframe {
     height: 100vh !important;
     max-height: 100vh !important;
+  }
+  
+  body {
+    overflow-x: hidden;
+  }
+  
+  .notifications-list {
+    max-height: 60vh;
   }
 }

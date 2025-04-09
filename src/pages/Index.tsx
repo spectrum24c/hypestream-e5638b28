@@ -50,13 +50,10 @@ const Index = () => {
 
   useEffect(() => {
     if (selectedMovieIdFromState) {
-      // Fetch movie details and open player
       const fetchMovieDetails = async () => {
         try {
-          // First try as a movie
           let data = await fetchFromTMDB(apiPaths.fetchMovieDetails(selectedMovieIdFromState));
           
-          // If no title found, try as a TV show
           if (!data.title) {
             data = await fetchFromTMDB(apiPaths.fetchTVDetails(selectedMovieIdFromState));
           }
@@ -90,14 +87,12 @@ const Index = () => {
           setViewingCategory(categoryFromParams);
           
           if (categoryFromParams === 'new') {
-            // Fetch new releases specifically
             const data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
             if (data && typeof data === 'object') {
               setViewAllContent(data.results || []);
             }
           }
           else if (genreFromParams) {
-            // Fetch by category and genre
             const data = await fetchContentByCategory(
               categoryFromParams, 
               parseInt(genreFromParams)
@@ -105,7 +100,6 @@ const Index = () => {
             setViewAllContent(data);
           } 
           else {
-            // Fetch all from the category
             let data;
             if (categoryFromParams === 'movie') {
               data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
@@ -129,10 +123,18 @@ const Index = () => {
             fetchFromTMDB(apiPaths.fetchTVList(18)),
           ]);
           
-          if (trendingData && typeof trendingData === 'object') setTrendingContent(trendingData.results || []);
-          if (newReleasesData && typeof newReleasesData === 'object') setNewReleases(newReleasesData.results || []);
-          if (popularMoviesData && typeof popularMoviesData === 'object') setPopularMovies(popularMoviesData.results || []);
-          if (topRatedShowsData && typeof topRatedShowsData === 'object') setTopRatedShows(topRatedShowsData.results || []);
+          if (trendingData && typeof trendingData === 'object' && 'results' in trendingData) {
+            setTrendingContent(trendingData.results || []);
+          }
+          if (newReleasesData && typeof newReleasesData === 'object' && 'results' in newReleasesData) {
+            setNewReleases(newReleasesData.results || []);
+          }
+          if (popularMoviesData && typeof popularMoviesData === 'object' && 'results' in popularMoviesData) {
+            setPopularMovies(popularMoviesData.results || []);
+          }
+          if (topRatedShowsData && typeof topRatedShowsData === 'object' && 'results' in topRatedShowsData) {
+            setTopRatedShows(topRatedShowsData.results || []);
+          }
         }
       } catch (error) {
         console.error("Error fetching content:", error);
@@ -198,9 +200,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-hype-dark text-foreground">
+    <div className="min-h-screen bg-hype-dark text-foreground overflow-x-hidden w-full">
       <Navbar />
-      <main className="pb-8 pt-16">
+      <main className="pb-8 pt-16 w-full">
         {!isSearching && (
           <HeroSection 
             onWatchNow={handleHeroWatchNow}

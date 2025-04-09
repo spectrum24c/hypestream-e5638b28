@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { categories } from '@/data/categories';
-import { Notification } from '@/types/movie';
+import { Notification } from '@/types/notification';
 import { fetchFromTMDB, apiPaths } from '@/services/tmdbApi';
 import SearchBar from './navbar/SearchBar';
 import DesktopNavigation from './navbar/DesktopNavigation';
@@ -40,7 +39,6 @@ const Navbar = () => {
   useEffect(() => {
     fetchLatestMovies();
     
-    // Run immediately and then set interval to run every 2 minutes
     const interval = setInterval(() => {
       fetchLatestMovies();
     }, 2 * 60 * 1000); // 2 minutes
@@ -50,18 +48,15 @@ const Navbar = () => {
 
   const fetchLatestMovies = async () => {
     try {
-      // Get a random page number between 1-5 for more variety
       const page = Math.floor(Math.random() * 5) + 1;
       
       const data = await fetchFromTMDB(`${apiPaths.fetchLatestMovies}&page=${page}`);
       
       if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results) && data.results.length > 0) {
-        // Filter out movies we've already processed
         const newMovies = data.results.filter((movie: any) => !processedMovieIds.has(movie.id));
         
-        if (newMovies.length === 0) return; // No new movies to show
+        if (newMovies.length === 0) return;
         
-        // Take just 3 new movies
         const latestMovies = newMovies.slice(0, 3);
         
         const newMovieIds = new Set(processedMovieIds);
@@ -70,7 +65,6 @@ const Navbar = () => {
         latestMovies.forEach((movie: any) => {
           newMovieIds.add(movie.id);
           
-          // Fixed timestamp type to be a number
           const timestamp = Date.now();
           
           newNotifications.push({
@@ -79,11 +73,11 @@ const Navbar = () => {
             message: `${movie.title || 'A new movie'} is now available to stream!`,
             poster_path: movie.poster_path,
             movie: {
-              id: movie.id.toString() // Convert to string to match expected type
+              id: movie.id.toString()
             },
             read: false,
             createdAt: new Date().toISOString(),
-            timestamp // Added numeric timestamp
+            timestamp
           });
         });
         
@@ -91,11 +85,9 @@ const Navbar = () => {
         
         if (newNotifications.length > 0) {
           setNotifications(prevNotifications => {
-            // Fixed type issue by properly typing the combined array
-            const combined = [...newNotifications, ...prevNotifications].slice(0, 10);
+            const combined = [...newNotifications, ...prevNotifications].slice(0, 10) as Notification[];
             setHasUnreadNotifications(true);
             
-            // Show toast for new movies
             toast({
               title: "New movies available!",
               description: `${newNotifications.length} new movie(s) just added`,
@@ -234,12 +226,12 @@ const Navbar = () => {
             />
 
             <NotificationsMenu 
-              notifications={notifications}
+              notifications={notifications as any}
               hasUnreadNotifications={hasUnreadNotifications}
               showNotifications={showNotifications}
               onToggleNotifications={setShowNotifications}
               onMarkAllAsRead={handleMarkAllAsRead}
-              onNotificationClick={handleNotificationClick}
+              onNotificationClick={handleNotificationClick as any}
             />
 
             <UserMenu 

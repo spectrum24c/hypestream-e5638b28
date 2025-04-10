@@ -2,6 +2,19 @@
 import type { Config } from "tailwindcss";
 
 export default {
+module.exports = {
+  theme: {
+    extend: {},
+  },
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+    require('@tailwindcss/line-clamp'),
+    require('@tailwindcss/aspect-ratio'),
+    require('@tailwindcss/filters'), // Add this line for backdrop-filter utilities
+  ],
+};
+	
 	darkMode: ["class"],
 	content: [
 		"./pages/**/*.{ts,tsx}",

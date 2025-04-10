@@ -25,6 +25,14 @@ const FAQs = () => {
       answer: "HypeStream is a streaming platform that offers movies, TV shows, and anime content. Our service provides users with high-quality streaming options for their favorite entertainment content."
     },
     {
+      question: "How do I create an account and log in to HypeStream?",
+      answer: "To create an account: 1) Click on 'Sign In' in the top-right corner, 2) Select 'Create an account', 3) Enter your email address, 4) Create a strong password, 5) Verify your email by clicking the link sent to your inbox. To log in: Simply enter your email and password on the sign-in page. If you forget your password, use the 'Forgot Password' link to reset it."
+    },
+    {
+      question: "Is HypeStream free to use?",
+      answer: "HypeStream offers both free and premium content. You can browse and watch many titles without a subscription, but creating a free account gives you access to personalized features like favorites, recommendations, and the ability to track your watch history."
+    },
+    {
       question: "Do I need to create an account to use HypeStream?",
       answer: "While you can browse our catalog without an account, creating a free account allows you to save favorites, receive personalized recommendations, and access premium features like HD streaming."
     },
@@ -51,6 +59,22 @@ const FAQs = () => {
     {
       question: "How do I manage notifications?",
       answer: "You can view all your notifications by clicking the bell icon in the top navigation bar. From there, you can mark notifications as read or click on them to go directly to the new content."
+    },
+    {
+      question: "How do I download content from HypeStream?",
+      answer: "To download content, click the download button on the movie or TV show card. Please note that download speed may vary based on your internet connection. Downloads are only available for certain titles and to registered users."
+    },
+    {
+      question: "Can I watch HypeStream on my smart TV?",
+      answer: "Yes, HypeStream is compatible with most smart TVs that have web browsing capabilities. You can also use devices like Chromecast, Apple TV, or other HDMI streaming devices to cast HypeStream from your mobile device or computer to your TV."
+    },
+    {
+      question: "What internet speed do I need for streaming?",
+      answer: "For SD quality streaming, we recommend at least 3 Mbps. For HD quality, 5+ Mbps is recommended. For the best 4K streaming experience, we recommend 25+ Mbps internet connection speed."
+    },
+    {
+      question: "How do I update my profile information?",
+      answer: "To update your profile, log into your account, click on your profile icon in the top-right corner, select 'Profile', and then edit your information as needed. Don't forget to save your changes."
     },
     {
       question: "Can I download content to watch offline?",
@@ -98,7 +122,7 @@ const FAQs = () => {
           </p>
           <Button 
             className="bg-hype-purple hover:bg-hype-purple/90"
-            onClick={() => window.open('mailto:awokojorichmond@gmail.com', '_blank')}
+            onClick={() => window.open('mailto:hypestream127@gmail.com', '_blank')}
           >
             Contact Support
           </Button>

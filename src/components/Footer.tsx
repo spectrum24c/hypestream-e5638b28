@@ -6,6 +6,12 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { DeviceInfo } from '@/types/movie';
 
+// Create a new table for newsletter subscribers if it doesn't exist
+const createNewsletterSubscribersTable = async () => {
+  const { error } = await supabase.rpc('create_newsletter_subscribers_if_not_exists');
+  if (error) console.error('Error creating newsletter_subscribers table:', error);
+};
+
 const Footer = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,6 +48,9 @@ const Footer = () => {
     if (subscribedEmail) {
       setIsSubscribed(true);
     }
+
+    // Ensure the newsletter_subscribers table exists
+    createNewsletterSubscribersTable();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -128,18 +137,16 @@ const Footer = () => {
     setIsSubmitting(true);
     
     try {
-      // If user is logged in, save to their profile
-      if (session) {
-        const { error } = await supabase
-          .from('newsletter_subscribers')
-          .upsert({
-            user_id: session.user.id,
-            email: email,
-            subscribed_at: new Date().toISOString()
-          });
+      // Store the email in custom function that stores to database
+      const { error } = await supabase.functions.invoke('save-newsletter-subscriber', {
+        body: { 
+          email: email,
+          adminEmail: 'hypestream127@gmail.com',
+          userId: session?.user?.id || null
+        }
+      });
 
-        if (error) throw error;
-      }
+      if (error) throw error;
       
       // Store email in localStorage to remember subscription
       localStorage.setItem('newsletter_email', email);
@@ -292,26 +299,23 @@ const Footer = () => {
               </div>
             ) : (
               <form onSubmit={handleSubscribe} className="space-y-4">
-                <div className="flex newsletter-container">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
                   <input
                     type="email"
                     placeholder="Your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="flex-1 rounded-l-md bg-muted px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-hype-purple newsletter-input"
+                    className="rounded-md sm:rounded-r-none bg-muted px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-hype-purple w-full"
                   />
                   <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="rounded-r-md bg-hype-purple px-4 py-2 text-white hover:bg-hype-purple/90 disabled:opacity-50 whitespace-nowrap"
+                    className="rounded-md sm:rounded-l-none bg-hype-purple px-4 py-2 text-white hover:bg-hype-purple/90 disabled:opacity-50 sm:whitespace-nowrap"
                   >
                     {isSubmitting ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                     ) : (
-                      <>
-                        <Mail className="h-4 w-4 sm:hidden" />
-                        <span className="hidden sm:inline">Subscribe</span>
-                      </>
+                      "Subscribe"
                     )}
                   </button>
                 </div>

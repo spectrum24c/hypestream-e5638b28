@@ -95,7 +95,8 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
   const year = (featuredContent.release_date || featuredContent.first_air_date || '').split('-')[0] || 'N/A';
   const rating = featuredContent.vote_average.toFixed(1);
   const category = featuredContent.media_type === 'tv' ? 'TV Show' : 'Movie';
-  // Always use the backdrop from the API now
+  
+  // Use the backdrop image for consistent experience across all device sizes
   const backdropUrl = featuredContent.backdrop_path 
     ? `${imgPath}${featuredContent.backdrop_path}`
     : 'https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop';

@@ -128,16 +128,19 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
   const numberOfSeasons = movieDetails?.number_of_seasons || movie.number_of_seasons;
   const status = movieDetails?.status;
   
-  let durationInfo;
+  let durationInfo = '';
   if (isTVShow) {
     durationInfo = numberOfSeasons ? `${numberOfSeasons} Season${numberOfSeasons !== 1 ? 's' : ''}` : '';
   } else {
     if (runtime) {
       durationInfo = `${runtime} min`;
-    } else if (status === 'Upcoming' || status === 'In Production') {
-      durationInfo = `Release date: ${releaseDate || 'TBA'}`;
-    } else {
-      durationInfo = '';
+    } else if (releaseDate) {
+      const releaseYear = new Date(releaseDate).getFullYear();
+      const currentYear = new Date().getFullYear();
+      
+      if (releaseYear > currentYear || status === 'Upcoming' || status === 'In Production') {
+        durationInfo = `Release date: ${releaseDate}`;
+      }
     }
   }
 

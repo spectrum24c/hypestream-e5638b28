@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { imgPath } from '@/services/tmdbApi';
+import { Download } from 'lucide-react';
 
 interface MovieCardProps {
   id: string;
@@ -43,6 +44,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
     durationInfo = runtime ? `${runtime} min` : '';
   }
 
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Will be implemented later as per user's request
+    console.log(`Download requested for: ${title}`);
+    alert('Download functionality will be available soon!');
+  };
+
   return (
     <div 
       className="flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] bg-gray-800 rounded-lg overflow-hidden hover:scale-105 transition duration-200 cursor-pointer shadow-lg"
@@ -55,6 +63,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
           className="w-full h-full object-cover"
           loading="lazy"
         />
+        <button 
+          onClick={handleDownload}
+          className="absolute bottom-2 right-2 bg-hype-purple/80 hover:bg-hype-purple p-1.5 rounded-full text-white"
+          aria-label="Download"
+        >
+          <Download size={16} />
+        </button>
       </div>
       <div className="p-2 md:p-3">
         <h3 className="font-bold text-xs md:text-sm mb-1 truncate">{title}</h3>

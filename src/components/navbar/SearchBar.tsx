@@ -37,7 +37,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           placeholder="Search movies & TV shows..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="bg-hype-dark-light/50 rounded-full py-1.5 px-4 pr-10 text-sm border border-border w-full md:w-[200px] focus:w-[280px] transition-all duration-300 focus:border-hype-purple focus:outline-none"
+          className="bg-hype-dark-light/950 rounded-full py-1.5 px-4 pr-10 text-sm border border-border w-full md:w-[200px] focus:w-[280px] transition-all duration-300 focus:border-hype-purple focus:outline-none"
           autoComplete="off"
         />
         <button type="submit" className="absolute right-3">

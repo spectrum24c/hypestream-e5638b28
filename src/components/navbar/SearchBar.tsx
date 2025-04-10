@@ -27,17 +27,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   return (
-    <>
+    <div className={`flex items-center ${className}`}>
       <form 
         onSubmit={handleSearch} 
-        className={`${isOpen ? 'flex fixed left-0 right-0 mx-auto top-16 w-[80%] max-w-md md:static md:w-auto md:mx-0 md:relative' : 'hidden'} md:flex items-center z-20 ${className}`}
+        className={`${isOpen ? 'flex' : 'hidden md:flex'} items-center relative`}
       >
         <input
           type="text"
           placeholder="Search movies & TV shows..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="bg-muted rounded-full py-2 px-4 pr-10 text-sm border border-border w-full md:min-w-[300px] focus:border-hype-purple focus:outline-none"
+          className="bg-hype-dark-light/50 rounded-full py-1.5 px-4 pr-10 text-sm border border-border w-full md:w-[200px] focus:w-[280px] transition-all duration-300 focus:border-hype-purple focus:outline-none"
           autoComplete="off"
         />
         <button type="submit" className="absolute right-3">
@@ -54,7 +54,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <Search className="h-5 w-5" />
         </button>
       )}
-    </>
+    </div>
   );
 };
 

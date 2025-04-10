@@ -17,7 +17,7 @@ export default function Navbar() {
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [session, setSession] = useState<any>(null);
@@ -92,15 +92,8 @@ export default function Navbar() {
   useEffect(() => {
     // Close mobile menu when route changes
     setIsMenuOpen(false);
+    setIsSearchOpen(false);
   }, [location.pathname]);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate('/', { state: { searchQuery } });
-      setSearchQuery('');
-    }
-  };
 
   const markNotificationsAsRead = async () => {
     // Since we don't have notifications table yet, this is a placeholder
@@ -113,22 +106,34 @@ export default function Navbar() {
     );
   };
 
-  // Fix the Promise<void> type issue by handling the return value correctly
+  // Handle signout with proper Promise<void> return
   const handleSignOut = async (): Promise<void> => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error signing out:", error);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error);
+      }
+    } catch (error) {
+      console.error("Error in sign out process:", error);
     }
   };
 
-  // Fix the Promise<void> type issue for deleteAccount as well
+  // Handle account deletion with proper Promise<void> return
   const handleDeleteAccount = async (): Promise<void> => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error deleting account:", error);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out during account deletion:", error);
+      }
+      // Note: Actual account deletion would require more logic
+      console.log("Delete account functionality would go here");
+    } catch (error) {
+      console.error("Error in delete account process:", error);
     }
-    // Note: Actual account deletion would require more logic
-    console.log("Delete account functionality would go here");
+  };
+
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen);
   };
 
   return (
@@ -148,15 +153,15 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          {!isMobile && <DesktopNavigation />}
+          <DesktopNavigation />
 
           {/* Right Side - Search, Notifications, Profile */}
           <div className="flex items-center space-x-2 md:space-x-4">
             {/* Search */}
             <SearchBar 
-              isOpen={true}
-              onToggle={() => {}}
-              className=""
+              isOpen={isMobile ? isSearchOpen : true}
+              onToggle={toggleSearch}
+              className="z-20"
             />
 
             {/* Notifications */}

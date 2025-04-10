@@ -1,8 +1,15 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { LogOut, Trash2 } from 'lucide-react';
+import { LogOut, Trash2, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { categories } from '@/data/categories';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface MobileNavigationProps {
   session: any;
@@ -18,11 +25,49 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
   return (
     <div className="bg-hype-dark border-t border-border">
       <div className="container mx-auto px-4 py-4">
-        <nav className="flex flex-col space-y-4">
-          <Link to="/" className="text-foreground hover:text-white">Home</Link>
-          <Link to="/favorites" className="text-foreground hover:text-white">My List</Link>
-          <Link to="/devices" className="text-foreground hover:text-white">Devices</Link>
-          <Link to="/faqs" className="text-foreground hover:text-white">FAQs</Link>
+        <nav className="flex flex-col space-y-1">
+          <Link to="/" className="text-foreground hover:text-white py-2">Home</Link>
+          
+          <Accordion type="single" collapsible className="w-full border-0">
+            {categories.map((category) => (
+              <AccordionItem key={category.id} value={category.id} className="border-b-0">
+                {category.subcategories.length > 0 ? (
+                  <>
+                    <AccordionTrigger className="py-2 text-foreground hover:text-white">
+                      {category.name}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="pl-4 flex flex-col gap-2 py-1">
+                        <Link 
+                          to={`/?category=${category.id}`} 
+                          className="text-muted-foreground hover:text-white py-1"
+                        >
+                          All {category.name}
+                        </Link>
+                        {category.subcategories.map((subcategory) => (
+                          <Link 
+                            key={subcategory.id}
+                            to={`/?category=${category.id}&genre=${subcategory.id}`}
+                            className="text-muted-foreground hover:text-white py-1"
+                          >
+                            {subcategory.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </>
+                ) : (
+                  <Link to={`/?category=${category.id}`} className="text-foreground hover:text-white py-2 block">
+                    {category.name}
+                  </Link>
+                )}
+              </AccordionItem>
+            ))}
+          </Accordion>
+          
+          <Link to="/favorites" className="text-foreground hover:text-white py-2">My List</Link>
+          <Link to="/devices" className="text-foreground hover:text-white py-2">Devices</Link>
+          <Link to="/faqs" className="text-foreground hover:text-white py-2">FAQs</Link>
           
           {session ? (
             <div className="pt-4 border-t border-border mt-4">

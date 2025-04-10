@@ -148,6 +148,22 @@ const Footer = () => {
 
       if (error) throw error;
       
+      // Send confirmation emails
+      try {
+        const confirmResponse = await supabase.functions.invoke('newsletter-confirm', {
+          body: { 
+            email: email,
+            adminEmail: 'hypestream127@gmail.com'
+          }
+        });
+        
+        if (confirmResponse.error) {
+          console.error("Error sending confirmation emails:", confirmResponse.error);
+        }
+      } catch (emailError) {
+        console.error("Error calling newsletter-confirm function:", emailError);
+      }
+      
       // Store email in localStorage to remember subscription
       localStorage.setItem('newsletter_email', email);
       
@@ -299,7 +315,7 @@ const Footer = () => {
               </div>
             ) : (
               <form onSubmit={handleSubscribe} className="space-y-4">
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="email"
                     placeholder="Your email"
@@ -310,7 +326,7 @@ const Footer = () => {
                   <button 
                     type="submit"
                     disabled={isSubmitting}
-                    className="rounded-md sm:rounded-l-none bg-hype-purple px-4 py-2 text-white hover:bg-hype-purple/90 disabled:opacity-50 sm:whitespace-nowrap"
+                    className="rounded-md sm:rounded-l-none bg-hype-purple px-4 py-2 text-white hover:bg-hype-purple/90 disabled:opacity-50"
                   >
                     {isSubmitting ? (
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>

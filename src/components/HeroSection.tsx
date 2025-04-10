@@ -1,6 +1,6 @@
 
-import React, { useEffect, useState, memo } from 'react';
-import { Play, Info } from 'lucide-react';
+import React, { useEffect, useState, memo, useCallback } from 'react';
+import { Play, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiPaths, fetchFromTMDB, imgPath } from '@/services/tmdbApi';
 import { useToast } from '@/hooks/use-toast';
@@ -27,11 +27,12 @@ interface HeroSectionProps {
 
 // Use memo to prevent unnecessary re-renders
 const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, useFixedImage = false }) => {
-  const [featuredContent, setFeaturedContent] = useState<FeaturedMovie | null>(null);
+  const [featuredContent, setFeaturedContent] = useState<FeaturedMovie[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
   const { toast } = useToast();
-
+  
   useEffect(() => {
     // Get auth session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
@@ -43,9 +44,12 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
         const data = await fetchFromTMDB(apiPaths.fetchTrending);
         
         if (data.results && data.results.length > 0) {
-          // Find a trending item with a backdrop image
-          const featuredItem = data.results.find((item: any) => item.backdrop_path) || data.results[0];
-          setFeaturedContent(featuredItem);
+          // Find trending items with backdrop images
+          const featuredItems = data.results
+            .filter((item: any) => item.backdrop_path && item.overview)
+            .slice(0, 5); // Limit to 5 items for the slider
+          
+          setFeaturedContent(featuredItems);
         }
       } catch (error) {
         console.error("Error fetching featured content:", error);
@@ -56,9 +60,29 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
 
     fetchFeaturedContent();
   }, []);
+  
+  const goToNextSlide = useCallback(() => {
+    setCurrentIndex((prevIndex) => 
+      prevIndex === featuredContent.length - 1 ? 0 : prevIndex + 1
+    );
+  }, [featuredContent.length]);
+  
+  const goToPreviousSlide = useCallback(() => {
+    setCurrentIndex((prevIndex) => 
+      prevIndex === 0 ? featuredContent.length - 1 : prevIndex - 1
+    );
+  }, [featuredContent.length]);
+  
+  // Auto-rotate slides every 6 seconds
+  useEffect(() => {
+    if (featuredContent.length <= 1) return;
+    
+    const interval = setInterval(goToNextSlide, 6000);
+    return () => clearInterval(interval);
+  }, [goToNextSlide, featuredContent.length]);
 
   const handleWatchNow = () => {
-    if (!featuredContent) return;
+    if (!featuredContent[currentIndex]) return;
     
     // Check if user is signed in
     if (!session) {
@@ -71,19 +95,19 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
     }
     
     if (onWatchNow) {
-      onWatchNow(featuredContent);
+      onWatchNow(featuredContent[currentIndex]);
     }
   };
 
   const handleMoreInfo = () => {
-    if (!featuredContent) return;
+    if (!featuredContent[currentIndex]) return;
     
     if (onMoreInfo) {
-      onMoreInfo(featuredContent);
+      onMoreInfo(featuredContent[currentIndex]);
     }
   };
 
-  if (loading || !featuredContent) {
+  if (loading || featuredContent.length === 0) {
     return (
       <div className="h-[50vh] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hype-purple"></div>
@@ -91,21 +115,22 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
     );
   }
 
-  const title = featuredContent.title || featuredContent.name || 'Featured Content';
-  const year = (featuredContent.release_date || featuredContent.first_air_date || '').split('-')[0] || 'N/A';
-  const rating = featuredContent.vote_average.toFixed(1);
-  const category = featuredContent.media_type === 'tv' ? 'TV Show' : 'Movie';
+  const currentMovie = featuredContent[currentIndex];
+  const title = currentMovie.title || currentMovie.name || 'Featured Content';
+  const year = (currentMovie.release_date || currentMovie.first_air_date || '').split('-')[0] || 'N/A';
+  const rating = currentMovie.vote_average.toFixed(1);
+  const category = currentMovie.media_type === 'tv' ? 'TV Show' : 'Movie';
   
   // Use the backdrop image for consistent experience across all device sizes
-  const backdropUrl = featuredContent.backdrop_path 
-    ? `${imgPath}${featuredContent.backdrop_path}`
+  const backdropUrl = currentMovie.backdrop_path 
+    ? `${imgPath}${currentMovie.backdrop_path}`
     : 'https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop';
 
   return (
     <div className="relative h-[70vh] min-h-[500px] w-full overflow-hidden mt-0">
       {/* Background Image - Add loading="lazy" for performance */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-black/40"></div>
+      <div className="absolute inset-0 transition-opacity duration-500">
+        <div className="absolute inset-0 bg-black/40 z-10"></div>
         <img
           src={backdropUrl}
           alt={title}
@@ -115,10 +140,43 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
       </div>
 
       {/* Gradient Overlay */}
-      <div className="banner-overlay"></div>
+      <div className="banner-overlay z-20"></div>
+
+      {/* Slider Navigation */}
+      <div className="absolute z-30 inset-0 flex items-center justify-between px-4">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="rounded-full bg-black/30 hover:bg-black/50 text-white h-12 w-12"
+          onClick={goToPreviousSlide}
+        >
+          <ChevronLeft className="h-8 w-8" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="rounded-full bg-black/30 hover:bg-black/50 text-white h-12 w-12"
+          onClick={goToNextSlide}
+        >
+          <ChevronRight className="h-8 w-8" />
+        </Button>
+      </div>
+
+      {/* Dots Indicator */}
+      <div className="absolute z-30 bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+        {featuredContent.map((_, i) => (
+          <button
+            key={i}
+            className={`h-2 w-2 rounded-full transition-all ${
+              i === currentIndex ? 'bg-white w-4' : 'bg-white/50'
+            }`}
+            onClick={() => setCurrentIndex(i)}
+          />
+        ))}
+      </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 relative h-full flex items-end pb-16">
+      <div className="container mx-auto px-4 relative h-full flex items-end pb-16 z-20">
         <div className="max-w-2xl animate-fade-in">
           <div className="flex items-center space-x-3 mb-3">
             <span className="bg-hype-orange px-2 py-1 text-xs font-medium text-white rounded">
@@ -154,7 +212,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
           </div>
 
           <p className="text-lg text-gray-300 mb-8 max-w-xl">
-            {featuredContent.overview || 'No description available.'}
+            {currentMovie.overview || 'No description available.'}
           </p>
 
           <div className="flex items-center space-x-4">

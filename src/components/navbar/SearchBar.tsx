@@ -33,9 +33,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   return (
     <div className={`flex items-center ${className}`}>
-      {/* Mobile specific styling */}
-      <div className={`md:hidden ${isMobileSearchOpen ? 'absolute top-16 left-1/2 transform -translate-x-1/2 w-[300px] bg-[#1F2937] rounded-lg p-3 z-50' : ''}`}>
-        {isMobileSearchOpen && (
+      {/* Mobile-specific styling */}
+      {isMobileSearchOpen && (
+        <div className="md:hidden absolute top-20 left-1/2 transform -translate-x-1/2 w-[300px] bg-[#1F2937] rounded-full p-3 z-50 mt-4">
           <form 
             onSubmit={handleSearch} 
             className="flex items-center relative"
@@ -52,8 +52,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <Search className="h-4 w-4 text-muted-foreground" />
             </button>
           </form>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Desktop and default view */}
       <form 

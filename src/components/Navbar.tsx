@@ -65,3 +65,5 @@
           onDeleteAccount={handleDeleteAccount}
         />
       )}
+    </header>
+

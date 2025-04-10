@@ -12,7 +12,6 @@ import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/types/notification';
-import { AuthError } from '@supabase/supabase-js';
 
 export default function Navbar() {
   const isMobile = useIsMobile();

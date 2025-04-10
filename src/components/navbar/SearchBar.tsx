@@ -32,14 +32,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
         onSubmit={handleSearch} 
         className={`${isOpen ? 'flex' : 'hidden md:flex'} items-center relative`}
       >
-        <input
-          type="text"
-          placeholder="Search movies & TV shows..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="bg-hype-dark-light/950 rounded-full py-1.5 px-4 pr-10 text-sm border border-border w-full md:w-[200px] focus:w-[280px] transition-all duration-300 focus:border-hype-purple focus:outline-none"
-          autoComplete="off"
-        />
+      <input
+  type="text"
+  placeholder="Search movies & TV shows..."
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  className="bg-[#1F2937] text-white rounded-full py-1.5 px-4 pr-10 text-sm border border-border w-full md:w-[200px] focus:w-[280px] transition-all duration-300 focus:border-hype-purple focus:outline-none"
+  autoComplete="off"
+/>
         <button type="submit" className="absolute right-3">
           <Search className="h-4 w-4 text-muted-foreground" />
         </button>

@@ -1,258 +1,234 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { categories } from '@/data/categories';
-import { Notification } from '@/types/notification';
-import { fetchFromTMDB, apiPaths } from '@/services/tmdbApi';
-import SearchBar from './navbar/SearchBar';
-import DesktopNavigation from './navbar/DesktopNavigation';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useMediaQuery } from '@/hooks/use-mobile';
 import MobileNavigation from './navbar/MobileNavigation';
-import UserMenu from './navbar/UserMenu';
+import DesktopNavigation from './navbar/DesktopNavigation';
+import SearchBar from './navbar/SearchBar';
 import NotificationsMenu from './navbar/NotificationsMenu';
+import UserMenu from './navbar/UserMenu';
+import { Bell, Menu, X } from 'lucide-react';
+import { Button } from './ui/button';
+import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { Notification } from '@/types/notification';
 
-const Navbar = () => {
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [session, setSession] = useState<any>(null);
+export default function Navbar() {
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [processedMovieIds, setProcessedMovieIds] = useState<Set<number>>(new Set());
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [session, setSession] = useState<any>(null);
+  const [isSubscriber, setIsSubscriber] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const location = useLocation();
 
   useEffect(() => {
+    // Check if user is authenticated
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      
+      if (currentSession) {
+        // Fetch subscription status
+        fetchSubscriptionStatus(currentSession.user.id);
+        
+        // Fetch notifications
+        fetchNotifications(currentSession.user.id);
+      }
+    });
+    
+    // Setup auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, newSession) => {
         setSession(newSession);
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    fetchLatestMovies();
-    
-    const interval = setInterval(() => {
-      fetchLatestMovies();
-    }, 2 * 60 * 1000); // 2 minutes
-    
-    return () => clearInterval(interval);
-  }, [processedMovieIds]);
-
-  const fetchLatestMovies = async () => {
-    try {
-      const page = Math.floor(Math.random() * 5) + 1;
-      
-      const data = await fetchFromTMDB(`${apiPaths.fetchLatestMovies}&page=${page}`);
-      
-      if (data && typeof data === 'object' && 'results' in data && Array.isArray(data.results) && data.results.length > 0) {
-        const newMovies = data.results.filter((movie: any) => !processedMovieIds.has(movie.id));
         
-        if (newMovies.length === 0) return;
-        
-        const latestMovies = newMovies.slice(0, 3);
-        
-        const newMovieIds = new Set(processedMovieIds);
-        const newNotifications: Notification[] = [];
-        
-        latestMovies.forEach((movie: any) => {
-          newMovieIds.add(movie.id);
-          
-          const timestamp = Date.now();
-          
-          newNotifications.push({
-            id: `${movie.id}-${timestamp}`,
-            title: "New Release!",
-            message: `${movie.title || 'A new movie'} is now available to stream!`,
-            poster_path: movie.poster_path,
-            movie: {
-              id: movie.id.toString()
-            },
-            read: false,
-            createdAt: new Date().toISOString(),
-            timestamp
-          });
-        });
-        
-        setProcessedMovieIds(newMovieIds);
-        
-        if (newNotifications.length > 0) {
-          setNotifications(prevNotifications => {
-            const combined = [...newNotifications, ...prevNotifications].slice(0, 10);
-            setHasUnreadNotifications(true);
-            
-            toast({
-              title: "New movies available!",
-              description: `${newNotifications.length} new movie(s) just added`,
-            });
-            
-            return combined;
-          });
+        if (newSession) {
+          fetchSubscriptionStatus(newSession.user.id);
+          fetchNotifications(newSession.user.id);
+        } else {
+          setNotifications([]);
+          setUnreadCount(0);
+          setIsSubscriber(false);
         }
       }
-    } catch (error) {
-      console.error("Error fetching latest movies for notifications:", error);
-    }
-  };
+    );
+    
+    // Clean up subscription when component unmounts
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
-  const handleSignOut = async () => {
+  const fetchSubscriptionStatus = async (userId: string) => {
     try {
-      const { error } = await supabase.auth.signOut();
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('subscription_status')
+        .eq('id', userId)
+        .single();
       
       if (error) throw error;
       
-      setSession(null);
-      toast({
-        title: "Signed out successfully",
-      });
-      navigate('/auth');
+      setIsSubscriber(data?.subscription_status === 'active');
     } catch (error) {
-      console.error('Error signing out:', error);
-      toast({
-        title: "Error signing out",
-        variant: "destructive"
-      });
+      console.error('Error fetching subscription status:', error);
     }
   };
 
-  const handleDeleteAccount = async () => {
+  const fetchNotifications = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (error) throw error;
+      
+      if (data) {
+        const notificationsWithFormatting: Notification[] = data.map((notification: any) => ({
+          id: notification.id,
+          title: notification.title,
+          message: notification.message,
+          image: notification.image,
+          poster_path: notification.poster_path,
+          createdAt: notification.created_at,
+          read: notification.read,
+          movie: notification.movie_id ? { id: notification.movie_id } : undefined
+        }));
+        
+        setNotifications(notificationsWithFormatting);
+        
+        const unread = data.filter((notification: any) => !notification.read).length;
+        setUnreadCount(unread);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    // Close mobile menu when route changes
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate('/', { state: { searchQuery } });
+      setSearchQuery('');
+    }
+  };
+
+  const markNotificationsAsRead = async () => {
     if (!session) return;
     
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete your account? This action cannot be undone."
-    );
-    
-    if (confirmDelete) {
-      try {
-        await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', session.user.id);
-        
-        await supabase
-          .from('profiles')
-          .delete()
-          .eq('id', session.user.id);
-        
-        await supabase.auth.signOut();
-        
-        const { error } = await supabase.rpc('delete_user');
-        
-        if (error) {
-          console.error('Error deleting user account:', error);
-        }
-        
-        toast({
-          title: "Account deleted",
-          description: "Your account has been permanently deleted",
-        });
-        
-        navigate('/auth');
-      } catch (error) {
-        console.error('Error deleting account:', error);
-        toast({
-          title: "Error deleting account",
-          description: "There was a problem deleting your account",
-          variant: "destructive"
-        });
-      }
-    }
-  };
-
-  const handleNewMovies = () => {
-    navigate('/?category=new');
-  };
-
-  const handleViewAll = (categoryId: string) => {
-    navigate(`/?category=${categoryId}`);
-  };
-
-  const handleMarkAllAsRead = () => {
-    setHasUnreadNotifications(false);
-    setNotifications(prevNotifications => 
-      prevNotifications.map(notification => ({
-        ...notification,
-        read: true
-      }))
-    );
-  };
-  
-  const handleNotificationClick = (notification: Notification) => {
-    if (notification.movie) {
-      setShowNotifications(false);
-      navigate('/', { state: { selectedMovieId: notification.movie.id } });
+    try {
+      // Get unread notification IDs
+      const unreadIds = notifications
+        .filter(notification => !notification.read)
+        .map(notification => notification.id);
       
-      setNotifications(prevNotifications => 
-        prevNotifications.map(n => 
-          n.id === notification.id ? { ...n, read: true } : n
-        )
+      if (unreadIds.length === 0) return;
+      
+      // Update notifications to mark as read
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .in('id', unreadIds);
+      
+      if (error) throw error;
+      
+      // Update local state
+      setNotifications(prev => 
+        prev.map(notification => ({
+          ...notification,
+          read: true
+        }))
       );
       
-      const stillHasUnread = notifications.some(n => n.id !== notification.id && !n.read);
-      setHasUnreadNotifications(stillHasUnread);
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Error marking notifications as read:', error);
     }
-  };
-
-  const toggleSearch = () => {
-    setSearchOpen(!searchOpen);
   };
 
   return (
-    <header className="fixed top-0 left-0 z-50 w-full bg-hype-dark/95 backdrop-blur-sm border-b border-border">
+    <header 
+      className={cn(
+        "fixed top-0 left-0 w-full z-40 transition-all duration-300",
+        isScrolled ? "bg-hype-dark/90 backdrop-blur-sm shadow-lg py-2" : "bg-gradient-to-b from-hype-dark/90 to-transparent py-3"
+      )}
+    >
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <span className="text-2xl font-bold text-white">HYPE<span className="text-hype-orange">STREAM</span></span>
-            </Link>
-          </div>
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <Link to="/" className="flex-shrink-0">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-hype-orange to-hype-purple bg-clip-text text-transparent">
+              HypeStream
+            </h1>
+          </Link>
 
-          <DesktopNavigation 
-            categories={categories}
-            onNewMovies={handleNewMovies}
-          />
+          {/* Desktop Navigation */}
+          {!isMobile && (
+            <DesktopNavigation isSubscriber={isSubscriber} />
+          )}
 
-          <div className="flex items-center space-x-4">
+          {/* Right Side - Search, Notifications, Profile */}
+          <div className="flex items-center space-x-2 md:space-x-4">
+            {/* Search */}
             <SearchBar 
-              isOpen={searchOpen}
-              onToggle={toggleSearch}
+              searchQuery={searchQuery} 
+              setSearchQuery={setSearchQuery} 
+              handleSearch={handleSearch} 
+              isMobile={isMobile}
             />
 
-            <NotificationsMenu 
-              notifications={notifications}
-              hasUnreadNotifications={hasUnreadNotifications}
-              showNotifications={showNotifications}
-              onToggleNotifications={setShowNotifications}
-              onMarkAllAsRead={handleMarkAllAsRead}
-              onNotificationClick={handleNotificationClick}
-            />
+            {/* Notifications */}
+            {session && (
+              <NotificationsMenu 
+                notifications={notifications} 
+                unreadCount={unreadCount}
+                markAsRead={markNotificationsAsRead}
+              />
+            )}
 
-            <UserMenu 
-              session={session}
-              onSignOut={handleSignOut}
-              onDeleteAccount={handleDeleteAccount}
-            />
-
-            <MobileNavigation 
-              categories={categories}
-              session={session}
-              onNewMovies={handleNewMovies}
-              onSignOut={handleSignOut}
-              onDeleteAccount={handleDeleteAccount}
-            />
+            {/* User Menu or Login Button */}
+            <UserMenu session={session} />
+            
+            {/* Mobile Menu Toggle */}
+            {isMobile && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="ml-1 text-foreground"
+                aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </Button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Mobile Navigation */}
+      {isMobile && isMenuOpen && (
+        <MobileNavigation isSubscriber={isSubscriber} />
+      )}
     </header>
   );
-};
-
-export default Navbar;
+}

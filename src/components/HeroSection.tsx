@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, memo, useCallback } from 'react';
-import { Play, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiPaths, fetchFromTMDB, imgPath } from '@/services/tmdbApi';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +31,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -62,26 +63,30 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
   }, []);
   
   const goToNextSlide = useCallback(() => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === featuredContent.length - 1 ? 0 : prevIndex + 1
-    );
-  }, [featuredContent.length]);
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setCurrentIndex((prevIndex) => 
+        prevIndex === featuredContent.length - 1 ? 0 : prevIndex + 1
+      );
+      
+      // Reset transition state after a short delay to ensure smooth animation
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
+    }, 300);
+  }, [featuredContent.length, isTransitioning]);
   
-  const goToPreviousSlide = useCallback(() => {
-    setCurrentIndex((prevIndex) => 
-      prevIndex === 0 ? featuredContent.length - 1 : prevIndex - 1
-    );
-  }, [featuredContent.length]);
-  
-  // Auto-rotate slides every 6 seconds
+  // Auto-rotate slides every 10 seconds (increased from 6)
   useEffect(() => {
     if (featuredContent.length <= 1) return;
     
-    const interval = setInterval(goToNextSlide, 6000);
+    const interval = setInterval(goToNextSlide, 10000);
     return () => clearInterval(interval);
   }, [goToNextSlide, featuredContent.length]);
 
-  const handleWatchNow = () => {
+  const handlePlayTrailer = () => {
     if (!featuredContent[currentIndex]) return;
     
     // Check if user is signed in
@@ -128,8 +133,8 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
 
   return (
     <div className="relative h-[70vh] min-h-[500px] w-full overflow-hidden mt-0">
-      {/* Background Image - Add loading="lazy" for performance */}
-      <div className="absolute inset-0 transition-opacity duration-500">
+      {/* Background Image with fade transition */}
+      <div className={`absolute inset-0 transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
         <div className="absolute inset-0 bg-black/40 z-10"></div>
         <img
           src={backdropUrl}
@@ -142,26 +147,6 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
       {/* Gradient Overlay */}
       <div className="banner-overlay z-20"></div>
 
-      {/* Slider Navigation */}
-      <div className="absolute z-30 inset-0 flex items-center justify-between px-4">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="rounded-full bg-black/30 hover:bg-black/50 text-white h-12 w-12"
-          onClick={goToPreviousSlide}
-        >
-          <ChevronLeft className="h-8 w-8" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="rounded-full bg-black/30 hover:bg-black/50 text-white h-12 w-12"
-          onClick={goToNextSlide}
-        >
-          <ChevronRight className="h-8 w-8" />
-        </Button>
-      </div>
-
       {/* Dots Indicator */}
       <div className="absolute z-30 bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
         {featuredContent.map((_, i) => (
@@ -171,13 +156,14 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
               i === currentIndex ? 'bg-white w-4' : 'bg-white/50'
             }`}
             onClick={() => setCurrentIndex(i)}
+            aria-label={`Go to slide ${i + 1}`}
           />
         ))}
       </div>
 
-      {/* Content */}
+      {/* Content with fade transition */}
       <div className="container mx-auto px-4 relative h-full flex items-end pb-16 z-20">
-        <div className="max-w-2xl animate-fade-in">
+        <div className={`max-w-2xl transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'animate-fade-in'}`}>
           <div className="flex items-center space-x-3 mb-3">
             <span className="bg-hype-orange px-2 py-1 text-xs font-medium text-white rounded">
               FEATURED
@@ -219,9 +205,9 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
             <Button 
               className="bg-hype-orange hover:bg-hype-orange/90 text-white px-8 py-6" 
               size="lg"
-              onClick={handleWatchNow}
+              onClick={handlePlayTrailer}
             >
-              <Play className="mr-2 h-5 w-5" /> Watch Now
+              <Play className="mr-2 h-5 w-5" /> Play Trailer
             </Button>
             <Button 
               variant="outline" 

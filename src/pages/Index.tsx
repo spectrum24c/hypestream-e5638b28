@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -232,11 +233,13 @@ const Index = () => {
   };
 
   const handleHeroWatchNow = (movie: any) => {
+    // When "Play Trailer" is clicked in hero section, show movie and auto-play trailer
     setSelectedMovie(movie as Movie);
     setShouldPlayMovie(true);
   };
 
   const handleHeroMoreInfo = (movie: any) => {
+    // When "More Info" is clicked in hero section, show movie details
     setSelectedMovie(movie as Movie);
     setShouldPlayMovie(false);
   };

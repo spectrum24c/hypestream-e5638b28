@@ -140,7 +140,12 @@ export const fetchContentByCategory = async (category: string, genreId: number) 
     }
     
     const data = await fetchFromTMDB(url);
-    return data.results || [];
+    
+    // Ensure we return the expected Movie[] type
+    if (data && data.results) {
+      return data.results;
+    }
+    return [];
   } catch (error) {
     console.error("Error fetching content by category:", error);
     return [];

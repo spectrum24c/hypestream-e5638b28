@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LogOut, Trash2, ChevronRight, X } from 'lucide-react';
+import { LogOut, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { categories } from '@/data/categories';
 import {
@@ -19,20 +19,12 @@ interface MobileNavigationProps {
 const MobileNavigation: React.FC<MobileNavigationProps> = ({
   session,
   onSignOut,
-  onDeleteAccount
+  onDeleteAccount,
 }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(true); // Set the menu to open by default
 
   return (
     <>
-      {/* Menu Button */}
-      <button
-        className="md:hidden p-2 text-white bg-hype-purple rounded"
-        onClick={() => setMenuOpen(true)}
-      >
-        Open Menu
-      </button>
-
       {/* Full-Screen Mobile Menu */}
       {menuOpen && (
         <div className="fixed inset-0 bg-hype-dark text-white z-50 overflow-y-auto">
@@ -46,11 +38,17 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
 
           <div className="container mx-auto px-4 py-4">
             <nav className="flex flex-col space-y-1">
-              <Link to="/" className="text-foreground hover:text-white py-2">Home</Link>
-              
+              <Link to="/" className="text-foreground hover:text-white py-2">
+                Home
+              </Link>
+
               <Accordion type="single" collapsible className="w-full border-0">
                 {categories.map((category) => (
-                  <AccordionItem key={category.id} value={category.id} className="border-b-0">
+                  <AccordionItem
+                    key={category.id}
+                    value={category.id}
+                    className="border-b-0"
+                  >
                     {category.subcategories.length > 0 ? (
                       <>
                         <AccordionTrigger className="py-2 text-foreground hover:text-white">
@@ -58,14 +56,14 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                         </AccordionTrigger>
                         <AccordionContent>
                           <div className="pl-4 flex flex-col gap-2 py-1">
-                            <Link 
-                              to={`/?category=${category.id}`} 
+                            <Link
+                              to={`/?category=${category.id}`}
                               className="text-muted-foreground hover:text-white py-1"
                             >
                               All {category.name}
                             </Link>
                             {category.subcategories.map((subcategory) => (
-                              <Link 
+                              <Link
                                 key={subcategory.id}
                                 to={`/?category=${category.id}&genre=${subcategory.id}`}
                                 className="text-muted-foreground hover:text-white py-1"
@@ -77,18 +75,36 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                         </AccordionContent>
                       </>
                     ) : (
-                      <Link to={`/?category=${category.id}`} className="text-foreground hover:text-white py-2 block">
+                      <Link
+                        to={`/?category=${category.id}`}
+                        className="text-foreground hover:text-white py-2 block"
+                      >
                         {category.name}
                       </Link>
                     )}
                   </AccordionItem>
                 ))}
               </Accordion>
-              
-              <Link to="/favorites" className="text-foreground hover:text-white py-2">My List</Link>
-              <Link to="/devices" className="text-foreground hover:text-white py-2">Devices</Link>
-              <Link to="/faqs" className="text-foreground hover:text-white py-2">FAQs</Link>
-              
+
+              <Link
+                to="/favorites"
+                className="text-foreground hover:text-white py-2"
+              >
+                My List
+              </Link>
+              <Link
+                to="/devices"
+                className="text-foreground hover:text-white py-2"
+              >
+                Devices
+              </Link>
+              <Link
+                to="/faqs"
+                className="text-foreground hover:text-white py-2"
+              >
+                FAQs
+              </Link>
+
               {session ? (
                 <div className="pt-4 border-t border-border mt-4">
                   <div className="text-sm text-muted-foreground mb-2">
@@ -101,19 +117,19 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                     <Link to="/favorites" className="block text-foreground">
                       My Favorites
                     </Link>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex items-center mt-2" 
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center mt-2"
                       onClick={onSignOut}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       Sign Out
                     </Button>
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
-                      className="flex items-center mt-2 w-full" 
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="flex items-center mt-2 w-full"
                       onClick={onDeleteAccount}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />

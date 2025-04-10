@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -6,12 +7,12 @@ import DesktopNavigation from './navbar/DesktopNavigation';
 import SearchBar from './navbar/SearchBar';
 import NotificationsMenu from './navbar/NotificationsMenu';
 import UserMenu from './navbar/UserMenu';
-import { Bell, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Button } from './ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/types/notification';
+import { AuthError } from '@supabase/supabase-js';
 
 export default function Navbar() {
   const isMobile = useIsMobile();
@@ -113,6 +114,24 @@ export default function Navbar() {
     );
   };
 
+  // Fix the Promise<void> type issue by handling the return value correctly
+  const handleSignOut = async (): Promise<void> => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
+  // Fix the Promise<void> type issue for deleteAccount as well
+  const handleDeleteAccount = async (): Promise<void> => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error deleting account:", error);
+    }
+    // Note: Actual account deletion would require more logic
+    console.log("Delete account functionality would go here");
+  };
+
   return (
     <header 
       className={cn(
@@ -153,8 +172,8 @@ export default function Navbar() {
             {/* User Menu or Login Button */}
             <UserMenu 
               session={session} 
-              onSignOut={async () => await supabase.auth.signOut()}
-              onDeleteAccount={async () => console.log("Delete account")}
+              onSignOut={handleSignOut}
+              onDeleteAccount={handleDeleteAccount}
             />
             
             {/* Mobile Menu Toggle */}
@@ -177,8 +196,8 @@ export default function Navbar() {
       {isMobile && isMenuOpen && (
         <MobileNavigation 
           session={session}
-          onSignOut={async () => await supabase.auth.signOut()}
-          onDeleteAccount={async () => console.log("Delete account")}
+          onSignOut={handleSignOut}
+          onDeleteAccount={handleDeleteAccount}
         />
       )}
     </header>

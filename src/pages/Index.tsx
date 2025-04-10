@@ -87,7 +87,8 @@ const Index = () => {
         if (searchQueryFromState) {
           const data = await searchContent(searchQueryFromState);
           if (data && typeof data === 'object' && 'results' in data) {
-            setSearchResults(data.results || []);
+            // Fix type error by explicitly casting to Movie[]
+            setSearchResults((data.results || []) as Movie[]);
             setIsSearching(true);
             setViewingCategory(null);
           }
@@ -99,7 +100,7 @@ const Index = () => {
           if (categoryFromParams === 'new') {
             const data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
             if (data && typeof data === 'object' && 'results' in data) {
-              setViewAllContent(data.results as Movie[] || []);
+              setViewAllContent((data.results || []) as Movie[]);
             }
           }
           else if (genreFromParams) {
@@ -123,7 +124,7 @@ const Index = () => {
               data = await fetchFromTMDB(apiPaths.fetchTrending);
             }
             if (data && typeof data === 'object' && 'results' in data) {
-              setViewAllContent(data.results as Movie[] || []);
+              setViewAllContent((data.results || []) as Movie[]);
             }
           }
         }
@@ -140,22 +141,22 @@ const Index = () => {
           ]);
           
           if (trendingData && typeof trendingData === 'object' && 'results' in trendingData) {
-            setTrendingContent(trendingData.results as Movie[] || []);
+            setTrendingContent((trendingData.results || []) as Movie[]);
           }
           if (newReleasesData && typeof newReleasesData === 'object' && 'results' in newReleasesData) {
-            setNewReleases(newReleasesData.results as Movie[] || []);
+            setNewReleases((newReleasesData.results || []) as Movie[]);
           }
           if (popularMoviesData && typeof popularMoviesData === 'object' && 'results' in popularMoviesData) {
-            setPopularMovies(popularMoviesData.results as Movie[] || []);
+            setPopularMovies((popularMoviesData.results || []) as Movie[]);
           }
           if (topRatedShowsData && typeof topRatedShowsData === 'object' && 'results' in topRatedShowsData) {
-            setTopRatedShows(topRatedShowsData.results as Movie[] || []);
+            setTopRatedShows((topRatedShowsData.results || []) as Movie[]);
           }
           if (horrorMoviesData && typeof horrorMoviesData === 'object' && 'results' in horrorMoviesData) {
-            setHorrorMovies(horrorMoviesData.results as Movie[] || []);
+            setHorrorMovies((horrorMoviesData.results || []) as Movie[]);
           }
           if (comedyMoviesData && typeof comedyMoviesData === 'object' && 'results' in comedyMoviesData) {
-            setComedyMovies(comedyMoviesData.results as Movie[] || []);
+            setComedyMovies((comedyMoviesData.results || []) as Movie[]);
           }
         }
       } catch (error) {

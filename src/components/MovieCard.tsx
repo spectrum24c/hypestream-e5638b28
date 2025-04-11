@@ -72,7 +72,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
         
         toast({
           title: "Download initiated",
-          description: `${title} (${link.quality}) download started`,
+          description: `${title} (${link.quality}) - Source: ${link.source || 'Unknown'} download started`,
         });
       } else {
         toast({

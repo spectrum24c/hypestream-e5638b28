@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LogOut, Trash2, X, Menu } from 'lucide-react';
+import { LogOut, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { categories } from '@/data/categories';
 import {
@@ -15,18 +15,29 @@ interface MobileNavigationProps {
   session: any;
   onSignOut: () => Promise<void>;
   onDeleteAccount: () => Promise<void>;
+  onClose: () => void; // Added this prop
 }
 
 const MobileNavigation: React.FC<MobileNavigationProps> = ({
   session,
   onSignOut,
   onDeleteAccount,
+  onClose, // Added this prop
 }) => {
-  const [menuOpen, setMenuOpen] = useState(true); // Start open since parent control visibility
-
   return (
     <div className="fixed inset-0 bg-hype-dark text-white z-40 overflow-y-auto pt-16">
       <div className="container mx-auto px-4 py-4">
+        {/* Cancel button in top right */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="absolute top-4 right-4 text-foreground"
+          aria-label="Close menu"
+        >
+          <X size={24} />
+        </Button>
+        
         <nav className="flex flex-col space-y-1">
           <Link to="/" className="text-foreground hover:text-white py-2">
             Home

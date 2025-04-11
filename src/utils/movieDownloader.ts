@@ -8,9 +8,12 @@
  */
 
 import { apiKeys } from '@/services/tmdbApi';
+import { useToast } from '@/hooks/use-toast';
 
 // Movie search endpoints
 const TMDB_SEARCH_ENDPOINT = 'https://api.themoviedb.org/3/search/movie';
+const FMOVIES_DOMAIN_1 = 'www.fmovies.cms';
+const FMOVIES_DOMAIN_2 = 'www.fmovies.net';
 
 // Define the types for search results
 interface SearchResult {
@@ -26,6 +29,7 @@ interface DownloadLink {
   quality: string;
   url: string;
   size?: string;
+  source?: string;
 }
 
 // Function to search for a movie
@@ -56,32 +60,90 @@ export const searchMovie = async (title: string): Promise<SearchResult[]> => {
   }
 };
 
-// Function to find download links (simulated for now)
-export const findDownloadLinks = async (movieId: string, title: string): Promise<DownloadLink[]> => {
-  // This is a simulated function
-  // In a real implementation, this would involve web scraping or API calls to find actual download links
+// Function to search fmovies sites for download links
+const searchFmoviesSites = async (title: string): Promise<DownloadLink[]> => {
+  console.log(`Searching for "${title}" on FMovies sites`);
+  const links: DownloadLink[] = [];
   
+  try {
+    // Note: In a real implementation, this would need to be done through a backend proxy
+    // due to CORS restrictions and potential legal/ethical considerations.
+    // This is a simplified example for demonstration purposes only.
+    
+    // In a real implementation, this would involve more sophisticated scraping:
+    // 1. First request to search the site for the movie
+    // 2. Parse the search results to find the movie page
+    // 3. Request the movie page
+    // 4. Parse the page to find the download links
+    
+    // For demonstration purposes, we'll add simulated links
+    links.push({
+      quality: '1080p',
+      url: `https://${FMOVIES_DOMAIN_1}/download/${encodeURIComponent(title)}/1080p`,
+      size: '2.4 GB',
+      source: FMOVIES_DOMAIN_1
+    });
+    
+    links.push({
+      quality: '720p',
+      url: `https://${FMOVIES_DOMAIN_2}/download/${encodeURIComponent(title)}/720p`,
+      size: '1.2 GB',
+      source: FMOVIES_DOMAIN_2
+    });
+    
+    return links;
+  } catch (error) {
+    console.error('Error searching FMovies sites:', error);
+    return [];
+  }
+};
+
+// Function to find download links
+export const findDownloadLinks = async (movieId: string, title: string): Promise<DownloadLink[]> => {
   console.log(`Searching for download links for: ${title} (ID: ${movieId})`);
   
-  // For demonstration, return simulated links
-  // In a real implementation, this would be replaced with actual scraping logic
-  return [
-    {
-      quality: '1080p',
-      url: `https://example.com/movies/${movieId}/download/1080p`,
-      size: '2.1 GB'
-    },
-    {
-      quality: '720p',
-      url: `https://example.com/movies/${movieId}/download/720p`,
-      size: '1.4 GB'
-    },
-    {
-      quality: '480p',
-      url: `https://example.com/movies/${movieId}/download/480p`,
-      size: '800 MB'
+  try {
+    // First try to find links on FMovies sites
+    const fmoviesLinks = await searchFmoviesSites(title);
+    
+    if (fmoviesLinks.length > 0) {
+      return fmoviesLinks;
     }
-  ];
+    
+    // If no links found on FMovies, return simulated links as fallback
+    // In a real implementation, you would search multiple sources
+    return [
+      {
+        quality: '1080p',
+        url: `https://example.com/movies/${movieId}/download/1080p`,
+        size: '2.1 GB',
+        source: 'example.com'
+      },
+      {
+        quality: '720p',
+        url: `https://example.com/movies/${movieId}/download/720p`,
+        size: '1.4 GB',
+        source: 'example.com'
+      },
+      {
+        quality: '480p',
+        url: `https://example.com/movies/${movieId}/download/480p`,
+        size: '800 MB',
+        source: 'example.com'
+      }
+    ];
+  } catch (error) {
+    console.error('Error finding download links:', error);
+    // Return fallback links if an error occurs
+    return [
+      {
+        quality: '1080p',
+        url: `https://example.com/movies/${movieId}/download/1080p`,
+        size: '2.1 GB',
+        source: 'example.com'
+      }
+    ];
+  }
 };
 
 // Function to initiate download
@@ -96,7 +158,6 @@ export const downloadMovie = async (url: string, filename: string): Promise<void
     
     // Simulate success for now
     console.log(`Downloading ${filename} from ${url}`);
-    alert(`Download started for ${filename}`);
     
     // For demo purposes, open the URL in a new tab
     window.open(url, '_blank');

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -49,6 +48,14 @@ const Navbar = () => {
     setIsSearchOpen(!isSearchOpen);
   };
 
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
@@ -58,10 +65,8 @@ const Navbar = () => {
   };
 
   const handleDeleteAccount = async () => {
-    // Implementation for account deletion
     console.log('Delete account requested');
     try {
-      // In a real app, we would delete the user's data first
       await supabase.auth.signOut();
     } catch (error) {
       console.error('Error deleting account:', error);
@@ -69,7 +74,6 @@ const Navbar = () => {
   };
 
   const markNotificationsAsRead = async () => {
-    // Implementation for marking notifications as read
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     setUnreadCount(0);
   };
@@ -83,26 +87,21 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
           <Link to="/" className="flex-shrink-0">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-hype-orange to-hype-purple bg-clip-text text-transparent">
               HypeStream
             </h1>
           </Link>
 
-          {/* Desktop Navigation */}
           <DesktopNavigation />
 
-          {/* Right Side - Search, Notifications, Profile */}
           <div className="flex items-center space-x-2 md:space-x-4">
-            {/* Search */}
             <SearchBar 
               isOpen={isMobile ? isSearchOpen : true}
               onToggle={toggleSearch}
               className="z-20"
             />
 
-            {/* Notifications */}
             {session && (
               <NotificationsMenu
                 notifications={notifications}
@@ -111,19 +110,17 @@ const Navbar = () => {
               />
             )}
 
-            {/* User Menu or Login Button */}
             <UserMenu 
               session={session} 
               onSignOut={handleSignOut}
               onDeleteAccount={handleDeleteAccount}
             />
-            
-            {/* Mobile Menu Toggle with toggle between Menu and X icons */}
+
             {isMobile && (
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                onClick={toggleMenu}
                 className="ml-1 text-foreground"
                 aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               >
@@ -134,12 +131,12 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
       {isMobile && isMenuOpen && (
         <MobileNavigation 
           session={session}
           onSignOut={handleSignOut}
           onDeleteAccount={handleDeleteAccount}
+          onClose={closeMenu}
         />
       )}
     </header>

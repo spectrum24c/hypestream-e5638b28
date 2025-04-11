@@ -1,5 +1,6 @@
 
-const apiKeys = {
+// Export the apiKeys so they can be imported in other files
+export const apiKeys = {
   tmdb: "62c59007d93c96aa3cca9f3422d51af5",
   youtube: "AIzaSyDXm-Wl4rlMXXhS0hWxoJDMdsc3mllh_ok"
 };

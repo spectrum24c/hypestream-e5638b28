@@ -28,14 +28,16 @@ const Footer = () => {
     try {
       const adminEmail = "hypestream127@gmail.com";
       
-      // Store email in our database
-      await supabase
-        .from('newsletter_subscribers')
-        .insert([{ email }]);
+      // Call the save-newsletter-subscriber edge function
+      const { error } = await supabase.functions.invoke('save-newsletter-subscriber', {
+        body: { email, adminEmail }
+      });
       
-      // Send notification email to admin
-      await supabase.functions.invoke('notify-admin', {
-        body: { subscriberEmail: email, adminEmail }
+      if (error) throw error;
+      
+      // Call the newsletter-confirm edge function
+      await supabase.functions.invoke('newsletter-confirm', {
+        body: { email, adminEmail }
       });
       
       // Clear the form

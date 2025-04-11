@@ -1,5 +1,81 @@
 
-<header 
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import DesktopNavigation from './navbar/DesktopNavigation';
+import MobileNavigation from './navbar/MobileNavigation';
+import SearchBar from './navbar/SearchBar';
+import UserMenu from './navbar/UserMenu';
+import NotificationsMenu from './navbar/NotificationsMenu';
+import { useMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
+import { Notification } from '@/types/notification';
+
+const Navbar = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [session, setSession] = useState<any>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const isMobile = useMobile();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setSession(newSession);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    // Implementation for account deletion
+    console.log('Delete account requested');
+    try {
+      // In a real app, we would delete the user's data first
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Error deleting account:', error);
+    }
+  };
+
+  const markNotificationsAsRead = async () => {
+    // Implementation for marking notifications as read
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setUnreadCount(0);
+  };
+
+  return (
+    <header 
       className={cn(
         "fixed top-0 left-0 w-full z-40 transition-all duration-300 backdrop-blur-[5px]",
         isScrolled ? "bg-hype-dark/90 shadow-lg py-2" : "bg-gradient-to-b from-hype-dark/90 to-transparent py-3"
@@ -67,3 +143,7 @@
         />
       )}
     </header>
+  );
+};
+
+export default Navbar;

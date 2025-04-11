@@ -9,7 +9,7 @@ import MobileNavigation from './navbar/MobileNavigation';
 import SearchBar from './navbar/SearchBar';
 import UserMenu from './navbar/UserMenu';
 import NotificationsMenu from './navbar/NotificationsMenu';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/types/notification';
 
@@ -20,7 +20,7 @@ const Navbar = () => {
   const [session, setSession] = useState<any>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -77,7 +77,7 @@ const Navbar = () => {
   return (
     <header 
       className={cn(
-        "fixed top-0 left-0 w-full z-40 transition-all duration-300 backdrop-blur-[5px]",
+        "fixed top-0 left-0 w-full z-40 transition-all duration-300",
         isScrolled ? "bg-hype-dark/90 shadow-lg py-2" : "bg-gradient-to-b from-hype-dark/90 to-transparent py-3"
       )}
     >

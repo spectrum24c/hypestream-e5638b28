@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import Profile from '@/pages/Profile';
@@ -13,18 +13,16 @@ import { Toaster } from "@/components/ui/toaster";
 function App() {
   return (
     <div className="app">
-      <Router>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/faqs" element={<FAQs />} />
-          <Route path="/devices" element={<Devices />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Toaster />
-      </Router>
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/favorites" element={<Favorites />} />
+        <Route path="/faqs" element={<FAQs />} />
+        <Route path="/devices" element={<Devices />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Toaster />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Mail } from 'lucide-react';
 import { 
   Accordion,
   AccordionContent,
@@ -59,10 +59,6 @@ const FAQs = () => {
     {
       question: "How do I manage notifications?",
       answer: "You can view all your notifications by clicking the bell icon in the top navigation bar. From there, you can mark notifications as read or click on them to go directly to the new content."
-    },
-    {
-      question: "How do I download content from HypeStream?",
-      answer: "To download content, click the download button on the movie or TV show card. Please note that download speed may vary based on your internet connection. Downloads are only available for certain titles and to registered users."
     },
     {
       question: "Can I watch HypeStream on my smart TV?",
@@ -122,7 +118,7 @@ const FAQs = () => {
           </p>
           <Button 
             className="bg-hype-purple hover:bg-hype-purple/90"
-            onClick={() => window.open('mailto:hypestream127@gmail.com', '_blank')}
+            onClick={() => window.open('mailto:awokojorichmond@gmail.com', '_blank')}
           >
             Contact Support
           </Button>

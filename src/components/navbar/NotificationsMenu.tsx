@@ -54,18 +54,8 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
     }
   };
   
-  // Simulate getting a new notification periodically
-  useEffect(() => {
-    // Don't run this in development to avoid spamming notifications
-    if (process.env.NODE_ENV === 'production') {
-      // Check for new movies every 5 minutes
-      const interval = setInterval(() => {
-        generateMovieNotification();
-      }, 5 * 60 * 1000);
-      
-      return () => clearInterval(interval);
-    }
-  }, []);
+  // Only generate new notifications when manually triggered (removed automatic generation)
+  // This fixes the issue with notifications constantly being added
   
   const handleMarkAllAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));

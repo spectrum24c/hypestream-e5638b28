@@ -1,7 +1,8 @@
+
 <header 
       className={cn(
-        "fixed top-0 left-0 w-full z-40 transition-all duration-300",
-        isScrolled ? "bg-hype-dark/90 backdrop-blur-sm shadow-lg py-2" : "bg-gradient-to-b from-hype-dark/90 to-transparent py-3"
+        "fixed top-0 left-0 w-full z-40 transition-all duration-300 backdrop-blur-[5px]",
+        isScrolled ? "bg-hype-dark/90 shadow-lg py-2" : "bg-gradient-to-b from-hype-dark/90 to-transparent py-3"
       )}
     >
       <div className="container mx-auto px-4">
@@ -66,4 +67,3 @@
         />
       )}
     </header>
-

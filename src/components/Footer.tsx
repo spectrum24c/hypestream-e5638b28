@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -27,16 +28,14 @@ const Footer = () => {
     try {
       const adminEmail = "hypestream127@gmail.com";
       
-      // Call the save-newsletter-subscriber edge function
-      const { error } = await supabase.functions.invoke('save-newsletter-subscriber', {
-        body: { email, adminEmail }
-      });
+      // Store email in our database
+      await supabase
+        .from('newsletter_subscribers')
+        .insert([{ email }]);
       
-      if (error) throw error;
-      
-      // Call the newsletter-confirm edge function
-      await supabase.functions.invoke('newsletter-confirm', {
-        body: { email, adminEmail }
+      // Send notification email to admin
+      await supabase.functions.invoke('notify-admin', {
+        body: { subscriberEmail: email, adminEmail }
       });
       
       // Clear the form
@@ -101,7 +100,15 @@ const Footer = () => {
           </div>
           
           <div>
-            <h3 className="text-xl font-bold mb-4">Connect</h3>
+            <h3 className="text-xl font-bold mb-4">Browse</h3>
+            <div className="grid grid-cols-1 gap-2">
+              <Link to="/" className="text-muted-foreground hover:text-white transition-colors">Home</Link>
+              <Link to="/?category=movie" className="text-muted-foreground hover:text-white transition-colors">Movies</Link>
+              <Link to="/?category=tv" className="text-muted-foreground hover:text-white transition-colors">TV Shows</Link>
+              <Link to="/favorites" className="text-muted-foreground hover:text-white transition-colors">My List</Link>
+            </div>
+            
+            <h3 className="text-xl font-bold mb-4 mt-8">Connect</h3>
             <div className="flex gap-4 mb-6">
               <a href="#" className="h-10 w-10 bg-hype-dark-light hover:bg-hype-purple rounded-full flex items-center justify-center">
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

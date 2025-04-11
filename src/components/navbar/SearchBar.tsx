@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface SearchBarProps {
@@ -35,7 +36,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     <div className={`flex items-center ${className}`}>
       {/* Mobile-specific styling */}
       {isMobileSearchOpen && (
-        <div className="md:hidden absolute top-16 left-1/2 transform -translate-x-1/2 w-[300px] bg-[#1F2937] rounded-full p-3 z-50 mt-2">
+        <div className="md:hidden fixed left-1/2 transform -translate-x-1/2 top-16 w-[300px] bg-[#1F2937] rounded-full p-3 z-50 mt-2">
           <form 
             onSubmit={handleSearch} 
             className="flex items-center relative"

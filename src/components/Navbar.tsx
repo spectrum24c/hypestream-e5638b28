@@ -118,7 +118,7 @@ const Navbar = () => {
               onDeleteAccount={handleDeleteAccount}
             />
             
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Menu Toggle with toggle between Menu and X icons */}
             {isMobile && (
               <Button
                 variant="ghost"

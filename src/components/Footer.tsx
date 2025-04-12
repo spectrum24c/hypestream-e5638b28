@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Facebook, Twitter, Instagram, Mail, Youtube, ExternalLink, Apple, SmartphoneIcon } from 'lucide-react';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Facebook, Twitter, Instagram, Mail, Youtube, ExternalLink } from 'lucide-react';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -28,7 +27,7 @@ const Footer = () => {
     setIsSubmitting(true);
     
     try {
-      const adminEmail = "awokojorichmond@gmail.com"; // Updated email as requested
+      const adminEmail = "hypestream127@gmail.com";
       
       // Call the save-newsletter-subscriber edge function
       const { error } = await supabase.functions.invoke('save-newsletter-subscriber', {
@@ -61,15 +60,6 @@ const Footer = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleAppleStoreClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Not Available",
-      description: "App not available for iOS users yet",
-      variant: "default"
-    });
   };
   
   return (
@@ -118,12 +108,8 @@ const Footer = () => {
             <ul className="space-y-2">
               <li><Link to="/faqs" className="text-gray-400 hover:text-white transition-colors">FAQs</Link></li>
               <li><Link to="/devices" className="text-gray-400 hover:text-white transition-colors">Devices</Link></li>
-              <li>
-                <SheetTrigger asChild>
-                  <Button variant="link" className="text-gray-400 hover:text-white transition-colors p-0 h-auto">Contact Us</Button>
-                </SheetTrigger>
-              </li>
-              <li><a href="mailto:awokojorichmond@gmail.com" className="text-gray-400 hover:text-white transition-colors">Support</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Support</a></li>
             </ul>
           </div>
           
@@ -131,21 +117,9 @@ const Footer = () => {
           <div className="md:col-span-2">
             <h3 className="text-xl font-bold mb-4 text-white">Legal</h3>
             <ul className="space-y-2">
-              <li>
-                <SheetTrigger asChild>
-                  <Button variant="link" className="text-gray-400 hover:text-white transition-colors p-0 h-auto">Terms of Use</Button>
-                </SheetTrigger>
-              </li>
-              <li>
-                <SheetTrigger asChild>
-                  <Button variant="link" className="text-gray-400 hover:text-white transition-colors p-0 h-auto">Privacy Policy</Button>
-                </SheetTrigger>
-              </li>
-              <li>
-                <SheetTrigger asChild>
-                  <Button variant="link" className="text-gray-400 hover:text-white transition-colors p-0 h-auto">Cookie Policy</Button>
-                </SheetTrigger>
-              </li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Use</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Cookie Policy</a></li>
             </ul>
           </div>
         </div>
@@ -165,7 +139,7 @@ const Footer = () => {
             <a href="#" className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors">
               <Youtube size={18} />
             </a>
-            <a href="mailto:awokojorichmond@gmail.com" className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors">
+            <a href="mailto:hypestream127@gmail.com" className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors">
               <Mail size={18} />
             </a>
           </div>
@@ -184,175 +158,21 @@ const Footer = () => {
         <div className="mt-8 text-center">
           <p className="text-gray-400 mb-3">Get the HypeStream app</p>
           <div className="flex justify-center space-x-4">
-            <Button 
-              onClick={handleAppleStoreClick} 
-              className="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-sm"
-            >
-              <Apple className="w-5 h-5 mr-2" />
+            <a href="#" className="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-sm">
+              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.79 1.18-.12 2.19-.84 3.11-.73 1.35.16 2.33.8 2.96 1.95-2.58 1.54-2.01 4.76.05 5.98-.71 1.84-1.63 3.71-3.2 4.98zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.32 2.32-1.66 4.11-3.74 4.25z" />
+              </svg>
               App Store
-            </Button>
-            <a 
-              href="https://median.co/share/dqnldn" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-sm"
-            >
-              <SmartphoneIcon className="w-5 h-5 mr-2" />
+            </a>
+            <a href="#" className="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-sm">
+              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3.609 1.814L13.792 12 3.609 22.186a.996.996 0 0 1-.289-.707V2.521a1 1 0 0 1 .289-.707zM14.83 12.955l2.909-1.686 2.646 1.535a.996.996 0 0 1 .365 1.248 1 1 0 0 1-.384.432L17.739 16l-2.908-1.687L14.83 12.955zm0-1.91l.001-1.358L17.739 8l2.626 1.516a1 1 0 0 1 .018 1.695l-2.646 1.535-2.907-1.686v-.015zM12.792 1.59l8.792 5.087v.003a1 1 0 0 1 .106 1.653l-2.676 1.552-2.906-1.688a1.03 1.03 0 0 1-.125-.082l-4.019-2.326 4.394-4.199H12.793zm0 20.819h-.001l-6.792-3.933-2.384 2.391a1.006 1.006 0 0 1-.584.262A1 1 0 0 1 2 20.13V3.87a1 1 0 0 1 1.031-.999.994.994 0 0 1 .584.262l2.384 2.39 6.792-3.932h.001A1 1 0 0 1 14 2.522v18.956a1 1 0 0 1-1.209.931z" />
+              </svg>
               Google Play
             </a>
           </div>
         </div>
       </div>
-
-      {/* Terms of Use Sheet */}
-      <Sheet>
-        <SheetContent className="overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Terms of Use</SheetTitle>
-            <SheetDescription>Last updated: April 2025</SheetDescription>
-          </SheetHeader>
-          <div className="mt-6 space-y-4 text-sm">
-            <h3 className="font-bold text-lg">Welcome to HypeStream</h3>
-            <p>These Terms of Use govern your use of the HypeStream platform and services.</p>
-            
-            <h4 className="font-semibold text-base mt-4">1. Acceptance of Terms</h4>
-            <p>By accessing or using our service, you agree to be bound by these Terms. If you disagree with any part of the terms, you may not access the service.</p>
-            
-            <h4 className="font-semibold text-base mt-4">2. User Accounts</h4>
-            <p>When you create an account with us, you must provide accurate, complete, and current information. You are responsible for safeguarding the password and for all activities that occur under your account.</p>
-            
-            <h4 className="font-semibold text-base mt-4">3. Content and Conduct</h4>
-            <p>Our service allows you to view content, add comments, and interact with other users. You are responsible for your conduct and any data, text, or information that you submit, post, or display on the service.</p>
-            
-            <h4 className="font-semibold text-base mt-4">4. Intellectual Property</h4>
-            <p>The service and its original content, features, and functionality are and will remain the exclusive property of HypeStream and its licensors.</p>
-            
-            <h4 className="font-semibold text-base mt-4">5. Termination</h4>
-            <p>We may terminate or suspend your account immediately, without prior notice or liability, for any reason, including without limitation if you breach the Terms.</p>
-            
-            <h4 className="font-semibold text-base mt-4">6. Changes to Terms</h4>
-            <p>We reserve the right, at our sole discretion, to modify or replace these Terms at any time. It is your responsibility to review these Terms periodically for changes.</p>
-            
-            <h4 className="font-semibold text-base mt-4">7. Contact Us</h4>
-            <p>If you have any questions about these Terms, please contact us at awokojorichmond@gmail.com.</p>
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Privacy Policy Sheet */}
-      <Sheet>
-        <SheetContent className="overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Privacy Policy</SheetTitle>
-            <SheetDescription>Last updated: April 2025</SheetDescription>
-          </SheetHeader>
-          <div className="mt-6 space-y-4 text-sm">
-            <h3 className="font-bold text-lg">HypeStream Privacy Policy</h3>
-            <p>This Privacy Policy describes how we collect, use, and disclose your information when you use our service.</p>
-            
-            <h4 className="font-semibold text-base mt-4">1. Information Collection</h4>
-            <p>We collect information you provide directly to us, such as when you create an account, update your profile, subscribe to our newsletter, or contact support.</p>
-            
-            <h4 className="font-semibold text-base mt-4">2. Use of Information</h4>
-            <p>We use the information we collect to provide, maintain, and improve our services, communicate with you, and personalize your experience.</p>
-            
-            <h4 className="font-semibold text-base mt-4">3. Sharing of Information</h4>
-            <p>We may share information as described in this policy, including with our service providers, for legal reasons, or in connection with business transfers.</p>
-            
-            <h4 className="font-semibold text-base mt-4">4. Security</h4>
-            <p>We take reasonable measures to help protect information about you from loss, theft, misuse, and unauthorized access.</p>
-            
-            <h4 className="font-semibold text-base mt-4">5. Your Choices</h4>
-            <p>You may update your account information and email preferences at any time by logging into your account settings.</p>
-            
-            <h4 className="font-semibold text-base mt-4">6. Changes to Policy</h4>
-            <p>We may change this privacy policy from time to time. We will post any changes on this page and, if the changes are significant, provide a more prominent notice.</p>
-            
-            <h4 className="font-semibold text-base mt-4">7. Contact Us</h4>
-            <p>If you have any questions about this Privacy Policy, please contact us at awokojorichmond@gmail.com.</p>
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Cookie Policy Sheet */}
-      <Sheet>
-        <SheetContent className="overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Cookie Policy</SheetTitle>
-            <SheetDescription>Last updated: April 2025</SheetDescription>
-          </SheetHeader>
-          <div className="mt-6 space-y-4 text-sm">
-            <h3 className="font-bold text-lg">HypeStream Cookie Policy</h3>
-            <p>This Cookie Policy explains how we use cookies and similar technologies on our website.</p>
-            
-            <h4 className="font-semibold text-base mt-4">1. What are Cookies</h4>
-            <p>Cookies are small text files that are stored on your browser or device when you visit our website. They allow us to recognize your browser and remember certain information.</p>
-            
-            <h4 className="font-semibold text-base mt-4">2. Types of Cookies We Use</h4>
-            <p>We use essential cookies, performance cookies, functional cookies, and targeting cookies to enhance your experience on our platform.</p>
-            
-            <h4 className="font-semibold text-base mt-4">3. How We Use Cookies</h4>
-            <p>We use cookies to understand how you interact with our website, remember your preferences, and improve your browsing experience.</p>
-            
-            <h4 className="font-semibold text-base mt-4">4. Your Choices</h4>
-            <p>Most web browsers are set to accept cookies by default. If you prefer, you can usually choose to set your browser to remove or reject cookies.</p>
-            
-            <h4 className="font-semibold text-base mt-4">5. Changes to This Policy</h4>
-            <p>We may update this Cookie Policy from time to time to reflect changes in technology, regulation, or our business practices.</p>
-            
-            <h4 className="font-semibold text-base mt-4">6. Contact Us</h4>
-            <p>If you have any questions about our use of cookies, please contact us at awokojorichmond@gmail.com.</p>
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Contact Us Sheet */}
-      <Sheet>
-        <SheetContent className="overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Contact Us</SheetTitle>
-            <SheetDescription>We're here to help!</SheetDescription>
-          </SheetHeader>
-          <div className="mt-6 space-y-4">
-            <p>Have questions, feedback, or need assistance? We'd love to hear from you!</p>
-            
-            <div className="py-4">
-              <h4 className="font-semibold mb-2">Email Us</h4>
-              <a 
-                href="mailto:awokojorichmond@gmail.com" 
-                className="flex items-center text-blue-500 hover:text-blue-600"
-              >
-                <Mail className="mr-2 h-4 w-4" />
-                awokojorichmond@gmail.com
-              </a>
-            </div>
-            
-            <div className="py-4">
-              <h4 className="font-semibold mb-2">Follow Us</h4>
-              <div className="flex space-x-4">
-                <a href="#" className="text-gray-500 hover:text-gray-700">
-                  <Facebook size={20} />
-                </a>
-                <a href="#" className="text-gray-500 hover:text-gray-700">
-                  <Twitter size={20} />
-                </a>
-                <a href="#" className="text-gray-500 hover:text-gray-700">
-                  <Instagram size={20} />
-                </a>
-              </div>
-            </div>
-            
-            <div className="pt-4">
-              <Button 
-                onClick={() => window.open('mailto:awokojorichmond@gmail.com', '_blank')}
-                className="w-full bg-hype-purple hover:bg-hype-purple/90"
-              >
-                Contact Support
-              </Button>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
     </footer>
   );
 };

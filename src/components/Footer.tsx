@@ -7,6 +7,19 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Facebook, Twitter, Instagram, Mail, Youtube, ExternalLink } from 'lucide-react';
 
+
+const Footer: React.FC = () => {
+  const [showModal, setShowModal] = useState(false);
+
+  const handleAppStoreClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default link behavior
+    setShowModal(true); // Show the modal
+  };
+
+  const closeModal = () => {
+    setShowModal(false); // Close the modal
+  };
+
 const Footer = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -158,7 +171,7 @@ const Footer = () => {
         <div className="mt-8 text-center">
           <p className="text-gray-400 mb-3">Get the HypeStream app</p>
           <div className="flex justify-center space-x-4">
-            <a href="#" className="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-sm">
+            <a href="#"  onClick={handleAppStoreClick} className="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-sm">
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.79 1.18-.12 2.19-.84 3.11-.73 1.35.16 2.33.8 2.96 1.95-2.58 1.54-2.01 4.76.05 5.98-.71 1.84-1.63 3.71-3.2 4.98zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.32 2.32-1.66 4.11-3.74 4.25z" />
               </svg>
@@ -172,6 +185,21 @@ const Footer = () => {
             </a>
           </div>
         </div>
+ {/* Custom Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+            <p className="text-lg font-semibold mb-4">Not available for iOS users yet</p>
+            <button
+              onClick={closeModal}
+              className="px-4 py-2 bg-hype-purple text-white rounded hover:bg-hype-purple/90"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+        
       </div>
     </footer>
   );

@@ -192,7 +192,7 @@ const Profile = () => {
                   <div className="relative mx-auto">
                     <Avatar className="w-32 h-32 mx-auto">
                       {avatarUrl ? (
-                        <AvatarImage src={avatarUrl} alt="Profile" className="object-cover"
+                        <AvatarImage src={avatarUrl} alt="Profile" className="object-fit"
 /> />
                       ) : (
                         <AvatarFallback className="text-4xl bg-hype-purple text-white">

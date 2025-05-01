@@ -29,8 +29,6 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
-  const [forgotPassword, setForgotPassword] = useState(false);
-  const [resetEmailSent, setResetEmailSent] = useState(false);
   const [session, setSession] = useState<any>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -104,34 +102,6 @@ const Auth = () => {
     }
   };
 
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
-      });
-
-      if (error) throw error;
-
-      setResetEmailSent(true);
-      toast({
-        title: "Password reset email sent",
-        description: "Check your email for the password reset link",
-      });
-    } catch (error: any) {
-      console.error('Password reset error:', error);
-      toast({
-        title: "Password reset failed",
-        description: error.message || "An error occurred while sending the reset email",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -156,64 +126,6 @@ const Auth = () => {
                   Back to Sign In
                 </Button>
               </div>
-            ) : forgotPassword ? (
-              <>
-                <h1 className="text-2xl font-bold mb-6 text-center">
-                  {resetEmailSent ? 'Check Your Email' : 'Reset Your Password'}
-                </h1>
-
-                {resetEmailSent ? (
-                  <div className="text-center space-y-4">
-                    <p className="text-muted-foreground">
-                      We've sent a password reset link to your email address. Please check your inbox.
-                    </p>
-                    <Button 
-                      onClick={() => {
-                        setForgotPassword(false);
-                        setResetEmailSent(false);
-                      }}
-                      className="mt-4 bg-hype-purple hover:bg-hype-purple/90 w-full"
-                    >
-                      Back to Sign In
-                    </Button>
-                  </div>
-                ) : (
-                  <form onSubmit={handlePasswordReset} className="space-y-6">
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium mb-2">
-                        Email
-                      </label>
-                      <Input
-                        type="email"
-                        id="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="w-full"
-                        placeholder="your@email.com"
-                      />
-                    </div>
-
-                    <Button
-                      type="submit"
-                      className="w-full bg-hype-purple hover:bg-hype-purple/90"
-                      disabled={loading}
-                    >
-                      {loading ? 'Sending...' : 'Send Reset Link'}
-                    </Button>
-
-                    <div className="mt-4 text-center">
-                      <button
-                        onClick={() => setForgotPassword(false)}
-                        type="button"
-                        className="text-sm text-hype-purple hover:underline"
-                      >
-                        Back to Sign In
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </>
             ) : (
               <>
                 <h1 className="text-2xl font-bold mb-6 text-center">
@@ -264,18 +176,6 @@ const Auth = () => {
                       </button>
                     </div>
                   </div>
-
-                  {!isSignUp && (
-                    <div className="flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() => setForgotPassword(true)}
-                        className="text-sm text-hype-purple hover:underline"
-                      >
-                        Forgot Password?
-                      </button>
-                    </div>
-                  )}
 
                   <Button
                     type="submit"

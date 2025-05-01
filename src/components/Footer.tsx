@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Facebook, Twitter, Instagram, Mail, Youtube, ExternalLink } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Mail, Youtube } from 'lucide-react';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -60,6 +60,15 @@ const Footer = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAppStoreClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toast({
+      title: "App Not Available",
+      description: "Our iOS app is not available yet. Coming soon!",
+      variant: "default"
+    });
   };
   
   return (
@@ -117,9 +126,9 @@ const Footer = () => {
           <div className="md:col-span-2">
             <h3 className="text-xl font-bold mb-4 text-white">Legal</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Use</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Cookie Policy</a></li>
+              <li><Link to="/terms-of-use" className="text-gray-400 hover:text-white transition-colors">Terms of Use</Link></li>
+              <li><Link to="/privacy-policy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/cookie-policy" className="text-gray-400 hover:text-white transition-colors">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>
@@ -158,7 +167,7 @@ const Footer = () => {
         <div className="mt-8 text-center">
           <p className="text-gray-400 mb-3">Get the HypeStream app</p>
           <div className="flex justify-center space-x-4">
-            <a href="#" className="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-sm">
+            <a href="#" onClick={handleAppStoreClick} className="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-sm">
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.79 1.18-.12 2.19-.84 3.11-.73 1.35.16 2.33.8 2.96 1.95-2.58 1.54-2.01 4.76.05 5.98-.71 1.84-1.63 3.71-3.2 4.98zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.32 2.32-1.66 4.11-3.74 4.25z" />
               </svg>

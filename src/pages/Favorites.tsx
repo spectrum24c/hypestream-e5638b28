@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { supabase } from '@/integrations/supabase/client';
 import MovieCard from '@/components/MovieCard';
 import MoviePlayer from '@/components/MoviePlayer';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 
@@ -164,15 +164,16 @@ const Favorites = () => {
                     isTVShow={favorite.is_tv_show}
                     onClick={() => handleMovieClick(favorite)}
                   />
-                  <div 
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer transition-opacity"
+                  <button 
+                    className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer transition-opacity sm:opacity-0 sm:group-hover:opacity-100 opacity-100"
                     onClick={(e) => {
                       e.stopPropagation();
                       removeFavorite(favorite.id);
                     }}
+                    aria-label="Remove from favorites"
                   >
-                    ✕
-                  </div>
+                    <X size={16} />
+                  </button>
                 </div>
               ))}
             </div>

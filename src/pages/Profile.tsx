@@ -192,8 +192,7 @@ const Profile = () => {
                   <div className="relative mx-auto">
                     <Avatar className="w-32 h-32 mx-auto">
                       {avatarUrl ? (
-                        <AvatarImage src={avatarUrl} alt="Profile"
-/> />
+                        <AvatarImage src={avatarUrl} alt="Profile" />
                       ) : (
                         <AvatarFallback className="text-4xl bg-hype-purple text-white">
                           {username.charAt(0) || (session?.user?.email?.charAt(0).toUpperCase() || '?')}

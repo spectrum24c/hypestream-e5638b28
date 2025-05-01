@@ -29,17 +29,22 @@ const Footer = () => {
     try {
       const adminEmail = "hypestream127@gmail.com";
       
-      // Call the save-newsletter-subscriber edge function
+      console.log("Submitting newsletter subscription for:", email, "to admin:", adminEmail);
+      
+      // Call the newsletter-confirm edge function first to send emails
+      await supabase.functions.invoke('newsletter-confirm', {
+        body: { email, adminEmail }
+      });
+      
+      // Then call save-newsletter-subscriber edge function to save to database
       const { error } = await supabase.functions.invoke('save-newsletter-subscriber', {
         body: { email, adminEmail }
       });
       
-      if (error) throw error;
-      
-      // Call the newsletter-confirm edge function
-      await supabase.functions.invoke('newsletter-confirm', {
-        body: { email, adminEmail }
-      });
+      if (error) {
+        console.error("Error from save-newsletter-subscriber:", error);
+        throw error;
+      }
       
       // Clear the form
       setEmail('');
@@ -187,3 +192,4 @@ const Footer = () => {
 };
 
 export default Footer;
+

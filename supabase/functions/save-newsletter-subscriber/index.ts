@@ -31,19 +31,13 @@ serve(async (req) => {
       }
     );
 
-    // Create the table if it doesn't exist
-    const { error: tableError } = await supabaseClient.rpc(
-      "create_newsletter_subscribers_if_not_exists"
-    );
-
-    if (tableError) {
-      console.error("Error ensuring table exists:", tableError);
-    }
-
     // Get the request body
     const { email, adminEmail, userId }: SubscriberData = await req.json();
 
-    // Save to the database
+    console.log("Received subscription request for:", email, "to admin:", adminEmail);
+
+    // Insert directly into the newsletter_subscribers table
+    // Without trying to call the non-existent function
     const { error: insertError } = await supabaseClient
       .from("newsletter_subscribers")
       .insert({
@@ -54,6 +48,7 @@ serve(async (req) => {
       });
 
     if (insertError) {
+      console.error("Error inserting subscriber:", insertError);
       throw insertError;
     }
 

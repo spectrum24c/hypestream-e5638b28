@@ -12,6 +12,7 @@ export interface Movie {
   overview?: string;
   runtime?: number | null;
   number_of_seasons?: number | null;
+  genre_ids?: number[];
 }
 
 export interface Notification {

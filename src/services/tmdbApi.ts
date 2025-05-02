@@ -1,4 +1,3 @@
-
 // Export the apiKeys so they can be imported in other files
 export const apiKeys = {
   tmdb: "62c59007d93c96aa3cca9f3422d51af5",
@@ -11,6 +10,16 @@ export const imgPath = "https://image.tmdb.org/t/p/original";
 // Cache for API responses
 const apiCache = new Map();
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes in milliseconds
+
+// Cache for genres
+let movieGenresCache: Genre[] = [];
+let tvGenresCache: Genre[] = [];
+let genresCacheTimestamp: number | null = null;
+
+export interface Genre {
+  id: number;
+  name: string;
+}
 
 export const apiPaths = {
   fetchAllCategories: `${tmdbApiEndpoint}/genre/movie/list?api_key=${apiKeys.tmdb}`,
@@ -25,7 +34,11 @@ export const apiPaths = {
   fetchTVDetails: (tvId: string) => `${tmdbApiEndpoint}/tv/${tvId}?api_key=${apiKeys.tmdb}&language=en-US`,
   searchMulti: (query: string) => `${tmdbApiEndpoint}/search/multi?api_key=${apiKeys.tmdb}&language=en-US&query=${encodeURIComponent(query)}`,
   fetchMovieTrailer: (movieId: string) => `${tmdbApiEndpoint}/movie/${movieId}/videos?api_key=${apiKeys.tmdb}&language=en-US`,
-  fetchTVTrailer: (tvId: string) => `${tmdbApiEndpoint}/tv/${tvId}/videos?api_key=${apiKeys.tmdb}&language=en-US`
+  fetchTVTrailer: (tvId: string) => `${tmdbApiEndpoint}/tv/${tvId}/videos?api_key=${apiKeys.tmdb}&language=en-US`,
+  fetchMovieGenres: `${tmdbApiEndpoint}/genre/movie/list?api_key=${apiKeys.tmdb}&language=en-US`,
+  fetchTVGenres: `${tmdbApiEndpoint}/genre/tv/list?api_key=${apiKeys.tmdb}&language=en-US`,
+  fetchAnime: `${tmdbApiEndpoint}/discover/tv?api_key=${apiKeys.tmdb}&language=en-US&with_keywords=210024`,
+  fetchAnimeByGenre: (genreId: number) => `${tmdbApiEndpoint}/discover/tv?api_key=${apiKeys.tmdb}&language=en-US&with_keywords=210024&with_genres=${genreId}`,
 };
 
 // Fetch data from TMDB API with caching
@@ -130,7 +143,11 @@ export const searchContent = async (query: string) => {
 export const fetchContentByCategory = async (category: string, genreId: number) => {
   try {
     let url;
-    if (category === 'movie') {
+    
+    // Special handling for anime category
+    if (category === 'anime') {
+      url = genreId ? apiPaths.fetchAnimeByGenre(genreId) : apiPaths.fetchAnime;
+    } else if (category === 'movie') {
       url = apiPaths.fetchMoviesList(genreId);
     } else if (category === 'tv') {
       url = apiPaths.fetchTVList(genreId);
@@ -158,4 +175,39 @@ export const formatDate = (dateString: string | null) => {
   if (!dateString) return 'N/A';
   const date = new Date(dateString);
   return isNaN(date.getTime()) ? 'N/A' : date.getFullYear().toString();
+};
+
+// Fetch genres for movies or TV shows
+export const fetchGenres = async (type: 'movie' | 'tv'): Promise<Genre[]> => {
+  const now = Date.now();
+  const cacheExpired = !genresCacheTimestamp || now - genresCacheTimestamp > CACHE_DURATION;
+  
+  if (type === 'movie' && movieGenresCache.length > 0 && !cacheExpired) {
+    return movieGenresCache;
+  }
+  
+  if (type === 'tv' && tvGenresCache.length > 0 && !cacheExpired) {
+    return tvGenresCache;
+  }
+  
+  try {
+    const url = type === 'movie' ? apiPaths.fetchMovieGenres : apiPaths.fetchTVGenres;
+    const data = await fetchFromTMDB(url);
+    
+    if (data && data.genres) {
+      if (type === 'movie') {
+        movieGenresCache = data.genres;
+      } else {
+        tvGenresCache = data.genres;
+      }
+      
+      genresCacheTimestamp = now;
+      return data.genres;
+    }
+    
+    return [];
+  } catch (error) {
+    console.error(`Error fetching ${type} genres:`, error);
+    return [];
+  }
 };

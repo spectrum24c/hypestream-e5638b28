@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { imgPath } from '@/services/tmdbApi';
+import React, { useEffect, useState } from 'react';
+import { imgPath, fetchGenres } from '@/services/tmdbApi';
 
 interface MovieCardProps {
   id: string;
@@ -11,6 +11,7 @@ interface MovieCardProps {
   isTVShow?: boolean;
   runtime?: number | null;
   numberOfSeasons?: number | null;
+  genreIds?: number[];
   onClick: () => void;
 }
 
@@ -23,8 +24,27 @@ const MovieCard: React.FC<MovieCardProps> = ({
   isTVShow = false,
   runtime,
   numberOfSeasons,
+  genreIds = [],
   onClick
 }) => {
+  const [genres, setGenres] = useState<string[]>([]);
+  
+  useEffect(() => {
+    const loadGenres = async () => {
+      if (genreIds && genreIds.length > 0) {
+        const genreList = await fetchGenres(isTVShow ? 'tv' : 'movie');
+        const matchedGenres = genreList
+          .filter(genre => genreIds.includes(genre.id))
+          .map(genre => genre.name)
+          .slice(0, 2); // Only show up to 2 genres to save space
+        
+        setGenres(matchedGenres);
+      }
+    };
+    
+    loadGenres();
+  }, [genreIds, isTVShow]);
+
   const posterUrl = posterPath 
     ? `${imgPath}${posterPath}` 
     : 'https://via.placeholder.com/300x450?text=No+Poster';
@@ -65,6 +85,11 @@ const MovieCard: React.FC<MovieCardProps> = ({
         {durationInfo && (
           <div className="text-gray-400 text-xs mt-1">
             {durationInfo}
+          </div>
+        )}
+        {genres.length > 0 && (
+          <div className="text-gray-300 text-xs mt-1 truncate">
+            {genres.join(' • ')}
           </div>
         )}
       </div>

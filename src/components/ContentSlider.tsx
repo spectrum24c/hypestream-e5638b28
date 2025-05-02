@@ -112,6 +112,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items, onViewAll }
               isTVShow={item.media_type === 'tv' || !!item.first_air_date}
               runtime={item.runtime}
               numberOfSeasons={item.number_of_seasons}
+              genreIds={item.genre_ids}
               onClick={() => handleMovieClick(item)}
             />
           ))}

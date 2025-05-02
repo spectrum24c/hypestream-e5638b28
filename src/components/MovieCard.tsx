@@ -78,18 +78,18 @@ const MovieCard: React.FC<MovieCardProps> = ({
       </div>
       <div className="p-2 md:p-3">
         <h3 className="font-bold text-xs md:text-sm mb-1 truncate">{title}</h3>
-        <div className="flex justify-between text-gray-400 text-xs">
+        <div className="flex justify-between text-gray-400 text-xs mb-1">
           <span>{year}</span>
           <span>★ {rating}</span>
         </div>
-        {durationInfo && (
-          <div className="text-gray-400 text-xs mt-1">
-            {durationInfo}
+        {genres.length > 0 && (
+          <div className="text-gray-300 text-xs mb-1 truncate">
+            {genres.join(' • ')}
           </div>
         )}
-        {genres.length > 0 && (
-          <div className="text-gray-300 text-xs mt-1 truncate">
-            {genres.join(' • ')}
+        {durationInfo && (
+          <div className="text-gray-400 text-xs">
+            {durationInfo}
           </div>
         )}
       </div>

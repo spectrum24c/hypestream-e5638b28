@@ -2,9 +2,10 @@
 import React, { useEffect, useState } from 'react';
 import { Bell } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Notification } from '@/types/notification';
+import { Notification } from '@/types/movie';
 import NotificationsList from './NotificationsList';
 import { fetchFromTMDB, apiPaths } from '@/services/tmdbApi';
+import { useNavigate } from 'react-router-dom';
 
 interface NotificationsMenuProps {
   notifications: Notification[];
@@ -19,6 +20,7 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
+  const navigate = useNavigate();
   
   // Function to generate a random notification
   const generateMovieNotification = async () => {
@@ -42,7 +44,8 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
           },
           read: false,
           createdAt: new Date().toISOString(),
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          isNew: true
         };
         
         // Add the new notification
@@ -84,8 +87,17 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
       setUnreadCount(prev => Math.max(0, prev - 1));
     }
     
-    // Additional logic for handling notification click (e.g., navigate to movie)
-    console.log('Notification clicked:', notification);
+    // If notification has a movie attached, navigate to the home page with that movie selected
+    if (notification.movie && notification.movie.id) {
+      navigate('/', { 
+        state: { 
+          selectedMovieId: notification.movie.id
+        }
+      });
+    }
+    
+    // Close the notifications popover by calling markAsRead
+    markAsRead();
   };
 
   return (

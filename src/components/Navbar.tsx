@@ -10,7 +10,8 @@ import UserMenu from './navbar/UserMenu';
 import NotificationsMenu from './navbar/NotificationsMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
-import { Notification } from '@/types/notification';
+import { Notification } from '@/types/movie';
+import { fetchFromTMDB, apiPaths } from '@/services/tmdbApi';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -40,6 +41,39 @@ const Navbar = () => {
         setSession(newSession);
       }
     );
+
+    // Generate initial notifications
+    const loadInitialNotifications = async () => {
+      try {
+        const data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
+        
+        if (data && data.results && data.results.length > 0) {
+          // Create notifications from the latest 3 movies
+          const newNotifications: Notification[] = data.results
+            .slice(0, 3)
+            .map((movie: any, index: number) => ({
+              id: `movie-init-${index}`,
+              title: 'New on HypeStream',
+              message: `"${movie.title}" is now available to watch!`,
+              poster_path: movie.poster_path,
+              movie: {
+                id: movie.id
+              },
+              read: false,
+              createdAt: new Date(Date.now() - index * 86400000).toISOString(), // Stagger by days
+              timestamp: Date.now() - index * 86400000,
+              isNew: true
+            }));
+          
+          setNotifications(newNotifications);
+          setUnreadCount(newNotifications.length);
+        }
+      } catch (error) {
+        console.error('Error generating initial notifications:', error);
+      }
+    };
+
+    loadInitialNotifications();
 
     return () => subscription.unsubscribe();
   }, []);

@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Notification } from '@/types/notification';
+import { Notification } from '@/types/movie';
 import { imgPath } from '@/services/tmdbApi';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface NotificationsListProps {
   notifications: Notification[];
@@ -42,7 +43,11 @@ const NotificationsList: React.FC<NotificationsListProps> = ({
             {notifications.map(notification => (
               <div 
                 key={notification.id} 
-                className={`py-3 cursor-pointer hover:bg-muted/50 rounded-md px-2 ${!notification.read ? 'bg-muted/30' : ''}`}
+                className={cn(
+                  "py-3 cursor-pointer hover:bg-muted/50 rounded-md px-2 transition-colors",
+                  !notification.read ? 'bg-muted/30' : '',
+                  notification.isNew ? 'relative' : ''
+                )}
                 onClick={() => onNotificationClick(notification)}
               >
                 <div className="flex items-center gap-3">
@@ -66,6 +71,11 @@ const NotificationsList: React.FC<NotificationsListProps> = ({
                     </p>
                   </div>
                 </div>
+                {notification.isNew && (
+                  <span className="absolute top-2 right-2 bg-hype-orange text-white px-1.5 py-0.5 text-[10px] font-medium rounded-sm">
+                    NEW
+                  </span>
+                )}
               </div>
             ))}
           </div>

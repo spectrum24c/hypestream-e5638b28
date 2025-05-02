@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { imgPath, apiPaths, fetchFromTMDB } from '@/services/tmdbApi';
+import { imgPath, apiPaths, fetchFromTMDB, fetchGenres } from '@/services/tmdbApi';
 import { Heart, Play, Film, X, ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +19,7 @@ interface MoviePlayerProps {
     media_type?: string;
     runtime?: number;
     number_of_seasons?: number;
+    genre_ids?: number[];
   } | null;
   onClose: () => void;
   autoPlayTrailer?: boolean;
@@ -33,6 +33,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [session, setSession] = useState(null);
   const [movieDetails, setMovieDetails] = useState<any>(null);
+  const [genres, setGenres] = useState<string[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -90,6 +91,23 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
       }
     };
     
+    // Load genres
+    const loadGenres = async () => {
+      if (!movie || !movie.genre_ids || movie.genre_ids.length === 0) return;
+      
+      try {
+        const isTVShow = movie.media_type === 'tv' || !!movie.first_air_date;
+        const genreList = await fetchGenres(isTVShow ? 'tv' : 'movie');
+        const matchedGenres = genreList
+          .filter(genre => movie.genre_ids?.includes(genre.id))
+          .map(genre => genre.name);
+        
+        setGenres(matchedGenres);
+      } catch (error) {
+        console.error('Error loading genres:', error);
+      }
+    };
+    
     // Fetch complete movie/TV details
     const fetchDetails = async () => {
       if (!movie) return;
@@ -102,6 +120,14 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
         
         const details = await fetchFromTMDB(detailsEndpoint);
         setMovieDetails(details);
+        
+        // If we have genres in the details, use those instead of loading separately
+        if (details.genres && details.genres.length > 0) {
+          setGenres(details.genres.map((g: { name: string }) => g.name));
+        } else {
+          // Otherwise load genres from IDs if available
+          loadGenres();
+        }
       } catch (error) {
         console.error('Error fetching details:', error);
       }
@@ -143,6 +169,9 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
       }
     }
   }
+
+  // Format genres for display
+  const genresText = genres.length > 0 ? genres.join(' • ') : '';
 
   const handleAddToFavorites = async () => {
     const session = await supabase.auth.getSession();
@@ -297,6 +326,11 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
                   <span>★ {rating}</span>
                   {durationInfo && <span>{durationInfo}</span>}
                 </div>
+                {genresText && (
+                  <div className="bg-gray-800/60 px-3 py-1.5 rounded-md mb-4 inline-block">
+                    <span className="text-gray-300 text-sm">{genresText}</span>
+                  </div>
+                )}
                 <p className="text-gray-300 mb-6">{movie.overview || 'No description available'}</p>
                 <div className="flex flex-wrap gap-3">
                   <Button onClick={watchNow} className="bg-hype-purple hover:bg-hype-purple/90">

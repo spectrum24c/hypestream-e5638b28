@@ -27,24 +27,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
   genreIds = [],
   onClick
 }) => {
-  const [genres, setGenres] = useState<string[]>([]);
-  
-  useEffect(() => {
-    const loadGenres = async () => {
-      if (genreIds && genreIds.length > 0) {
-        const genreList = await fetchGenres(isTVShow ? 'tv' : 'movie');
-        const matchedGenres = genreList
-          .filter(genre => genreIds.includes(genre.id))
-          .map(genre => genre.name)
-          .slice(0, 2); // Only show up to 2 genres to save space
-        
-        setGenres(matchedGenres);
-      }
-    };
-    
-    loadGenres();
-  }, [genreIds, isTVShow]);
-
   const posterUrl = posterPath 
     ? `${imgPath}${posterPath}` 
     : 'https://via.placeholder.com/300x450?text=No+Poster';
@@ -62,9 +44,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
   } else {
     durationInfo = runtime ? `${runtime} min` : '';
   }
-
-  // Format genres for display
-  const genresText = genres.length > 0 ? genres.join(' • ') : '';
 
   return (
     <div 
@@ -87,8 +66,6 @@ const MovieCard: React.FC<MovieCardProps> = ({
         </div>
         <div className="text-gray-400 text-xs mb-1">
           {durationInfo}
-          {durationInfo && genresText && ' • '}
-          {genresText && <span className="text-gray-300">{genresText}</span>}
         </div>
       </div>
     </div>

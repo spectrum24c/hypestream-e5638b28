@@ -63,6 +63,9 @@ const MovieCard: React.FC<MovieCardProps> = ({
     durationInfo = runtime ? `${runtime} min` : '';
   }
 
+  // Format genres for display
+  const genresText = genres.length > 0 ? genres.join(' • ') : '';
+
   return (
     <div 
       className="flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] bg-gray-800 rounded-lg overflow-hidden hover:scale-105 transition duration-200 cursor-pointer shadow-lg"
@@ -82,16 +85,11 @@ const MovieCard: React.FC<MovieCardProps> = ({
           <span>{year}</span>
           <span>★ {rating}</span>
         </div>
-        {genres.length > 0 && (
-          <div className="text-gray-300 text-xs mb-1 truncate">
-            {genres.join(' • ')}
-          </div>
-        )}
-        {durationInfo && (
-          <div className="text-gray-400 text-xs">
-            {durationInfo}
-          </div>
-        )}
+        <div className="text-gray-400 text-xs mb-1">
+          {durationInfo}
+          {durationInfo && genresText && ' • '}
+          {genresText && <span className="text-gray-300">{genresText}</span>}
+        </div>
       </div>
     </div>
   );

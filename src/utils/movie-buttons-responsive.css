@@ -1,0 +1,26 @@
+
+/* CSS to make movie control buttons more responsive */
+@media (max-width: 640px) {
+  .movie-controls {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  
+  .movie-controls-button {
+    margin: 0.25rem 0 !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  .movie-action-buttons {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    margin-top: 0.5rem !important;
+  }
+  
+  .movie-action-buttons button {
+    margin: 0.25rem !important;
+    flex: 1 1 40% !important;
+    min-width: 120px !important;
+  }
+}

@@ -7,6 +7,7 @@ import NotificationsList from './NotificationsList';
 import { fetchFromTMDB, apiPaths } from '@/services/tmdbApi';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface NotificationsMenuProps {
   notifications: Notification[];
@@ -310,22 +311,34 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
     markAsRead();
   };
 
+  // Check if notifications are enabled
+  const notificationsEnabled = userPreferences?.enableNotifications;
+
   return (
     <Popover onOpenChange={(open) => open && markAsRead()}>
       <PopoverTrigger asChild>
         <button className="p-2 text-muted-foreground hover:text-foreground relative">
           <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
+          {unreadCount > 0 && notificationsEnabled && (
             <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-2 h-2"></span>
           )}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
-        <NotificationsList 
-          notifications={notifications}
-          onMarkAllAsRead={handleMarkAllAsRead}
-          onNotificationClick={handleNotificationClick}
-        />
+        {notificationsEnabled ? (
+          <NotificationsList 
+            notifications={notifications}
+            onMarkAllAsRead={handleMarkAllAsRead}
+            onNotificationClick={handleNotificationClick}
+          />
+        ) : (
+          <Alert className="bg-muted/30">
+            <AlertDescription>
+              You have turned off notifications, so you won't be able to receive new alerts.
+              Visit your settings to enable notifications.
+            </AlertDescription>
+          </Alert>
+        )}
       </PopoverContent>
     </Popover>
   );

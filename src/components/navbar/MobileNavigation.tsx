@@ -15,14 +15,14 @@ interface MobileNavigationProps {
   session: any;
   onSignOut: () => Promise<void>;
   onDeleteAccount: () => Promise<void>;
-  onClose: () => void; // Added this prop
+  onClose: () => void;
 }
 
 const MobileNavigation: React.FC<MobileNavigationProps> = ({
   session,
   onSignOut,
   onDeleteAccount,
-  onClose, // Added this prop
+  onClose,
 }) => {
   return (
     <div className="fixed inset-0 bg-hype-dark text-white z-40 overflow-y-auto pt-16">
@@ -117,6 +117,9 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                 </Link>
                 <Link to="/favorites" className="block text-foreground">
                   My Favorites
+                </Link>
+                <Link to="/settings" className="block text-foreground">
+                  Settings
                 </Link>
                 <Button
                   variant="outline"

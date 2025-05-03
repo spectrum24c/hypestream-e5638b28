@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -58,7 +57,7 @@ const UserSettingsPage: React.FC = () => {
     id: '1',
     preferredGenres: [28, 12, 878],
     preferredLanguages: ['en'],
-    enableNotifications: true
+    enableNotifications: true // Default to true
   });
 
   useEffect(() => {
@@ -78,29 +77,12 @@ const UserSettingsPage: React.FC = () => {
         const storedPreferences = localStorage.getItem('userPreferences');
         if (storedPreferences) {
           try {
-            setUserPreferences(JSON.parse(storedPreferences));
+            const parsedPrefs = JSON.parse(storedPreferences);
+            setUserPreferences(parsedPrefs);
           } catch (error) {
             console.error('Error parsing stored preferences:', error);
           }
         }
-        
-        // In a real app, fetch user preferences from Supabase
-        // const { data, error } = await supabase
-        //   .from('user_preferences')
-        //   .select('*')
-        //   .eq('user_id', session.user.id)
-        //   .single();
-        
-        // if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows found"
-        //   console.error('Error fetching user preferences:', error);
-        //   toast({
-        //     title: "Error loading preferences",
-        //     description: "There was a problem loading your preferences",
-        //     variant: "destructive"
-        //   });
-        // } else if (data) {
-        //   setUserPreferences(data);
-        // }
       }
     };
     
@@ -111,18 +93,8 @@ const UserSettingsPage: React.FC = () => {
     // Save preferences to localStorage
     localStorage.setItem('userPreferences', JSON.stringify(preferences));
     
-    // In a real app, save to Supabase
-    // const { error } = await supabase
-    //   .from('user_preferences')
-    //   .upsert({
-    //     user_id: session.user.id,
-    //     ...preferences
-    //   });
-    
-    // if (error) {
-    //   console.error('Error saving preferences:', error);
-    //   throw new Error('Failed to save preferences');
-    // }
+    // Update notification enabled state in localStorage
+    localStorage.setItem('notificationsEnabled', preferences.enableNotifications ? 'true' : 'false');
     
     setUserPreferences(preferences);
     console.log('Preferences saved:', preferences);

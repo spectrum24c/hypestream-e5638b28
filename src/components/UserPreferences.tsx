@@ -24,7 +24,9 @@ const UserPreferences: React.FC<UserPreferencesProps> = ({
 }) => {
   const [preferredGenres, setPreferredGenres] = useState<number[]>(preferences.preferredGenres || []);
   const [preferredLanguages, setPreferredLanguages] = useState<string[]>(preferences.preferredLanguages || []);
-  const [enableNotifications, setEnableNotifications] = useState<boolean>(preferences.enableNotifications);
+  const [enableNotifications, setEnableNotifications] = useState<boolean>(
+    preferences.enableNotifications !== undefined ? preferences.enableNotifications : true
+  );
   const [genreSearch, setGenreSearch] = useState('');
   const [langSearch, setLangSearch] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -65,12 +67,17 @@ const UserPreferences: React.FC<UserPreferencesProps> = ({
     setIsSaving(true);
     
     try {
-      await onSave({
+      const updatedPreferences = {
         ...preferences,
         preferredGenres,
         preferredLanguages,
         enableNotifications
-      });
+      };
+      
+      await onSave(updatedPreferences);
+      
+      // Persist the notification state in localStorage
+      localStorage.setItem('userPreferences', JSON.stringify(updatedPreferences));
       
       toast({
         title: "Preferences saved",

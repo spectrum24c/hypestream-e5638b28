@@ -43,22 +43,11 @@ const Navbar = () => {
     );
 
     // Check notification settings from user preferences
-    const notifSetting = localStorage.getItem('notificationsEnabled');
-    if (notifSetting === 'false') {
-      setNotificationsEnabled(false);
-      return;
-    }
-
-    // Get user preferences to check if notifications are enabled
     const storedPreferences = localStorage.getItem('userPreferences');
     if (storedPreferences) {
       try {
         const preferences = JSON.parse(storedPreferences);
         setNotificationsEnabled(preferences.enableNotifications);
-        
-        if (!preferences.enableNotifications) {
-          return; // Don't load notifications if disabled
-        }
       } catch (error) {
         console.error('Error parsing stored preferences:', error);
       }
@@ -168,6 +157,26 @@ const Navbar = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Listen for changes to user preferences
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'userPreferences' || e.key === 'notificationsEnabled') {
+        try {
+          const storedPreferences = localStorage.getItem('userPreferences');
+          if (storedPreferences) {
+            const preferences = JSON.parse(storedPreferences);
+            setNotificationsEnabled(preferences.enableNotifications);
+          }
+        } catch (error) {
+          console.error('Error parsing preferences:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
   };
@@ -230,7 +239,7 @@ const Navbar = () => {
               className="z-20"
             />
 
-            {session && notificationsEnabled && (
+            {session && (
               <NotificationsMenu
                 notifications={notifications}
                 unreadCount={unreadCount}

@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { imgPath, apiPaths, fetchFromTMDB, fetchGenres } from '@/services/tmdbApi';
-import { Heart, Play, Film, X, ArrowLeft } from 'lucide-react';
+import { Heart, Play, Film, X, ArrowLeft, Monitor } from 'lucide-react';
 import { Button } from './ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -29,6 +30,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
   const [isLoading, setIsLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showStream, setShowStream] = useState(false);
+  const [showAltStream, setShowAltStream] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [session, setSession] = useState(null);
@@ -120,6 +122,20 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
         
         const details = await fetchFromTMDB(detailsEndpoint);
         setMovieDetails(details);
+        
+        // Record this movie to watched list
+        const watchedMovies = JSON.parse(localStorage.getItem('watchedMovies') || '[]');
+        const existingIndex = watchedMovies.findIndex((m: any) => m.id === movie.id);
+        
+        if (existingIndex === -1) {
+          watchedMovies.push({
+            id: movie.id,
+            title: details.title || details.name,
+            genre_ids: details.genres?.map((g: any) => g.id) || [],
+            timestamp: Date.now()
+          });
+          localStorage.setItem('watchedMovies', JSON.stringify(watchedMovies));
+        }
         
         // If we have genres in the details, use those instead of loading separately
         if (details.genres && details.genres.length > 0) {
@@ -230,6 +246,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
     if (trailerKey) {
       setShowTrailer(true);
       setShowStream(false);
+      setShowAltStream(false);
     } else {
       toast({
         title: "Trailer not available",
@@ -252,11 +269,28 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
     
     setShowStream(true);
     setShowTrailer(false);
+    setShowAltStream(false);
+  };
+
+  const watchNowAlt = () => {
+    // Check if user is signed in
+    if (!session) {
+      toast({
+        title: "Authentication required",
+        description: "Please login to watch content",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setShowAltStream(true);
+    setShowTrailer(false);
+    setShowStream(false);
   };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-0 player-cont">
-      <div className={`relative ${!showStream && !showTrailer ? 'bg-card w-full max-w-4xl rounded-xl overflow-hidden max-h-[95vh] md:max-h-[90vh]' : 'w-full h-full'} flex flex-col`}>
+      <div className={`relative ${!showStream && !showTrailer && !showAltStream ? 'bg-card w-full max-w-4xl rounded-xl overflow-hidden max-h-[95vh] md:max-h-[90vh]' : 'w-full h-full'} flex flex-col`}>
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 z-10 bg-black/50 rounded-full p-2 text-white hover:bg-black/70 transition"
@@ -288,6 +322,30 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
             ></iframe>
           </div>
         )}
+
+        {showAltStream && (
+          <div className="stream w-full h-screen bg-black flex items-center justify-center flex-1 relative">
+            <Button 
+              onClick={() => setShowAltStream(false)} 
+              className="absolute top-4 right-14 z-50 bg-hype-purple hover:bg-hype-purple/90 text-white font-bold"
+              style={{ backgroundColor: '#8941ff' }}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
+            </Button>
+            <iframe
+              className="w-full h-full"
+              src={isTVShow 
+                ? `https://vidsrc.vip/embed/tv/${movie.id}/1/1`
+                : `https://vidsrc.vip/embed/movie/${movie.id}`}
+              title={`${title} Stream (Alternate)`}
+              frameBorder="0"
+              referrerPolicy="origin"
+              allowFullScreen
+              style={{ height: '70vh', width: '40%' }}
+              loading="lazy"
+            ></iframe>
+          </div>
+        )}
         
         {showTrailer && trailerKey && (
           <div className="trailer-cont w-full h-screen bg-black flex-1 fixed inset-0 z-60 flex items-center justify-center">
@@ -311,7 +369,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
           </div>
         )}
         
-        {!showStream && !showTrailer && (
+        {!showStream && !showTrailer && !showAltStream && (
           <div className="p-6 overflow-y-auto">
             <div className="flex flex-col md:flex-row gap-6">
               <img 
@@ -335,6 +393,9 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
                 <div className="flex flex-wrap gap-3">
                   <Button onClick={watchNow} className="bg-hype-purple hover:bg-hype-purple/90">
                     <Play className="mr-2 h-4 w-4" /> Watch Now
+                  </Button>
+                  <Button onClick={watchNowAlt} className="bg-hype-orange hover:bg-hype-orange/90">
+                    <Monitor className="mr-2 h-4 w-4" /> Watch (Alt Source)
                   </Button>
                   <Button onClick={playTrailer} variant="secondary">
                     <Film className="mr-2 h-4 w-4" /> Watch Trailer

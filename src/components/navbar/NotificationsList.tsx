@@ -76,6 +76,11 @@ const NotificationsList: React.FC<NotificationsListProps> = ({
                     NEW
                   </span>
                 )}
+                {notification.type === 'suggestion' && (
+                  <span className="absolute top-2 right-2 bg-hype-purple text-white px-1.5 py-0.5 text-[10px] font-medium rounded-sm">
+                    SUGGESTED
+                  </span>
+                )}
               </div>
             ))}
           </div>

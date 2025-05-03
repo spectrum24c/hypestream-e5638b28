@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -11,7 +12,6 @@ import NotificationsMenu from './navbar/NotificationsMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/types/movie';
-import { fetchFromTMDB, apiPaths } from '@/services/tmdbApi';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -42,38 +42,59 @@ const Navbar = () => {
       }
     );
 
-    // Generate initial notifications
-    const loadInitialNotifications = async () => {
+    // Get notifications from localStorage if available, otherwise generate initial ones
+    const storedNotifications = localStorage.getItem('notifications');
+    if (storedNotifications) {
       try {
-        const data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
-        
-        if (data && data.results && data.results.length > 0) {
-          // Create notifications from the latest 3 movies
-          const newNotifications: Notification[] = data.results
-            .slice(0, 3)
-            .map((movie: any, index: number) => ({
-              id: `movie-init-${index}`,
-              title: 'New on HypeStream',
-              message: `"${movie.title}" is now available to watch!`,
-              poster_path: movie.poster_path,
-              movie: {
-                id: movie.id
-              },
-              read: false,
-              createdAt: new Date(Date.now() - index * 86400000).toISOString(), // Stagger by days
-              timestamp: Date.now() - index * 86400000,
-              isNew: true
-            }));
-          
-          setNotifications(newNotifications);
-          setUnreadCount(newNotifications.length);
+        const parsedNotifications = JSON.parse(storedNotifications);
+        if (Array.isArray(parsedNotifications) && parsedNotifications.length > 0) {
+          setNotifications(parsedNotifications);
+          const unreadCount = parsedNotifications.filter(n => !n.read).length;
+          setUnreadCount(unreadCount);
+          return; // Skip initial notification generation if we have stored ones
         }
       } catch (error) {
-        console.error('Error generating initial notifications:', error);
+        console.error('Error parsing stored notifications:', error);
       }
-    };
+    }
 
-    loadInitialNotifications();
+    // Generate initial notifications only if we don't have stored ones
+    const initialNotifications: Notification[] = [
+      {
+        id: `movie-init-1`,
+        title: 'New on HypeStream',
+        message: `"The Dark Knight" is now available to watch!`,
+        poster_path: '/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
+        movie: {
+          id: '155'
+        },
+        read: false,
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        timestamp: Date.now() - 86400000,
+        isNew: true,
+        type: 'new',
+        isPersistent: true
+      },
+      {
+        id: `suggestion-init-1`,
+        title: 'Recommended for You',
+        message: 'Based on your interests, you might enjoy "Inception"!',
+        poster_path: '/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg',
+        movie: {
+          id: '27205'
+        },
+        read: false,
+        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+        timestamp: Date.now() - 2 * 86400000,
+        isNew: false,
+        type: 'suggestion',
+        isPersistent: true
+      }
+    ];
+    
+    setNotifications(initialNotifications);
+    setUnreadCount(initialNotifications.length);
+    localStorage.setItem('notifications', JSON.stringify(initialNotifications));
 
     return () => subscription.unsubscribe();
   }, []);
@@ -108,8 +129,12 @@ const Navbar = () => {
   };
 
   const markNotificationsAsRead = async () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    const updatedNotifications = notifications.map(n => ({ ...n, read: true }));
+    setNotifications(updatedNotifications);
     setUnreadCount(0);
+    
+    // Save read status to localStorage
+    localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
   };
 
   return (

@@ -28,6 +28,8 @@ export interface Notification {
     id: string;
   };
   isNew?: boolean;
+  type?: 'new' | 'suggestion';
+  isPersistent?: boolean;
 }
 
 export interface DeviceInfo {

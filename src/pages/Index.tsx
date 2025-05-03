@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -11,8 +10,33 @@ import MovieCard from '@/components/MovieCard';
 import MoviePlayer from '@/components/MoviePlayer';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowDown } from 'lucide-react';
-import { Movie } from '@/types/movie';
+import { Movie, WatchHistory } from '@/types/movie';
 import { useToast } from '@/hooks/use-toast';
+import ContinueWatching from '@/components/ContinueWatching';
+import AdvancedFilters from '@/components/AdvancedFilters';
+
+// Sample genres for filtering
+const genres = [
+  { id: 28, name: "Action" },
+  { id: 12, name: "Adventure" },
+  { id: 16, name: "Animation" },
+  { id: 35, name: "Comedy" },
+  { id: 80, name: "Crime" },
+  { id: 99, name: "Documentary" },
+  { id: 18, name: "Drama" },
+  { id: 10751, name: "Family" },
+  { id: 14, name: "Fantasy" },
+  { id: 36, name: "History" },
+  { id: 27, name: "Horror" },
+  { id: 10402, name: "Music" },
+  { id: 9648, name: "Mystery" },
+  { id: 10749, name: "Romance" },
+  { id: 878, name: "Science Fiction" },
+  { id: 10770, name: "TV Movie" },
+  { id: 53, name: "Thriller" },
+  { id: 10752, name: "War" },
+  { id: 37, name: "Western" }
+];
 
 const Index = () => {
   const [trendingContent, setTrendingContent] = useState<Movie[]>([]);
@@ -36,11 +60,32 @@ const Index = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  
+  // New state for Continue Watching and filters
+  const [continueWatchingItems, setContinueWatchingItems] = useState<WatchHistory[]>([]);
+  const [activeFilters, setActiveFilters] = useState<any>(null);
 
   const searchQueryFromState = location.state?.searchQuery || '';
   const selectedMovieIdFromState = location.state?.selectedMovieId;
   const categoryFromParams = searchParams.get('category');
   const genreFromParams = searchParams.get('genre');
+
+  // Get continue watching data from localStorage
+  useEffect(() => {
+    try {
+      const watchHistoryStr = localStorage.getItem('watchHistory');
+      if (watchHistoryStr) {
+        const watchHistory = JSON.parse(watchHistoryStr);
+        // Sort by last watched, most recent first
+        const sorted = watchHistory.sort((a: WatchHistory, b: WatchHistory) => {
+          return parseInt(b.last_watched) - parseInt(a.last_watched);
+        });
+        setContinueWatchingItems(sorted);
+      }
+    } catch (error) {
+      console.error('Error loading watch history:', error);
+    }
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
@@ -87,7 +132,6 @@ const Index = () => {
         if (searchQueryFromState) {
           const data = await searchContent(searchQueryFromState);
           if (data && typeof data === 'object' && 'results' in data) {
-            // Fix type error by explicitly casting to Movie[]
             setSearchResults((data.results || []) as Movie[]);
             setIsSearching(true);
             setViewingCategory(null);
@@ -249,10 +293,77 @@ const Index = () => {
     navigate('/', { replace: true });
     setIsSearching(false);
     setViewingCategory(null);
+    setActiveFilters(null);
   };
 
   const handleViewAll = (categoryId: string) => {
     navigate(`/?category=${categoryId}`);
+  };
+
+  // Handle for Advanced Filters
+  const handleApplyFilters = (filters: any) => {
+    setActiveFilters(filters);
+    
+    // Filter the current view content based on the applied filters
+    const filteredContent = viewAllContent.filter(item => {
+      // Filter by year
+      const releaseYear = item.release_date 
+        ? parseInt(item.release_date.split('-')[0])
+        : item.first_air_date 
+          ? parseInt(item.first_air_date.split('-')[0])
+          : 0;
+      
+      const yearMatch = releaseYear >= filters.years[0] && releaseYear <= filters.years[1];
+      
+      // Filter by rating
+      const ratingMatch = 
+        (item.vote_average || 0) >= filters.ratings[0] && 
+        (item.vote_average || 0) <= filters.ratings[1];
+      
+      // Filter by genres
+      const genreMatch = filters.genres.length === 0 || 
+        (item.genre_ids && item.genre_ids.some((genreId: number) => filters.genres.includes(genreId)));
+      
+      return yearMatch && ratingMatch && genreMatch;
+    });
+    
+    setViewAllContent(filteredContent);
+  };
+  
+  const handleClearFilters = () => {
+    setActiveFilters(null);
+    // Refetch the content without filters
+    const reloadContent = async () => {
+      try {
+        let data;
+        if (categoryFromParams === 'new') {
+          data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
+        } else if (categoryFromParams === 'movie') {
+          data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
+        } else if (categoryFromParams === 'tv') {
+          data = await fetchFromTMDB(apiPaths.fetchPopularTV);
+        } else if (categoryFromParams === 'horror') {
+          data = await fetchFromTMDB(apiPaths.fetchMoviesList(27));
+        } else if (categoryFromParams === 'comedy') {
+          data = await fetchFromTMDB(apiPaths.fetchMoviesList(35));
+        } else if (genreFromParams) {
+          data = await fetchContentByCategory(
+            categoryFromParams || 'movie', 
+            parseInt(genreFromParams)
+          );
+        } else {
+          data = await fetchFromTMDB(apiPaths.fetchTrending);
+        }
+        
+        if (data && typeof data === 'object' && 'results' in data) {
+          setViewAllContent((data.results || []) as Movie[]);
+        }
+      } catch (error) {
+        console.error("Error reloading content:", error);
+      }
+    };
+    
+    reloadContent();
   };
 
   const getCategoryDisplayName = () => {
@@ -303,6 +414,13 @@ const Index = () => {
         )}
         
         <div className="container mx-auto px-4 mt-4">
+          {!isSearching && continueWatchingItems.length > 0 && (
+            <ContinueWatching
+              items={continueWatchingItems}
+              onItemClick={handleMovieClick}
+            />
+          )}
+          
           {isSearching ? (
             <div className="my-8">
               <div className="flex items-center mb-6">
@@ -317,6 +435,13 @@ const Index = () => {
                   {getCategoryDisplayName()}
                 </h2>
               </div>
+              
+              <AdvancedFilters
+                genres={genres}
+                onApplyFilters={handleApplyFilters}
+                onClearFilters={handleClearFilters}
+                activeFilters={activeFilters}
+              />
               
               {loading ? (
                 <div className="flex justify-center items-center h-64">

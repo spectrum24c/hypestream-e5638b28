@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SocialShare } from '@/types/movie';
+import type { SocialShare as SocialShareType } from '@/types/movie';
 import { useToast } from '@/hooks/use-toast';
 
 interface SocialShareProps {
@@ -23,7 +23,7 @@ const SocialShare: React.FC<SocialShareProps> = ({
 }) => {
   const { toast } = useToast();
 
-  const shareOptions: SocialShare[] = [
+  const shareOptions: SocialShareType[] = [
     {
       platform: 'facebook',
       title: 'Share on Facebook',

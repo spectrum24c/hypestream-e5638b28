@@ -37,7 +37,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   activeFilters
 }) => {
   const currentYear = new Date().getFullYear();
-  const defaultFilters = {
+  const defaultFilters: FilterOptions = {
     years: [1990, currentYear],
     ratings: [0, 10],
     genres: []
@@ -59,14 +59,14 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   const handleYearsChange = (value: number[]) => {
     setFilters({
       ...filters,
-      years: [value[0], value[1]]
+      years: [value[0], value[1]] as [number, number]
     });
   };
   
   const handleRatingsChange = (value: number[]) => {
     setFilters({
       ...filters,
-      ratings: [value[0], value[1]]
+      ratings: [value[0], value[1]] as [number, number]
     });
   };
   

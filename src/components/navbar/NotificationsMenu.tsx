@@ -21,10 +21,21 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
+  const [userPreferences, setUserPreferences] = useState<any>(null);
   const navigate = useNavigate();
   
-  // Load notifications from local storage on startup
+  // Load user preferences and notifications from local storage on startup
   useEffect(() => {
+    const storedPreferences = localStorage.getItem('userPreferences');
+    if (storedPreferences) {
+      try {
+        const parsedPreferences = JSON.parse(storedPreferences);
+        setUserPreferences(parsedPreferences);
+      } catch (error) {
+        console.error('Error parsing stored preferences:', error);
+      }
+    }
+
     const storedNotifications = localStorage.getItem('notifications');
     if (storedNotifications) {
       try {
@@ -47,16 +58,50 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
     }
   }, [notifications]);
   
-  // Function to generate a random notification
+  // Function to generate a movie notification based on user preferences
   const generateMovieNotification = async () => {
     try {
-      // Fetch latest movies
-      const data = await fetchFromTMDB(apiPaths.fetchLatestMovies);
+      if (!userPreferences || !userPreferences.enableNotifications) {
+        return;
+      }
+
+      // Get preferred genres
+      const preferredGenres = userPreferences.preferredGenres || [];
+      
+      // If user has preferred genres, use one of them to fetch movies
+      let data;
+      if (preferredGenres.length > 0) {
+        // Pick a random genre from user's preferred genres
+        const randomGenreIndex = Math.floor(Math.random() * preferredGenres.length);
+        const genreId = preferredGenres[randomGenreIndex];
+        data = await fetchFromTMDB(apiPaths.fetchMoviesList(genreId));
+      } else {
+        // Default to latest movies if no genre preferences
+        data = await fetchFromTMDB(apiPaths.fetchLatestMovies);
+      }
       
       if (data && data.results && data.results.length > 0) {
+        // Filter movies by preferred language if set
+        let filteredMovies = data.results;
+        const preferredLanguages = userPreferences.preferredLanguages || [];
+        
+        if (preferredLanguages.length > 0) {
+          filteredMovies = data.results.filter((movie: any) => 
+            preferredLanguages.includes(movie.original_language)
+          );
+          
+          // Fall back to all results if no movies match language preference
+          if (filteredMovies.length === 0) {
+            filteredMovies = data.results;
+          }
+        }
+        
         // Pick a random movie from the results
-        const randomIndex = Math.floor(Math.random() * data.results.length);
-        const movie = data.results[randomIndex];
+        const randomIndex = Math.floor(Math.random() * filteredMovies.length);
+        const movie = filteredMovies[randomIndex];
+        
+        // Save movie details in localStorage for future reference
+        localStorage.setItem(`movie_${movie.id}`, JSON.stringify(movie));
         
         // Check if we already have a notification for this movie
         const existingNotification = notifications.find(n => 
@@ -91,65 +136,72 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
     }
   };
   
-  // Function to generate movie suggestions based on watched movies
+  // Function to generate movie suggestions based on watched movies and preferences
   const generateMovieSuggestions = async () => {
     try {
-      // Get watched movie information from localStorage or database
-      // For this example we'll use local storage
-      const watchedMovies = JSON.parse(localStorage.getItem('watchedMovies') || '[]');
+      if (!userPreferences || !userPreferences.enableNotifications) {
+        return;
+      }
       
-      if (watchedMovies.length === 0) return;
+      // Get preferred genres from user preferences
+      const preferredGenres = userPreferences.preferredGenres || [];
       
-      // Extract genre IDs from watched movies
-      const watchedGenres = new Set<number>();
-      watchedMovies.forEach((movie: any) => {
-        if (movie.genre_ids) {
-          movie.genre_ids.forEach((genreId: number) => watchedGenres.add(genreId));
-        }
-      });
-      
-      // If we have watched genres, fetch recommendations based on them
-      if (watchedGenres.size > 0) {
-        const genreId = Array.from(watchedGenres)[Math.floor(Math.random() * watchedGenres.size)];
+      // If we have preferred genres, fetch recommendations based on them
+      if (preferredGenres.length > 0) {
+        // Pick a random genre from user's preferred genres
+        const randomGenreIndex = Math.floor(Math.random() * preferredGenres.length);
+        const genreId = preferredGenres[randomGenreIndex];
+        
         const data = await fetchFromTMDB(apiPaths.fetchMoviesList(genreId));
         
         if (data && data.results && data.results.length > 0) {
-          // Filter out movies we've already watched
-          const unwatchedMovies = data.results.filter((movie: any) => 
-            !watchedMovies.some((watched: any) => watched.id === movie.id)
-          );
+          // Filter movies by preferred language if set
+          let filteredMovies = data.results;
+          const preferredLanguages = userPreferences.preferredLanguages || [];
           
-          if (unwatchedMovies.length > 0) {
-            // Pick a random unwatched movie
-            const movie = unwatchedMovies[Math.floor(Math.random() * unwatchedMovies.length)];
-            
-            // Check if we already have a suggestion notification for this movie
-            const existingNotification = notifications.find(n => 
-              n.movie?.id === movie.id && n.type === 'suggestion'
+          if (preferredLanguages.length > 0) {
+            filteredMovies = data.results.filter((movie: any) => 
+              preferredLanguages.includes(movie.original_language)
             );
             
-            if (!existingNotification) {
-              // Create a suggestion notification
-              const newNotification: Notification = {
-                id: `suggestion-${Date.now()}`,
-                title: 'Recommended for You',
-                message: `Based on your interests, you might enjoy "${movie.title || movie.name}"!`,
-                poster_path: movie.poster_path,
-                movie: {
-                  id: movie.id
-                },
-                read: false,
-                createdAt: new Date().toISOString(),
-                timestamp: Date.now(),
-                isNew: false,
-                type: 'suggestion',
-                isPersistent: true
-              };
-              
-              // Add the new notification
-              setNotifications(prev => [newNotification, ...prev]);
-              setUnreadCount(prev => prev + 1);
+            // Fall back to all results if no movies match language preference
+            if (filteredMovies.length === 0) {
+              filteredMovies = data.results;
             }
+          }
+          
+          // Pick a random movie from filtered list
+          const movie = filteredMovies[Math.floor(Math.random() * filteredMovies.length)];
+          
+          // Save movie details in localStorage for future reference
+          localStorage.setItem(`movie_${movie.id}`, JSON.stringify(movie));
+          
+          // Check if we already have a suggestion notification for this movie
+          const existingNotification = notifications.find(n => 
+            n.movie?.id === movie.id && n.type === 'suggestion'
+          );
+          
+          if (!existingNotification) {
+            // Create a suggestion notification
+            const newNotification: Notification = {
+              id: `suggestion-${Date.now()}`,
+              title: 'Recommended for You',
+              message: `Based on your interests, you might enjoy "${movie.title || movie.name}"!`,
+              poster_path: movie.poster_path,
+              movie: {
+                id: movie.id
+              },
+              read: false,
+              createdAt: new Date().toISOString(),
+              timestamp: Date.now(),
+              isNew: false,
+              type: 'suggestion',
+              isPersistent: true
+            };
+            
+            // Add the new notification
+            setNotifications(prev => [newNotification, ...prev]);
+            setUnreadCount(prev => prev + 1);
           }
         }
       }
@@ -197,26 +249,33 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
     }
   };
   
-  // Simulate getting a new notification periodically
+  // Simulate getting a new notification periodically based on user preferences
   useEffect(() => {
-    // Don't run this in development to avoid spamming notifications
-    if (process.env.NODE_ENV === 'production') {
-      // Check for new movies every 5 minutes
-      const interval = setInterval(() => {
-        generateMovieNotification();
-      }, 5 * 60 * 1000);
-      
-      // Check for suggested movies every 10 minutes
-      const suggestionInterval = setInterval(() => {
-        generateMovieSuggestions();
-      }, 10 * 60 * 1000);
-      
-      return () => {
-        clearInterval(interval);
-        clearInterval(suggestionInterval);
-      };
+    if (!userPreferences || !userPreferences.enableNotifications) {
+      return;
     }
-  }, []);
+    
+    // Check for new movies every 5 minutes
+    const interval = setInterval(() => {
+      generateMovieNotification();
+    }, 5 * 60 * 1000);
+    
+    // Check for suggested movies every 10 minutes
+    const suggestionInterval = setInterval(() => {
+      generateMovieSuggestions();
+    }, 10 * 60 * 1000);
+    
+    // Generate initial notifications if none exist
+    if (notifications.length === 0) {
+      generateMovieNotification();
+      setTimeout(() => generateMovieSuggestions(), 2000);
+    }
+    
+    return () => {
+      clearInterval(interval);
+      clearInterval(suggestionInterval);
+    };
+  }, [userPreferences]);
   
   const handleMarkAllAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));

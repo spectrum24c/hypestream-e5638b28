@@ -10,8 +10,6 @@ import Devices from '@/pages/Devices';
 import TermsOfUse from '@/pages/TermsOfUse';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import CookiePolicy from '@/pages/CookiePolicy';
-import WatchHistory from '@/pages/WatchHistory';
-import Watchlist from '@/pages/Watchlist';
 import UserSettings from '@/pages/UserSettings';
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -26,8 +24,6 @@ function App() {
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/faqs" element={<FAQs />} />
         <Route path="/devices" element={<Devices />} />
-        <Route path="/watch-history" element={<WatchHistory />} />
-        <Route path="/watchlist" element={<Watchlist />} />
         <Route path="/settings" element={<UserSettings />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />

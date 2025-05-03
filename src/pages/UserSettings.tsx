@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from '@/components/ui/button';
 import UserPreferences from '@/components/UserPreferences';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { UserPreference } from '@/types/movie';
+import { Home } from 'lucide-react';
 
 // Mock data - in a real app, this would come from an API
 const mockGenres = [
@@ -72,6 +74,16 @@ const UserSettingsPage: React.FC = () => {
         });
         navigate('/auth');
       } else {
+        // Try to load preferences from localStorage
+        const storedPreferences = localStorage.getItem('userPreferences');
+        if (storedPreferences) {
+          try {
+            setUserPreferences(JSON.parse(storedPreferences));
+          } catch (error) {
+            console.error('Error parsing stored preferences:', error);
+          }
+        }
+        
         // In a real app, fetch user preferences from Supabase
         // const { data, error } = await supabase
         //   .from('user_preferences')
@@ -96,6 +108,9 @@ const UserSettingsPage: React.FC = () => {
   }, [navigate, toast]);
 
   const handleSavePreferences = async (preferences: UserPreference): Promise<void> => {
+    // Save preferences to localStorage
+    localStorage.setItem('userPreferences', JSON.stringify(preferences));
+    
     // In a real app, save to Supabase
     // const { error } = await supabase
     //   .from('user_preferences')
@@ -118,9 +133,20 @@ const UserSettingsPage: React.FC = () => {
       <Navbar />
       <main className="pt-24 pb-16 mx-auto container px-4">
         <div className="max-w-5xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <Button 
+              variant="ghost" 
+              className="flex items-center gap-1 text-hype-purple" 
+              onClick={() => navigate('/')}
+            >
+              <Home size={16} />
+              <span>Back to Home</span>
+            </Button>
+            <h1 className="text-2xl font-bold">Settings</h1>
+          </div>
+          
           <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold">Settings</h1>
+            <div className="flex items-center justify-end mb-6">
               <TabsList>
                 <TabsTrigger value="preferences">Preferences</TabsTrigger>
                 <TabsTrigger value="account">Account</TabsTrigger>

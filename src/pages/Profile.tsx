@@ -8,9 +8,29 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
-import { FileEdit } from 'lucide-react';
+import { FileEdit, Home, Image } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
+
+// Array of predefined avatars
+const predefinedAvatars = [
+  "/lovable-uploads/7ea3104a-6d4d-4bbd-b3c1-0aac01fc7026.png",
+  "/lovable-uploads/8eee155a-5511-42f0-83bb-7ef906513992.png", 
+  "/lovable-uploads/d10d9e46-e814-4d99-b2a6-4b6df0b8e6a1.png",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Mia",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Alex",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob",
+  "https://api.dicebear.com/7.x/avataaars/svg?seed=Jane"
+];
 
 const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -19,6 +39,7 @@ const Profile = () => {
   const [updating, setUpdating] = useState(false);
   const [session, setSession] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -165,6 +186,38 @@ const Profile = () => {
     }
   };
 
+  const selectPredefinedAvatar = async (avatarUrl: string) => {
+    if (!session?.user?.id) return;
+    
+    setUpdating(true);
+    try {
+      // Update profile with selected avatar URL
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: avatarUrl })
+        .eq('id', session.user.id);
+      
+      if (error) throw error;
+      
+      setAvatarUrl(avatarUrl);
+      setIsAvatarDialogOpen(false);
+      
+      toast({
+        title: "Avatar selected",
+        description: "Your profile avatar has been updated",
+      });
+    } catch (error) {
+      console.error('Error selecting avatar:', error);
+      toast({
+        title: "Error selecting avatar",
+        description: "There was a problem updating your avatar",
+        variant: "destructive"
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-hype-dark text-foreground">
       <Navbar />
@@ -174,9 +227,10 @@ const Profile = () => {
             <Button 
               onClick={() => navigate('/')} 
               variant="ghost" 
-              className="mr-2"
+              className="flex items-center gap-1 text-hype-purple mr-2"
             >
-              ← Back to Home
+              <Home size={16} />
+              <span>Back to Home</span>
             </Button>
             <h1 className="text-3xl font-bold">My Profile</h1>
           </div>
@@ -203,16 +257,25 @@ const Profile = () => {
                         </AvatarFallback>
                       )}
                     </Avatar>
-                    <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-hype-purple text-white rounded-full p-2 cursor-pointer">
-                      <FileEdit className="h-4 w-4" />
-                      <input 
-                        id="avatar-upload" 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handleAvatarChange} 
-                        className="hidden" 
-                      />
-                    </label>
+                    <div className="absolute bottom-0 right-0 flex">
+                      <button
+                        onClick={() => setIsAvatarDialogOpen(true)}
+                        className="bg-hype-purple text-white rounded-full p-2 cursor-pointer mr-1"
+                        title="Choose from gallery"
+                      >
+                        <Image className="h-4 w-4" />
+                      </button>
+                      <label htmlFor="avatar-upload" className="bg-hype-purple text-white rounded-full p-2 cursor-pointer">
+                        <FileEdit className="h-4 w-4" />
+                        <input 
+                          id="avatar-upload" 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={handleAvatarChange} 
+                          className="hidden" 
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
                 
@@ -263,6 +326,54 @@ const Profile = () => {
         </div>
       </main>
       <Footer />
+
+      {/* Avatar Selection Dialog */}
+      <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Choose an Avatar</DialogTitle>
+            <DialogDescription>
+              Select an avatar from our collection or upload your own.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-3 gap-4 py-4">
+            {predefinedAvatars.map((avatar, index) => (
+              <div 
+                key={index}
+                onClick={() => selectPredefinedAvatar(avatar)}
+                className={`cursor-pointer rounded-full overflow-hidden border-2 ${
+                  avatarUrl === avatar ? 'border-hype-purple' : 'border-transparent'
+                } hover:border-hype-purple transition-all`}
+              >
+                <img 
+                  src={avatar} 
+                  alt={`Avatar option ${index + 1}`}
+                  className="w-full h-auto aspect-square object-cover"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 flex justify-between">
+            <Button variant="outline" onClick={() => setIsAvatarDialogOpen(false)}>
+              Cancel
+            </Button>
+            <label htmlFor="avatar-dialog-upload" className="bg-hype-purple text-white px-4 py-2 rounded-md cursor-pointer flex items-center gap-2">
+              <FileEdit className="h-4 w-4" />
+              <span>Upload Custom</span>
+              <input 
+                id="avatar-dialog-upload" 
+                type="file" 
+                accept="image/*" 
+                onChange={(e) => {
+                  handleAvatarChange(e);
+                  setIsAvatarDialogOpen(false);
+                }} 
+                className="hidden" 
+              />
+            </label>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -30,6 +30,12 @@ const UserPreferences: React.FC<UserPreferencesProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
+  // Apply notification preference to global state
+  useEffect(() => {
+    // Set the notification preference in localStorage
+    localStorage.setItem('notificationsEnabled', enableNotifications ? 'true' : 'false');
+  }, [enableNotifications]);
+
   const filteredGenres = genres.filter((genre) => 
     genre.name.toLowerCase().includes(genreSearch.toLowerCase())
   );
@@ -99,7 +105,7 @@ const UserPreferences: React.FC<UserPreferencesProps> = ({
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className={`space-y-4 ${!enableNotifications && "opacity-50 pointer-events-none"}`}>
           <h3 className="text-lg font-medium">Preferred Genres</h3>
           <p className="text-sm text-muted-foreground">Choose genres you enjoy to get personalized recommendations</p>
           
@@ -163,7 +169,7 @@ const UserPreferences: React.FC<UserPreferencesProps> = ({
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className={`space-y-4 ${!enableNotifications && "opacity-50 pointer-events-none"}`}>
           <h3 className="text-lg font-medium">Preferred Languages</h3>
           <p className="text-sm text-muted-foreground">Select languages for content</p>
           

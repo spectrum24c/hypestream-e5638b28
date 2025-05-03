@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -20,6 +19,7 @@ const Navbar = () => {
   const [session, setSession] = useState<any>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -42,16 +42,83 @@ const Navbar = () => {
       }
     );
 
-    // Get notifications from localStorage if available, otherwise generate initial ones
+    // Check notification settings from user preferences
+    const notifSetting = localStorage.getItem('notificationsEnabled');
+    if (notifSetting === 'false') {
+      setNotificationsEnabled(false);
+      return;
+    }
+
+    // Get user preferences to check if notifications are enabled
+    const storedPreferences = localStorage.getItem('userPreferences');
+    if (storedPreferences) {
+      try {
+        const preferences = JSON.parse(storedPreferences);
+        setNotificationsEnabled(preferences.enableNotifications);
+        
+        if (!preferences.enableNotifications) {
+          return; // Don't load notifications if disabled
+        }
+      } catch (error) {
+        console.error('Error parsing stored preferences:', error);
+      }
+    }
+
+    // Get notifications from localStorage if available
     const storedNotifications = localStorage.getItem('notifications');
     if (storedNotifications) {
       try {
         const parsedNotifications = JSON.parse(storedNotifications);
         if (Array.isArray(parsedNotifications) && parsedNotifications.length > 0) {
-          setNotifications(parsedNotifications);
-          const unreadCount = parsedNotifications.filter(n => !n.read).length;
-          setUnreadCount(unreadCount);
-          return; // Skip initial notification generation if we have stored ones
+          // Filter notifications based on user preferences if available
+          if (storedPreferences) {
+            const preferences = JSON.parse(storedPreferences);
+            const preferredGenres = preferences.preferredGenres || [];
+            const preferredLanguages = preferences.preferredLanguages || [];
+            
+            // Only keep notifications that match user preferences
+            const filteredNotifications = parsedNotifications.filter((notification: Notification) => {
+              // If it's a movie notification, check if it matches user preferences
+              if (notification.movie && notification.movie.id) {
+                // Get movie details from localStorage if available (simplified approach)
+                const movieCache = localStorage.getItem(`movie_${notification.movie.id}`);
+                if (movieCache) {
+                  try {
+                    const movieData = JSON.parse(movieCache);
+                    // Check if movie genre matches preferred genres
+                    if (movieData.genre_ids && preferredGenres.length > 0) {
+                      const hasMatchingGenre = movieData.genre_ids.some((genreId: number) => 
+                        preferredGenres.includes(genreId)
+                      );
+                      if (!hasMatchingGenre) return false;
+                    }
+                    
+                    // Check if movie language matches preferred languages
+                    if (movieData.original_language && preferredLanguages.length > 0) {
+                      if (!preferredLanguages.includes(movieData.original_language)) {
+                        return false;
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error parsing movie cache:', error);
+                  }
+                }
+              }
+              
+              return true;
+            });
+            
+            setNotifications(filteredNotifications);
+            const unreadCount = filteredNotifications.filter(n => !n.read).length;
+            setUnreadCount(unreadCount);
+            return;
+          } else {
+            // No preferences, show all notifications
+            setNotifications(parsedNotifications);
+            const unreadCount = parsedNotifications.filter(n => !n.read).length;
+            setUnreadCount(unreadCount);
+            return;
+          }
         }
       } catch (error) {
         console.error('Error parsing stored notifications:', error);
@@ -59,42 +126,44 @@ const Navbar = () => {
     }
 
     // Generate initial notifications only if we don't have stored ones
-    const initialNotifications: Notification[] = [
-      {
-        id: `movie-init-1`,
-        title: 'New on HypeStream',
-        message: `"The Dark Knight" is now available to watch!`,
-        poster_path: '/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
-        movie: {
-          id: '155'
+    if (notificationsEnabled) {
+      const initialNotifications: Notification[] = [
+        {
+          id: `movie-init-1`,
+          title: 'New on HypeStream',
+          message: `"The Dark Knight" is now available to watch!`,
+          poster_path: '/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
+          movie: {
+            id: '155'
+          },
+          read: false,
+          createdAt: new Date(Date.now() - 86400000).toISOString(),
+          timestamp: Date.now() - 86400000,
+          isNew: true,
+          type: 'new',
+          isPersistent: true
         },
-        read: false,
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-        timestamp: Date.now() - 86400000,
-        isNew: true,
-        type: 'new',
-        isPersistent: true
-      },
-      {
-        id: `suggestion-init-1`,
-        title: 'Recommended for You',
-        message: 'Based on your interests, you might enjoy "Inception"!',
-        poster_path: '/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg',
-        movie: {
-          id: '27205'
-        },
-        read: false,
-        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
-        timestamp: Date.now() - 2 * 86400000,
-        isNew: false,
-        type: 'suggestion',
-        isPersistent: true
-      }
-    ];
-    
-    setNotifications(initialNotifications);
-    setUnreadCount(initialNotifications.length);
-    localStorage.setItem('notifications', JSON.stringify(initialNotifications));
+        {
+          id: `suggestion-init-1`,
+          title: 'Recommended for You',
+          message: 'Based on your interests, you might enjoy "Inception"!',
+          poster_path: '/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg',
+          movie: {
+            id: '27205'
+          },
+          read: false,
+          createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+          timestamp: Date.now() - 2 * 86400000,
+          isNew: false,
+          type: 'suggestion',
+          isPersistent: true
+        }
+      ];
+      
+      setNotifications(initialNotifications);
+      setUnreadCount(initialNotifications.length);
+      localStorage.setItem('notifications', JSON.stringify(initialNotifications));
+    }
 
     return () => subscription.unsubscribe();
   }, []);
@@ -161,7 +230,7 @@ const Navbar = () => {
               className="z-20"
             />
 
-            {session && (
+            {session && notificationsEnabled && (
               <NotificationsMenu
                 notifications={notifications}
                 unreadCount={unreadCount}

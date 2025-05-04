@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -121,7 +120,6 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-4 text-white">Help</h3>
             <ul className="space-y-2">
               <li><Link to="/faqs" className="text-gray-400 hover:text-white transition-colors">FAQs</Link></li>
-              <li><Link to="/devices" className="text-gray-400 hover:text-white transition-colors">Devices</Link></li>
               <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
               <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Support</a></li>
             </ul>
@@ -192,4 +190,3 @@ const Footer = () => {
 };
 
 export default Footer;
-

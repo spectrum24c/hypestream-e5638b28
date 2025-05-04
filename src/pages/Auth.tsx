@@ -18,7 +18,7 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, AlertTriangle } from 'lucide-react';
 
 const passwordSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters")
@@ -176,6 +176,16 @@ const Auth = () => {
                       </button>
                     </div>
                   </div>
+
+                  {isSignUp && (
+                    <div className="bg-amber-900/20 border border-amber-700/30 rounded-lg p-3 flex items-start gap-3">
+                      <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-amber-200">
+                        <p className="font-medium">Important Password Notice</p>
+                        <p className="mt-1">Please use a 6-digit password that you can easily remember. Password recovery is not currently available, so make sure it's something you won't forget.</p>
+                      </div>
+                    </div>
+                  )}
 
                   <Button
                     type="submit"

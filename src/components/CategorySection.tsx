@@ -1,42 +1,30 @@
 
 import React from 'react';
-import { Film, Tv, Play, Heart } from 'lucide-react';
+import { Film, Tv } from 'lucide-react';
 
 const categoryItems = [
   {
     icon: <Film />,
-    name: 'Movies',
+    name: 'Browse Movies',
     color: 'bg-hype-purple',
-    description: 'Latest blockbusters and classics'
+    description: 'Explore our collection'
   },
   {
     icon: <Tv />,
-    name: 'TV Shows',
+    name: 'Browse TV Shows',
     color: 'bg-hype-teal',
-    description: 'Binge-worthy series'
-  },
-  {
-    icon: <Play />,
-    name: 'Anime',
-    color: 'bg-hype-orange',
-    description: 'Japanese animation'
-  },
-  {
-    icon: <Heart />,
-    name: 'My List',
-    color: 'bg-hype-magenta',
-    description: 'Your saved content'
+    description: 'Find your next binge'
   }
 ];
 
 const CategorySection = () => {
   return (
     <div className="py-8 px-4 md:px-8">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {categoryItems.map((item, index) => (
           <div 
             key={index}
-            className="relative rounded-xl overflow-hidden group cursor-pointer h-36 md:h-40 bg-hype-gray/50 hover:bg-hype-gray transition-all duration-300"
+            className="relative rounded-xl overflow-hidden group cursor-pointer h-40 bg-hype-gray/50 hover:bg-hype-gray transition-all duration-300"
           >
             <div className={`absolute top-4 left-4 ${item.color} p-3 rounded-full text-white transition-transform group-hover:scale-110 duration-300`}>
               {item.icon}

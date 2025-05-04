@@ -14,6 +14,7 @@ import { Movie, WatchHistory } from '@/types/movie';
 import { useToast } from '@/hooks/use-toast';
 import ContinueWatching from '@/components/ContinueWatching';
 import AdvancedFilters from '@/components/AdvancedFilters';
+import CategorySection from '@/components/CategorySection';
 
 // Sample genres for filtering
 const genres = [
@@ -64,6 +65,7 @@ const Index = () => {
   // New state for Continue Watching and filters
   const [continueWatchingItems, setContinueWatchingItems] = useState<WatchHistory[]>([]);
   const [activeFilters, setActiveFilters] = useState<any>(null);
+  const [originalContent, setOriginalContent] = useState<Movie[]>([]);  // Store original unfiltered content
 
   const searchQueryFromState = location.state?.searchQuery || '';
   const selectedMovieIdFromState = location.state?.selectedMovieId;
@@ -132,7 +134,9 @@ const Index = () => {
         if (searchQueryFromState) {
           const data = await searchContent(searchQueryFromState);
           if (data && typeof data === 'object' && 'results' in data) {
-            setSearchResults((data.results || []) as Movie[]);
+            const results = (data.results || []) as Movie[];
+            setSearchResults(results);
+            setOriginalContent(results);
             setIsSearching(true);
             setViewingCategory(null);
           }
@@ -144,7 +148,9 @@ const Index = () => {
           if (categoryFromParams === 'new') {
             const data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
             if (data && typeof data === 'object' && 'results' in data) {
-              setViewAllContent((data.results || []) as Movie[]);
+              const results = (data.results || []) as Movie[];
+              setViewAllContent(results);
+              setOriginalContent(results);
             }
           }
           else if (genreFromParams) {
@@ -153,6 +159,7 @@ const Index = () => {
               parseInt(genreFromParams)
             );
             setViewAllContent(data as Movie[]);
+            setOriginalContent(data as Movie[]);
           } 
           else {
             let data;
@@ -168,7 +175,9 @@ const Index = () => {
               data = await fetchFromTMDB(apiPaths.fetchTrending);
             }
             if (data && typeof data === 'object' && 'results' in data) {
-              setViewAllContent((data.results || []) as Movie[]);
+              const results = (data.results || []) as Movie[];
+              setViewAllContent(results);
+              setOriginalContent(results);
             }
           }
         }
@@ -213,6 +222,30 @@ const Index = () => {
     fetchMovieData();
   }, [searchQueryFromState, categoryFromParams, genreFromParams]);
 
+  const applyFiltersToContent = (content: Movie[], filters: any) => {
+    return content.filter(item => {
+      // Filter by year
+      const releaseYear = item.release_date 
+        ? parseInt(item.release_date.split('-')[0])
+        : item.first_air_date 
+          ? parseInt(item.first_air_date.split('-')[0])
+          : 0;
+      
+      const yearMatch = releaseYear >= filters.years[0] && releaseYear <= filters.years[1];
+      
+      // Filter by rating
+      const ratingMatch = 
+        (item.vote_average || 0) >= filters.ratings[0] && 
+        (item.vote_average || 0) <= filters.ratings[1];
+      
+      // Filter by genres
+      const genreMatch = filters.genres.length === 0 || 
+        (item.genre_ids && item.genre_ids.some((genreId: number) => filters.genres.includes(genreId)));
+      
+      return yearMatch && ratingMatch && genreMatch;
+    });
+  };
+
   const loadMoreContent = async () => {
     if (loadingMore || !hasMore) return;
     
@@ -241,7 +274,7 @@ const Index = () => {
       const data = await fetchFromTMDB(url);
       
       if (data && typeof data === 'object' && 'results' in data) {
-        const newResults = data.results || [];
+        const newResults = data.results || [] as Movie[];
         
         if (newResults.length === 0) {
           setHasMore(false);
@@ -250,7 +283,18 @@ const Index = () => {
             description: "You've reached the end of the list",
           });
         } else {
-          setViewAllContent(prevContent => [...prevContent, ...newResults as Movie[]]);
+          // Apply active filters to new content if filters are active
+          let filteredNewResults = newResults;
+          
+          if (activeFilters) {
+            filteredNewResults = applyFiltersToContent(newResults as Movie[], activeFilters);
+          }
+          
+          // Add new content to original content list for future filtering
+          setOriginalContent(prev => [...prev, ...newResults as Movie[]]);
+          
+          // Add filtered new results to the view
+          setViewAllContent(prevContent => [...prevContent, ...filteredNewResults]);
           setCurrentPage(nextPage);
         }
       } else {
@@ -304,66 +348,29 @@ const Index = () => {
   const handleApplyFilters = (filters: any) => {
     setActiveFilters(filters);
     
-    // Filter the current view content based on the applied filters
-    const filteredContent = viewAllContent.filter(item => {
-      // Filter by year
-      const releaseYear = item.release_date 
-        ? parseInt(item.release_date.split('-')[0])
-        : item.first_air_date 
-          ? parseInt(item.first_air_date.split('-')[0])
-          : 0;
-      
-      const yearMatch = releaseYear >= filters.years[0] && releaseYear <= filters.years[1];
-      
-      // Filter by rating
-      const ratingMatch = 
-        (item.vote_average || 0) >= filters.ratings[0] && 
-        (item.vote_average || 0) <= filters.ratings[1];
-      
-      // Filter by genres
-      const genreMatch = filters.genres.length === 0 || 
-        (item.genre_ids && item.genre_ids.some((genreId: number) => filters.genres.includes(genreId)));
-      
-      return yearMatch && ratingMatch && genreMatch;
-    });
+    // Filter the content based on the applied filters
+    let contentToFilter;
     
-    setViewAllContent(filteredContent);
+    if (searchQueryFromState) {
+      contentToFilter = originalContent;
+      const filteredContent = applyFiltersToContent(contentToFilter, filters);
+      setSearchResults(filteredContent);
+    } else {
+      contentToFilter = originalContent;
+      const filteredContent = applyFiltersToContent(contentToFilter, filters);
+      setViewAllContent(filteredContent);
+    }
   };
   
   const handleClearFilters = () => {
     setActiveFilters(null);
-    // Refetch the content without filters
-    const reloadContent = async () => {
-      try {
-        let data;
-        if (categoryFromParams === 'new') {
-          data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
-        } else if (categoryFromParams === 'movie') {
-          data = await fetchFromTMDB(apiPaths.fetchPopularMovies);
-        } else if (categoryFromParams === 'tv') {
-          data = await fetchFromTMDB(apiPaths.fetchPopularTV);
-        } else if (categoryFromParams === 'horror') {
-          data = await fetchFromTMDB(apiPaths.fetchMoviesList(27));
-        } else if (categoryFromParams === 'comedy') {
-          data = await fetchFromTMDB(apiPaths.fetchMoviesList(35));
-        } else if (genreFromParams) {
-          data = await fetchContentByCategory(
-            categoryFromParams || 'movie', 
-            parseInt(genreFromParams)
-          );
-        } else {
-          data = await fetchFromTMDB(apiPaths.fetchTrending);
-        }
-        
-        if (data && typeof data === 'object' && 'results' in data) {
-          setViewAllContent((data.results || []) as Movie[]);
-        }
-      } catch (error) {
-        console.error("Error reloading content:", error);
-      }
-    };
     
-    reloadContent();
+    // Reset to original unfiltered content
+    if (searchQueryFromState) {
+      setSearchResults(originalContent);
+    } else {
+      setViewAllContent(originalContent);
+    }
   };
 
   const getCategoryDisplayName = () => {
@@ -384,7 +391,7 @@ const Index = () => {
     }
     
     if (categoryFromParams && genreFromParams) {
-      const genreName = genreFromParams;
+      const genreName = genres.find(g => g.id === parseInt(genreFromParams))?.name || genreFromParams;
       return `${categoryFromParams === 'movie' ? 'Movies' : 'TV Shows'} - ${genreName}`;
     }
     
@@ -489,6 +496,7 @@ const Index = () => {
             <>
               {!loading && (
                 <div className="space-y-6 px-0 sm:px-0">
+                  {!isSearching && <CategorySection />}
                   <ContentSlider title="Trending Now" items={trendingContent} onViewAll={() => handleViewAll('trending')} />
                   <ContentSlider title="New Releases" items={newReleases} onViewAll={() => handleViewAll('new')} />
                   <ContentSlider title="Popular Movies" items={popularMovies} onViewAll={() => handleViewAll('movie')} />

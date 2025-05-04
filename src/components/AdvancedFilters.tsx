@@ -57,17 +57,21 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
   };
   
   const handleYearsChange = (value: number[]) => {
-    setFilters({
-      ...filters,
-      years: [value[0], value[1]] as [number, number]
-    });
+    if (value.length >= 2) {
+      setFilters({
+        ...filters,
+        years: [value[0], value[1]] as [number, number]
+      });
+    }
   };
   
   const handleRatingsChange = (value: number[]) => {
-    setFilters({
-      ...filters,
-      ratings: [value[0], value[1]] as [number, number]
-    });
+    if (value.length >= 2) {
+      setFilters({
+        ...filters,
+        ratings: [value[0], value[1]] as [number, number]
+      });
+    }
   };
   
   const toggleGenre = (genreId: number) => {
@@ -212,39 +216,35 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
         
         {hasActiveFilters() && (
           <div className="flex flex-wrap gap-2">
-            {filters.years[0] !== defaultFilters.years[0] || filters.years[1] !== defaultFilters.years[1] ? (
+            {(filters.years[0] !== defaultFilters.years[0] || filters.years[1] !== defaultFilters.years[1]) ? (
               <Badge variant="outline" className="bg-muted/50 flex items-center gap-1">
                 Years: {filters.years[0]} - {filters.years[1]}
                 <X 
                   className="h-3 w-3 ml-1 cursor-pointer" 
                   onClick={() => {
-                    setFilters({
+                    const updatedFilters = {
                       ...filters,
                       years: defaultFilters.years
-                    });
-                    onApplyFilters({
-                      ...filters,
-                      years: defaultFilters.years
-                    });
+                    };
+                    setFilters(updatedFilters);
+                    onApplyFilters(updatedFilters);
                   }}
                 />
               </Badge>
             ) : null}
             
-            {filters.ratings[0] !== defaultFilters.ratings[0] || filters.ratings[1] !== defaultFilters.ratings[1] ? (
+            {(filters.ratings[0] !== defaultFilters.ratings[0] || filters.ratings[1] !== defaultFilters.ratings[1]) ? (
               <Badge variant="outline" className="bg-muted/50 flex items-center gap-1">
                 Rating: {filters.ratings[0].toFixed(1)} - {filters.ratings[1].toFixed(1)}
                 <X 
                   className="h-3 w-3 ml-1 cursor-pointer" 
                   onClick={() => {
-                    setFilters({
+                    const updatedFilters = {
                       ...filters,
                       ratings: defaultFilters.ratings
-                    });
-                    onApplyFilters({
-                      ...filters,
-                      ratings: defaultFilters.ratings
-                    });
+                    };
+                    setFilters(updatedFilters);
+                    onApplyFilters(updatedFilters);
                   }}
                 />
               </Badge>
@@ -259,14 +259,12 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                     const genreId = genres.find(g => g.name === name)?.id;
                     if (genreId) {
                       const newGenres = filters.genres.filter(id => id !== genreId);
-                      setFilters({
+                      const updatedFilters = {
                         ...filters,
                         genres: newGenres
-                      });
-                      onApplyFilters({
-                        ...filters,
-                        genres: newGenres
-                      });
+                      };
+                      setFilters(updatedFilters);
+                      onApplyFilters(updatedFilters);
                     }
                   }}
                 />

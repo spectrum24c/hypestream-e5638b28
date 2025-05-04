@@ -120,8 +120,8 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-4 text-white">Help</h3>
             <ul className="space-y-2">
               <li><Link to="/faqs" className="text-gray-400 hover:text-white transition-colors">FAQs</Link></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Support</a></li>
+              <li><Link to="/support" className="text-gray-400 hover:text-white transition-colors">Support</Link></li>
+              <li><a href="mailto:hypestream127@gmail.com" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
             </ul>
           </div>
           

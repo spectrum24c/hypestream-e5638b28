@@ -26,11 +26,19 @@ const FAQs = () => {
     },
     {
       question: "How do I create an account and log in to HypeStream?",
-      answer: "To create an account: 1) Click on 'Sign In' in the top-right corner, 2) Select 'Create an account', 3) Enter your email address, 4) Create a strong password, 5) Verify your email by clicking the link sent to your inbox. To log in: Simply enter your email and password on the sign-in page. If you forget your password, use the 'Forgot Password' link to reset it."
+      answer: "To create an account: 1) Click on 'Sign In' in the top-right corner, 2) Select 'Create an account', 3) Enter your email address, 4) Create a strong 6-digit password, 5) Verify your email by clicking the link sent to your inbox. To log in: Simply enter your email and password on the sign-in page."
+    },
+    {
+      question: "What if I forget my password?",
+      answer: "Currently, password recovery is not available. That's why we strongly recommend using a simple 6-digit password that you can easily remember. Make sure to keep your password secure but memorable."
     },
     {
       question: "Is HypeStream free to use?",
       answer: "HypeStream offers both free and premium content. You can browse and watch many titles without a subscription, but creating a free account gives you access to personalized features like favorites, recommendations, and the ability to track your watch history."
+    },
+    {
+      question: "How do I make payments for premium content?",
+      answer: "For premium content, you can make payments via bank transfer to our PALMPAY account (Account number: 8028151231). Always include your registered email address as a reference when making payments. For more information, visit our Support page."
     },
     {
       question: "Do I need to create an account to use HypeStream?",
@@ -54,15 +62,15 @@ const FAQs = () => {
     },
     {
       question: "What should I do if a stream isn't working?",
-      answer: "If you're experiencing playback issues, try: 1) Refreshing the page, 2) Checking your internet connection, 3) Trying a different browser, or 4) Clearing your browser cache. If problems persist, the stream may be temporarily unavailable."
+      answer: "If you're experiencing playback issues, try: 1) Refreshing the page, 2) Checking your internet connection, 3) Trying a different browser, or 4) Clearing your browser cache. If problems persist, visit our Support page to report the issue."
     },
     {
       question: "How do I manage notifications?",
       answer: "You can view all your notifications by clicking the bell icon in the top navigation bar. From there, you can mark notifications as read or click on them to go directly to the new content."
     },
     {
-      question: "How do I download content from HypeStream?",
-      answer: "To download content, click the download button on the movie or TV show card. Please note that download speed may vary based on your internet connection. Downloads are only available for certain titles and to registered users."
+      question: "How do I contact customer support?",
+      answer: "You can contact our support team through multiple channels: 1) Visit our Support page, 2) Send an email to hypestream127@gmail.com, 3) Use our live chat support, or 4) Call our support line directly. We aim to respond to all inquiries within 24 hours."
     },
     {
       question: "Can I watch HypeStream on my smart TV?",
@@ -79,6 +87,14 @@ const FAQs = () => {
     {
       question: "Can I download content to watch offline?",
       answer: "Currently, HypeStream only supports online streaming. We may add download functionality for offline viewing in future updates."
+    },
+    {
+      question: "What payment methods are accepted?",
+      answer: "Currently, we accept bank transfers to our PALMPAY account (Account number: 8028151231). Please always include your registered email as a reference with payments. We're working on adding more payment options like credit/debit cards and mobile payments in the future."
+    },
+    {
+      question: "How do I cancel my subscription?",
+      answer: "To cancel a subscription, go to your account settings and select 'Manage Subscription'. From there, you can cancel your current plan. For any issues, please contact our support team via the Support page."
     },
     {
       question: "How can I delete my account?",
@@ -122,7 +138,7 @@ const FAQs = () => {
           </p>
           <Button 
             className="bg-hype-purple hover:bg-hype-purple/90"
-            onClick={() => window.open('mailto:hypestream127@gmail.com', '_blank')}
+            onClick={() => navigate('/support')}
           >
             Contact Support
           </Button>

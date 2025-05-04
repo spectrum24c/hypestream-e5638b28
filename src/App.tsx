@@ -10,6 +10,7 @@ import TermsOfUse from '@/pages/TermsOfUse';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import CookiePolicy from '@/pages/CookiePolicy';
 import UserSettings from '@/pages/UserSettings';
+import Support from '@/pages/Support';
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
 
@@ -26,6 +27,7 @@ function App() {
         <Route path="/terms-of-use" element={<TermsOfUse />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/support" element={<Support />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />

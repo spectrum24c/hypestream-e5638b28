@@ -11,9 +11,14 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    // Calculate the increment needed to reach 100% in 8 seconds
+    // If we update every 20ms, we need (8000ms / 20ms) = 400 steps
+    // So each step should increase progress by (100 / 400) = 0.25
+    const increment = 0.25;
+    
     const interval = setInterval(() => {
       setProgress(prev => {
-        const newProgress = prev + 2;
+        const newProgress = prev + increment;
         if (newProgress >= 100) {
           clearInterval(interval);
           setTimeout(() => {

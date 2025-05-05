@@ -49,6 +49,21 @@ html, body, #root {
   background: linear-gradient(0deg, rgba(10, 10, 20, 1) 0%, rgba(10, 10, 20, 0) 100%);
 }
 
+.light .banner-overlay {
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+/* Theme transitions */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Adjustments for content slider spacing */
+div[class*="content-slider"] {
+  margin-top: 1rem !important;
+  margin-bottom: 1.5rem !important;
+}
+
 /* Mobile optimization for footer */
 @media (max-width: 640px) {
   .footer-grid {

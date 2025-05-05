@@ -11,27 +11,32 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import CookiePolicy from '@/pages/CookiePolicy';
 import UserSettings from '@/pages/UserSettings';
 import Support from '@/pages/Support';
+import Watchlist from '@/pages/Watchlist';
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 function App() {
   return (
-    <div className="app">
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/favorites" element={<Favorites />} />
-        <Route path="/faqs" element={<FAQs />} />
-        <Route path="/settings" element={<UserSettings />} />
-        <Route path="/terms-of-use" element={<TermsOfUse />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/cookie-policy" element={<CookiePolicy />} />
-        <Route path="/support" element={<Support />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <Toaster />
-    </div>
+    <ThemeProvider>
+      <div className="app">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/watchlist" element={<Watchlist />} />
+          <Route path="/faqs" element={<FAQs />} />
+          <Route path="/settings" element={<UserSettings />} />
+          <Route path="/terms-of-use" element={<TermsOfUse />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <Toaster />
+      </div>
+    </ThemeProvider>
   );
 }
 

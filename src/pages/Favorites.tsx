@@ -18,6 +18,7 @@ interface Favorite {
   release_date: string | null;
   vote_average: number | null;
   is_tv_show: boolean;
+  overview: string | null;
 }
 
 interface MovieDetails {
@@ -115,7 +116,8 @@ const Favorites = () => {
       poster_path: favorite.poster_path,
       release_date: favorite.release_date || undefined,
       vote_average: favorite.vote_average || undefined,
-      media_type: favorite.is_tv_show ? 'tv' : 'movie'
+      media_type: favorite.is_tv_show ? 'tv' : 'movie',
+      overview: favorite.overview || undefined
     };
     setSelectedMovie(movie);
   };
@@ -163,6 +165,7 @@ const Favorites = () => {
                     voteAverage={favorite.vote_average}
                     isTVShow={favorite.is_tv_show}
                     onClick={() => handleMovieClick(favorite)}
+                    description={favorite.overview}
                   />
                   <button 
                     className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer transition-opacity sm:opacity-0 sm:group-hover:opacity-100 opacity-100"

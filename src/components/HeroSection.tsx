@@ -132,7 +132,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
     : 'https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop';
 
   return (
-    <div className="relative h-[70vh] min-h-[500px] w-full overflow-hidden mt-10">
+    <div className="relative h-[70vh] min-h-[500px] w-full overflow-hidden mt-0 -mb-5">
       {/* Background Image with fade transition */}
       <div className={`absolute inset-0 transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
         <div className="absolute inset-0 bg-black/40 z-10"></div>

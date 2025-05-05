@@ -18,7 +18,7 @@ interface Favorite {
   release_date: string | null;
   vote_average: number | null;
   is_tv_show: boolean;
-  overview: string | null;
+  overview?: string | null;
 }
 
 interface MovieDetails {
@@ -72,13 +72,13 @@ const Favorites = () => {
       
       if (error) throw error;
       
-      // Transform data to ensure it has the overview property
-      const favsWithOverview = data?.map(fav => ({
+      // Transform data to ensure each favorite has an overview property (even if null)
+      const processedFavorites = data?.map((fav: any) => ({
         ...fav,
         overview: fav.overview || null
       })) || [];
       
-      setFavorites(favsWithOverview);
+      setFavorites(processedFavorites);
     } catch (error) {
       console.error('Error fetching favorites:', error);
       toast({
@@ -171,7 +171,7 @@ const Favorites = () => {
                     voteAverage={favorite.vote_average}
                     isTVShow={favorite.is_tv_show}
                     onClick={() => handleMovieClick(favorite)}
-                    description={favorite.overview}
+                    overview={favorite.overview || null}
                   />
                   <button 
                     className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer transition-opacity sm:opacity-0 sm:group-hover:opacity-100 opacity-100"

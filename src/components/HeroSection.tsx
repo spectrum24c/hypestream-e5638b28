@@ -162,7 +162,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
       </div>
 
       {/* Content with fade transition */}
-      <div className="container mx-auto px-4 relative h-full flex items-end pb-8 z-20">
+      <div className="container mx-auto px-4 relative h-full flex items-end pb-4 z-20">
         <div className={`max-w-2xl transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'animate-fade-in'}`}>
           <div className="flex items-center space-x-3 mb-3">
             <span className="bg-hype-orange px-2 py-1 text-xs font-medium text-white rounded">

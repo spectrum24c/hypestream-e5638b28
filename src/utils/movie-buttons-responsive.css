@@ -34,4 +34,78 @@
     margin-bottom: 0.5rem !important;
     width: 100% !important;
   }
+  
+  /* Enhanced mobile styles for UI elements */
+  .movie-card {
+    min-width: 140px !important;
+  }
+  
+  .movie-info {
+    padding: 0.5rem !important;
+  }
+  
+  .movie-title {
+    font-size: 0.9rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 0.2rem !important;
+  }
+  
+  .movie-meta {
+    font-size: 0.7rem !important;
+  }
+  
+  /* Mobile navigation enhancements */
+  .mobile-nav-menu {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 50 !important;
+    background-color: rgba(0, 0, 0, 0.95) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 1rem !important;
+    padding-top: 4rem !important;
+  }
+  
+  .mobile-nav-item {
+    padding: 0.75rem 0 !important;
+    font-size: 1.25rem !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  /* Mobile content spacing */
+  .section-title {
+    margin-bottom: 0.5rem !important;
+    font-size: 1.25rem !important;
+  }
+  
+  /* More compact cards on mobile */
+  .favorites-grid {
+    gap: 0.5rem !important;
+  }
+  
+  /* Better form UX on mobile */
+  .mobile-stack-form {
+    flex-direction: column !important;
+  }
+  
+  .mobile-stack-form > * {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 0.5rem !important;
+  }
+}
+
+/* Tablet specific optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+  }
+  
+  .tablet-padding {
+    padding: 1rem !important;
+  }
+  
+  .tablet-text {
+    font-size: 0.9rem !important;
+  }
 }

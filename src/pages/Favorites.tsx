@@ -72,7 +72,13 @@ const Favorites = () => {
       
       if (error) throw error;
       
-      setFavorites(data || []);
+      // Transform data to ensure it has the overview property
+      const favsWithOverview = data?.map(fav => ({
+        ...fav,
+        overview: fav.overview || null
+      })) || [];
+      
+      setFavorites(favsWithOverview);
     } catch (error) {
       console.error('Error fetching favorites:', error);
       toast({

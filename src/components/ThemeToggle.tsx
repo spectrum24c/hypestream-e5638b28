@@ -15,7 +15,7 @@ export function ThemeToggle() {
       />
       <Switch 
         id="theme-toggle" 
-        checked={theme === "light"} 
+        checked={theme === "dark" ? false : true}
         onCheckedChange={toggleTheme}
       />
       <Moon 

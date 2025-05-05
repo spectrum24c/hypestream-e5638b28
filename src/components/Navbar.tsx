@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -11,6 +12,7 @@ import NotificationsMenu from './navbar/NotificationsMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/types/movie';
+import { ThemeToggle } from './ThemeToggle';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -246,6 +248,8 @@ const Navbar = () => {
                 markAsRead={markNotificationsAsRead}
               />
             )}
+
+            <ThemeToggle />
 
             <UserMenu 
               session={session} 

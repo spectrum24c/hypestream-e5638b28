@@ -10,6 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface MobileNavigationProps {
   session: any;
@@ -94,17 +95,15 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
             My List
           </Link>
           <Link
-            to="/devices"
-            className="text-foreground hover:text-white py-2"
-          >
-            Devices
-          </Link>
-          <Link
             to="/faqs"
             className="text-foreground hover:text-white py-2"
           >
             FAQs
           </Link>
+
+          <div className="py-2">
+            <ThemeToggle />
+          </div>
 
           {session ? (
             <div className="pt-4 border-t border-border mt-4">

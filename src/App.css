@@ -58,6 +58,33 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Light mode styles */
+:root {
+  color-scheme: dark;
+}
+
+.light {
+  color-scheme: light;
+  background-color: white;
+  color: #1a1a1a;
+}
+
+.light .bg-hype-dark {
+  background-color: #f8f9fa;
+}
+
+.light .text-foreground {
+  color: #1a1a1a;
+}
+
+.light .text-muted-foreground {
+  color: #555;
+}
+
+.light .bg-gray-800 {
+  background-color: #efefef;
+}
+
 /* Adjustments for content slider spacing */
 div[class*="content-slider"] {
   margin-top: 1rem !important;

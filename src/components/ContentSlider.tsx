@@ -63,7 +63,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items, onViewAll }
   };
 
   return (
-    <div className="py-3">
+    <div className="py-1">
       {/* Section Title */}
       <div className="flex items-center justify-between mb-2 px-2">
         <h2 className="text-xl md:text-2xl font-bold text-white">{title}</h2>

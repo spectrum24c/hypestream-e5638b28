@@ -12,6 +12,7 @@ interface MovieCardProps {
   runtime?: number | null;
   numberOfSeasons?: number | null;
   genreIds?: number[];
+  overview?: string | null;
   onClick: () => void;
 }
 
@@ -25,6 +26,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   runtime,
   numberOfSeasons,
   genreIds = [],
+  overview,
   onClick
 }) => {
   const posterUrl = posterPath 

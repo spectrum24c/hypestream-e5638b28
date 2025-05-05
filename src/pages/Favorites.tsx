@@ -19,7 +19,7 @@ interface Favorite {
   release_date: string | null;
   vote_average: number | null;
   is_tv_show: boolean;
-  overview: string | null;
+  overview?: string | null; // Make overview optional since it might be missing from the database
 }
 
 interface MovieDetails {
@@ -74,7 +74,8 @@ const Favorites = () => {
       
       if (error) throw error;
       
-      setFavorites(data || []);
+      // Cast the data to Favorite[] type, ensuring it matches our interface
+      setFavorites(data as Favorite[]);
     } catch (error) {
       console.error('Error fetching favorites:', error);
       toast({

@@ -63,9 +63,9 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items, onViewAll }
   };
 
   return (
-    <div className="py-6 px-0">
+    <div className="py-3">
       {/* Section Title */}
-      <div className="flex items-center justify-between mb-4 px-2">
+      <div className="flex items-center justify-between mb-2 px-2">
         <h2 className="text-xl md:text-2xl font-bold text-white">{title}</h2>
         <Button 
           variant="ghost" 
@@ -114,6 +114,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items, onViewAll }
               numberOfSeasons={item.number_of_seasons}
               genreIds={item.genre_ids}
               onClick={() => handleMovieClick(item)}
+              overview={item.overview}
             />
           ))}
         </div>

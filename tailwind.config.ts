@@ -66,7 +66,7 @@ export default {
         hype: {
           purple: '#6923D0',
           orange: '#FF6B00',
-          dark: 'hsl(var(--hype-dark))',
+          dark: '#121212',
           teal: '#1DB2A2',
           magenta: '#FF2E63',
           gray: '#2A2A2A',

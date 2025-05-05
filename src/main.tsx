@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from 'react-router-dom';
 import App from "./App";
@@ -12,7 +12,7 @@ import { initPerformanceOptimizations } from "./utils/performanceOptimizer";
 initPerformanceOptimizations();
 
 const Root = () => {
-  const [showSplash, setShowSplash] = React.useState(true);
+  const [showSplash, setShowSplash] = useState(true);
   
   const handleSplashComplete = () => {
     setShowSplash(false);

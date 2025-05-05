@@ -10,8 +10,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { Separator } from "@/components/ui/separator";
 
 interface MobileNavigationProps {
   session: any;
@@ -96,23 +94,20 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
             My List
           </Link>
           <Link
+            to="/devices"
+            className="text-foreground hover:text-white py-2"
+          >
+            Devices
+          </Link>
+          <Link
             to="/faqs"
             className="text-foreground hover:text-white py-2"
           >
             FAQs
           </Link>
 
-          <Separator className="my-2" />
-          
-          <div className="py-2 flex items-center">
-            <span className="mr-4 text-foreground">Theme:</span>
-            <ThemeToggle />
-          </div>
-
-          <Separator className="my-2" />
-
           {session ? (
-            <div className="pt-2 mt-2">
+            <div className="pt-4 border-t border-border mt-4">
               <div className="text-sm text-muted-foreground mb-2">
                 Signed in as {session.user.email}
               </div>

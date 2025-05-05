@@ -18,7 +18,6 @@ interface Favorite {
   release_date: string | null;
   vote_average: number | null;
   is_tv_show: boolean;
-  overview?: string | null;
 }
 
 interface MovieDetails {
@@ -72,13 +71,7 @@ const Favorites = () => {
       
       if (error) throw error;
       
-      // Transform data to ensure each favorite has an overview property (even if null)
-      const processedFavorites = data?.map((fav: any) => ({
-        ...fav,
-        overview: fav.overview || null
-      })) || [];
-      
-      setFavorites(processedFavorites);
+      setFavorites(data || []);
     } catch (error) {
       console.error('Error fetching favorites:', error);
       toast({
@@ -122,8 +115,7 @@ const Favorites = () => {
       poster_path: favorite.poster_path,
       release_date: favorite.release_date || undefined,
       vote_average: favorite.vote_average || undefined,
-      media_type: favorite.is_tv_show ? 'tv' : 'movie',
-      overview: favorite.overview || undefined
+      media_type: favorite.is_tv_show ? 'tv' : 'movie'
     };
     setSelectedMovie(movie);
   };
@@ -171,7 +163,6 @@ const Favorites = () => {
                     voteAverage={favorite.vote_average}
                     isTVShow={favorite.is_tv_show}
                     onClick={() => handleMovieClick(favorite)}
-                    overview={favorite.overview || null}
                   />
                   <button 
                     className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-pointer transition-opacity sm:opacity-0 sm:group-hover:opacity-100 opacity-100"

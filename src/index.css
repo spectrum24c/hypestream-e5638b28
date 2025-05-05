@@ -60,41 +60,6 @@ html, body, #root {
     --hype-teal: 166 71% 43%;
     --hype-dark: 225 14% 10%;
   }
-
-  .light {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-
-    --hype-purple: 277 99% 43%;
-    --hype-orange: 25 95% 53%;
-    --hype-teal: 166 71% 43%;
-    --hype-dark: 0 0% 100%;
-  }
   
   body {
     @apply bg-background text-foreground;
@@ -154,12 +119,6 @@ html, body, #root {
   footer .grid-cols-1 {
     grid-template-columns: repeat(2, 1fr);
   }
-}
-
-/* Fix content slider spacing */
-.content-slider {
-  margin-top: 0.5rem !important;
-  padding-top: 0 !important;
 }
 
 /* Mobile optimizations */

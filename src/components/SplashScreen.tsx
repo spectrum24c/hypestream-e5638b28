@@ -8,7 +8,7 @@ interface SplashScreenProps {
 }
 
 const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
-  const [progress, setProgress] = useState<number>(0);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     // Calculate the increment needed to reach 100% in 6 seconds

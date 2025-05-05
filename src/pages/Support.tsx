@@ -8,47 +8,36 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Mail, Phone, MessageSquare, Copy, CheckCircle, HelpCircle, Info } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, MessageSquare, HelpCircle, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const Support = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isCopied, setIsCopied] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [subject, setSubject] = useState('');
   const [submitting, setSubmitting] = useState(false);
   
-  const accountNumber = '8028151231';
-  const bankName = 'PALMPAY';
-  
   const handleBackToHome = () => {
     navigate('/');
   };
 
-  const copyAccountNumber = () => {
-    navigator.clipboard.writeText(accountNumber);
-    setIsCopied(true);
-    
-    toast({
-      title: "Account number copied!",
-      description: "The account number has been copied to your clipboard.",
-    });
-    
-    setTimeout(() => {
-      setIsCopied(false);
-    }, 2000);
-  };
-
-  const handleSubmitForm = (e: React.FormEvent) => {
+  const handleSubmitForm = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      // Send form data to designated email
+      // In a real application, you would use an API endpoint to send emails
+      // This is a mock implementation that simulates the submission
+      
+      // Create a mailto link as a fallback for now
+      const mailtoLink = `mailto:awokojorichmond@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`)}`;
+      window.open(mailtoLink, '_blank');
+      
       toast({
         title: "Support request submitted",
         description: "We'll get back to you as soon as possible.",
@@ -57,8 +46,15 @@ const Support = () => {
       setEmail('');
       setSubject('');
       setMessage('');
+    } catch (error) {
+      toast({
+        title: "Error submitting form",
+        description: "Please try again later.",
+        variant: "destructive"
+      });
+    } finally {
       setSubmitting(false);
-    }, 1000);
+    }
   };
 
   const supportCategories = [
@@ -104,10 +100,9 @@ const Support = () => {
         </div>
 
         <Tabs defaultValue="support" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="support">Contact Support</TabsTrigger>
             <TabsTrigger value="faq">Frequently Asked Questions</TabsTrigger>
-            <TabsTrigger value="payments">Payment Information</TabsTrigger>
           </TabsList>
           
           {/* Contact Support Tab */}
@@ -120,15 +115,15 @@ const Support = () => {
                       <MessageSquare className="h-5 w-5 text-primary" />
                       Chat Support
                     </CardTitle>
-                    <CardDescription>Get help through our live chat</CardDescription>
+                    <CardDescription>Get help through our chat support</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p>Our customer support team is available 24/7 via live chat. Average response time is under 5 minutes during peak hours.</p>
+                    <p>Our customer support team is available 24/7 via WhatsApp. Average response time is under 5 minutes during peak hours.</p>
                   </CardContent>
                   <CardFooter>
                     <Button 
                       className="w-full"
-                      onClick={() => window.open('https://t.me/HypeStreamSupport', '_blank')}
+                      onClick={() => window.open('https://wa.link/ho4enf', '_blank')}
                     >
                       Start Chat
                     </Button>
@@ -149,7 +144,7 @@ const Support = () => {
                   <CardFooter>
                     <Button 
                       className="w-full"
-                      onClick={() => window.open('mailto:hypestream127@gmail.com', '_blank')}
+                      onClick={() => window.open('mailto:awokojorichmond@gmail.com', '_blank')}
                     >
                       Send Email
                     </Button>
@@ -167,14 +162,14 @@ const Support = () => {
                   <CardContent>
                     <p>Call our dedicated support line for urgent issues or if you prefer speaking with a representative directly.</p>
                     <div className="mt-4 text-center">
-                      <p className="text-lg font-medium">+234 801 234 5678</p>
+                      <p className="text-lg font-medium">+234 912 720 4575</p>
                       <p className="text-sm text-muted-foreground">Mon-Fri: 8AM-8PM | Sat-Sun: 10AM-6PM</p>
                     </div>
                   </CardContent>
                   <CardFooter>
                     <Button 
                       className="w-full"
-                      onClick={() => window.open('tel:+2348012345678', '_blank')}
+                      onClick={() => window.open('tel:+2349127204575', '_blank')}
                     >
                       Call Support
                     </Button>
@@ -284,98 +279,11 @@ const Support = () => {
               <CardFooter className="flex justify-center border-t pt-4">
                 <p className="text-sm text-muted-foreground">
                   Can't find what you're looking for?{" "}
-                  <Button variant="link" className="h-auto p-0" onClick={() => window.open('mailto:hypestream127@gmail.com', '_blank')}>
+                  <Button variant="link" className="h-auto p-0" onClick={() => window.open('mailto:awokojorichmond@gmail.com', '_blank')}>
                     Contact our support team
                   </Button>
                 </p>
               </CardFooter>
-            </Card>
-          </TabsContent>
-          
-          {/* Payment Information Tab */}
-          <TabsContent value="payments">
-            <Card className="bg-card">
-              <CardHeader>
-                <CardTitle className="text-xl">Payment Support</CardTitle>
-                <CardDescription>Use these account details for payments and subscriptions</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="bg-secondary/30 rounded-lg p-4 border border-border">
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-1">Bank Name</p>
-                      <p className="font-medium">{bankName}</p>
-                    </div>
-                    <div className="relative">
-                      <p className="text-sm text-muted-foreground mb-1">Account Number</p>
-                      <div className="flex items-center justify-between bg-background rounded-md p-3 border border-input">
-                        <span className="font-medium">{accountNumber}</span>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={copyAccountNumber}
-                          className="flex gap-1"
-                        >
-                          {isCopied ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                          {isCopied ? "Copied!" : "Copy"}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Payment Instructions</h3>
-                  <div className="grid gap-4">
-                    <div className="bg-primary/10 rounded-md p-3 border border-primary/20">
-                      <p className="text-sm font-medium">
-                        Please include your HypeStream account email as reference when making payments to ensure proper allocation.
-                      </p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Subscription Payment Steps:</h4>
-                      <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground pl-2">
-                        <li>Log in to your banking app or visit your bank</li>
-                        <li>Select "Transfer to other banks"</li>
-                        <li>Enter the account number: {accountNumber}</li>
-                        <li>Select the bank: {bankName}</li>
-                        <li>Enter the amount for your chosen subscription plan</li>
-                        <li>Add your HypeStream email as the payment reference</li>
-                        <li>Complete the transaction</li>
-                        <li>Your account will be activated within 24 hours</li>
-                      </ol>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Accepted Payment Methods</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="p-3 border border-border rounded-md text-center">
-                      <p className="font-medium">Bank Transfers</p>
-                    </div>
-                    <div className="p-3 border border-border rounded-md text-center">
-                      <p className="font-medium">Mobile Money</p>
-                    </div>
-                    <div className="p-3 border border-border rounded-md text-center">
-                      <p className="font-medium">USSD Payments</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-destructive/10 text-destructive rounded-md p-3 border border-destructive/20">
-                  <div className="flex items-start gap-2">
-                    <HelpCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium">Payment Issues?</p>
-                      <p className="text-sm">
-                        If you've made a payment but your account hasn't been activated, please contact our billing department at billing@hypestream.com with your payment receipt.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
             </Card>
           </TabsContent>
         </Tabs>

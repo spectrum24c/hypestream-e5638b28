@@ -1,6 +1,6 @@
 
-import React, { useEffect, useState } from 'react';
-import { imgPath, fetchGenres } from '@/services/tmdbApi';
+import React from 'react';
+import { imgPath } from '@/services/tmdbApi';
 
 interface MovieCardProps {
   id: string;
@@ -49,7 +49,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
   return (
     <div 
-      className="flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] bg-gray-800 rounded-lg overflow-hidden hover:scale-105 transition duration-200 cursor-pointer shadow-lg"
+      className="flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] bg-card rounded-lg overflow-hidden hover:scale-105 transition duration-200 cursor-pointer shadow-lg border border-border/10 hover:border-hype-purple/30"
       onClick={onClick}
     >
       <div className="relative aspect-[2/3] w-full">
@@ -59,6 +59,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           className="w-full h-full object-cover"
           loading="lazy"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
       </div>
       <div className="p-2 md:p-3">
         <h3 className="font-bold text-xs md:text-sm mb-1 truncate">{title}</h3>

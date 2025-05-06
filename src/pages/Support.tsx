@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Mail, Phone, MessageSquare, HelpCircle, Info } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, MessageSquare, HelpCircle, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -20,6 +20,7 @@ const Support = () => {
   const [message, setMessage] = useState('');
   const [subject, setSubject] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   const handleBackToHome = () => {
     navigate('/');
@@ -59,10 +60,18 @@ const Support = () => {
 
   const supportCategories = [
     {
+      title: "Getting Started",
+      items: [
+        { question: "How do I create an account?", answer: "To create an account, click on the 'Sign Up' button in the top right corner of the homepage. Fill in your details, verify your email address, and you're all set!" },
+        { question: "Is there a free trial available?", answer: "Yes, we offer a 7-day free trial for all new users. You can access all premium features during this period without any charges." },
+        { question: "What devices can I watch on?", answer: "Our service is available on web browsers, mobile devices (iOS and Android), smart TVs, gaming consoles, and streaming devices like Roku and Apple TV." }
+      ]
+    },
+    {
       title: "Account & Billing",
       items: [
         { question: "How do I change my payment method?", answer: "You can update your payment method in Settings > Billing Information. We accept bank transfers, credit cards, and mobile payments." },
-        { question: "Why was my subscription canceled?", answer: "Subscriptions may be canceled due to payment failures or at your request. Check your email for notifications or contact our billing team for assistance." },
+        { question: "Why was my account locked?", answer: "Accounts may be temporarily locked for security reasons, such as multiple failed login attempts or suspicious activity. Contact our support team for assistance." },
         { question: "How do I upgrade my subscription plan?", answer: "Go to Settings > Subscription and select 'Upgrade Plan' to see available options and complete your upgrade." }
       ]
     },
@@ -84,35 +93,112 @@ const Support = () => {
     }
   ];
 
+  const filteredCategories = searchQuery
+    ? supportCategories.map(category => ({
+        ...category,
+        items: category.items.filter(item => 
+          item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.answer.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+      })).filter(category => category.items.length > 0)
+    : supportCategories;
+
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-screen bg-hype-dark text-foreground">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 pt-20 pb-12">
-        <div className="mb-8 flex items-center">
-          <Button 
-            onClick={handleBackToHome} 
-            variant="ghost" 
-            className="mr-4"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Home
-          </Button>
-          <h1 className="text-3xl font-bold">Help & Support Center</h1>
+      <main className="container mx-auto px-4 pt-20 pb-12 md:px-6">
+        <div className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex items-center">
+            <Button 
+              onClick={handleBackToHome} 
+              variant="ghost" 
+              className="mr-2 md:mr-4"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+            </Button>
+            <h1 className="text-2xl md:text-3xl font-bold">Help & Support Center</h1>
+          </div>
+          
+          <div className="relative w-full md:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search help articles..." 
+              className="pl-10 bg-background/10 border-border"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
 
-        <Tabs defaultValue="support" className="w-full">
+        <Tabs defaultValue="faq" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger value="faq">Help Center</TabsTrigger>
             <TabsTrigger value="support">Contact Support</TabsTrigger>
-            <TabsTrigger value="faq">Frequently Asked Questions</TabsTrigger>
           </TabsList>
+          
+          {/* FAQ Tab */}
+          <TabsContent value="faq">
+            <Card className="bg-card/50 backdrop-blur-sm border-border">
+              <CardHeader>
+                <CardTitle className="text-xl">Knowledge Base</CardTitle>
+                <CardDescription>
+                  Browse through our most common questions and answers
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {filteredCategories.length > 0 ? (
+                    filteredCategories.map((category, index) => (
+                      <div key={index} className="space-y-3">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                          <HelpCircle className="h-5 w-5 text-hype-purple" />
+                          {category.title}
+                        </h3>
+                        <Accordion type="single" collapsible className="w-full">
+                          {category.items.map((item, itemIndex) => (
+                            <AccordionItem key={itemIndex} value={`faq-${index}-${itemIndex}`} className="border-border">
+                              <AccordionTrigger className="text-left hover:text-hype-purple">
+                                {item.question}
+                              </AccordionTrigger>
+                              <AccordionContent className="text-muted-foreground">
+                                <p>{item.answer}</p>
+                              </AccordionContent>
+                            </AccordionItem>
+                          ))}
+                        </Accordion>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="py-8 text-center">
+                      <HelpCircle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No results found</h3>
+                      <p className="text-muted-foreground mb-4">We couldn't find any help articles matching "{searchQuery}"</p>
+                      <Button variant="outline" onClick={() => setSearchQuery('')}>
+                        Clear Search
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-center border-t pt-4">
+                <p className="text-sm text-muted-foreground">
+                  Can't find what you're looking for?{" "}
+                  <Button variant="link" className="h-auto p-0" onClick={() => document.querySelector('[data-state="inactive"][value="support"]')?.click()}>
+                    Contact our support team
+                  </Button>
+                </p>
+              </CardFooter>
+            </Card>
+          </TabsContent>
           
           {/* Contact Support Tab */}
           <TabsContent value="support">
             <div className="grid md:grid-cols-2 gap-6 mb-8">
               <div className="space-y-6">
-                <Card className="bg-card">
+                <Card className="bg-card/50 backdrop-blur-sm border-border hover:border-hype-purple/50 transition-colors">
                   <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
-                      <MessageSquare className="h-5 w-5 text-primary" />
+                      <MessageSquare className="h-5 w-5 text-hype-purple" />
                       Chat Support
                     </CardTitle>
                     <CardDescription>Get help through our chat support</CardDescription>
@@ -122,7 +208,7 @@ const Support = () => {
                   </CardContent>
                   <CardFooter>
                     <Button 
-                      className="w-full"
+                      className="w-full bg-hype-purple hover:bg-hype-purple/90"
                       onClick={() => window.open('https://wa.link/ho4enf', '_blank')}
                     >
                       Start Chat
@@ -130,10 +216,10 @@ const Support = () => {
                   </CardFooter>
                 </Card>
                 
-                <Card className="bg-card">
+                <Card className="bg-card/50 backdrop-blur-sm border-border hover:border-hype-purple/50 transition-colors">
                   <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
-                      <Mail className="h-5 w-5 text-primary" />
+                      <Mail className="h-5 w-5 text-hype-purple" />
                       Email Support
                     </CardTitle>
                     <CardDescription>Send us an email for assistance</CardDescription>
@@ -143,7 +229,7 @@ const Support = () => {
                   </CardContent>
                   <CardFooter>
                     <Button 
-                      className="w-full"
+                      className="w-full bg-hype-purple hover:bg-hype-purple/90"
                       onClick={() => window.open('mailto:awokojorichmond@gmail.com', '_blank')}
                     >
                       Send Email
@@ -151,10 +237,10 @@ const Support = () => {
                   </CardFooter>
                 </Card>
                 
-                <Card className="bg-card">
+                <Card className="bg-card/50 backdrop-blur-sm border-border hover:border-hype-purple/50 transition-colors">
                   <CardHeader>
                     <CardTitle className="text-xl flex items-center gap-2">
-                      <Phone className="h-5 w-5 text-primary" />
+                      <Phone className="h-5 w-5 text-hype-purple" />
                       Phone Support
                     </CardTitle>
                     <CardDescription>Speak with a representative directly</CardDescription>
@@ -168,7 +254,7 @@ const Support = () => {
                   </CardContent>
                   <CardFooter>
                     <Button 
-                      className="w-full"
+                      className="w-full bg-hype-purple hover:bg-hype-purple/90"
                       onClick={() => window.open('tel:+2349127204575', '_blank')}
                     >
                       Call Support
@@ -178,7 +264,7 @@ const Support = () => {
               </div>
               
               <div>
-                <Card className="bg-card">
+                <Card className="bg-card/50 backdrop-blur-sm border-border sticky top-24">
                   <CardHeader>
                     <CardTitle className="text-xl">Contact Form</CardTitle>
                     <CardDescription>
@@ -188,7 +274,7 @@ const Support = () => {
                   <CardContent>
                     <form onSubmit={handleSubmitForm} className="space-y-4">
                       <div className="grid gap-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <label htmlFor="name" className="text-sm font-medium">Name</label>
                             <Input 
@@ -197,6 +283,7 @@ const Support = () => {
                               onChange={(e) => setName(e.target.value)}
                               placeholder="Your name" 
                               required
+                              className="bg-background/10"
                             />
                           </div>
                           <div className="space-y-2">
@@ -208,6 +295,7 @@ const Support = () => {
                               onChange={(e) => setEmail(e.target.value)}
                               placeholder="Your email" 
                               required
+                              className="bg-background/10"
                             />
                           </div>
                         </div>
@@ -219,6 +307,7 @@ const Support = () => {
                             onChange={(e) => setSubject(e.target.value)}
                             placeholder="What is this regarding?" 
                             required 
+                            className="bg-background/10"
                           />
                         </div>
                         <div className="space-y-2">
@@ -230,10 +319,15 @@ const Support = () => {
                             placeholder="Describe your issue or question in detail" 
                             rows={5} 
                             required 
+                            className="bg-background/10"
                           />
                         </div>
                       </div>
-                      <Button type="submit" className="w-full" disabled={submitting}>
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-hype-purple hover:bg-hype-purple/90" 
+                        disabled={submitting}
+                      >
                         {submitting ? "Submitting..." : "Submit Support Request"}
                       </Button>
                     </form>
@@ -241,50 +335,6 @@ const Support = () => {
                 </Card>
               </div>
             </div>
-          </TabsContent>
-          
-          {/* FAQ Tab */}
-          <TabsContent value="faq">
-            <Card className="bg-card">
-              <CardHeader>
-                <CardTitle className="text-xl">Frequently Asked Questions</CardTitle>
-                <CardDescription>
-                  Browse through our most common questions and answers
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {supportCategories.map((category, index) => (
-                    <div key={index} className="space-y-3">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Info className="h-5 w-5 text-primary" />
-                        {category.title}
-                      </h3>
-                      <Accordion type="single" collapsible className="w-full">
-                        {category.items.map((item, itemIndex) => (
-                          <AccordionItem key={itemIndex} value={`faq-${index}-${itemIndex}`}>
-                            <AccordionTrigger className="text-left">
-                              {item.question}
-                            </AccordionTrigger>
-                            <AccordionContent>
-                              <p className="text-muted-foreground">{item.answer}</p>
-                            </AccordionContent>
-                          </AccordionItem>
-                        ))}
-                      </Accordion>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-center border-t pt-4">
-                <p className="text-sm text-muted-foreground">
-                  Can't find what you're looking for?{" "}
-                  <Button variant="link" className="h-auto p-0" onClick={() => window.open('mailto:awokojorichmond@gmail.com', '_blank')}>
-                    Contact our support team
-                  </Button>
-                </p>
-              </CardFooter>
-            </Card>
           </TabsContent>
         </Tabs>
       </main>

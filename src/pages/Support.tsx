@@ -183,7 +183,12 @@ const Support = () => {
               <CardFooter className="flex justify-center border-t pt-4">
                 <p className="text-sm text-muted-foreground">
                   Can't find what you're looking for?{" "}
-                  <Button variant="link" className="h-auto p-0" onClick={() => document.querySelector('[data-state="inactive"][value="support"]')?.click()}>
+                  <Button variant="link" className="h-auto p-0" onClick={() => {
+                    const element = document.querySelector('[data-state="inactive"][value="support"]');
+                    if (element) {
+                      (element as HTMLElement).click();
+                    }
+                  }}>
                     Contact our support team
                   </Button>
                 </p>

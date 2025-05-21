@@ -13,8 +13,13 @@ import UserSettings from '@/pages/UserSettings';
 import Support from '@/pages/Support';
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
+import { useHardwareBackButton, useStatusBarCustomization } from '@/utils/mobileUtils';
 
 function App() {
+  // Use mobile-specific hooks
+  useHardwareBackButton();
+  useStatusBarCustomization(true);
+
   return (
     <div className="app">
       <Routes>

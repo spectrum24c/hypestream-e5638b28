@@ -361,6 +361,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
               src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&hd=1`}
               title={`${title} Trailer`}
               frameBorder="0"
+              referrerPolicy="origin"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
               style={{ height: '100vh', width: '100%' }}

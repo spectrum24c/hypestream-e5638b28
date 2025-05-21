@@ -68,4 +68,3 @@ export const trackWatchProgress = (movieId: string, progress: number, mediaType:
     console.error('Error tracking watch progress:', error);
   }
 };
-

@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { imgPath } from '@/services/tmdbApi';
+import React, { useState } from 'react';
+import { getOptimizedImagePath } from '@/services/tmdbApi';
 
 interface MovieCardProps {
   id: string;
@@ -29,8 +29,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
   overview,
   onClick
 }) => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  
+  // Use optimized image paths with appropriate size
   const posterUrl = posterPath 
-    ? `${imgPath}${posterPath}` 
+    ? getOptimizedImagePath(posterPath, 'medium') 
     : 'https://via.placeholder.com/300x450?text=No+Poster';
   
   // Format release date to just show year
@@ -47,18 +51,36 @@ const MovieCard: React.FC<MovieCardProps> = ({
     durationInfo = runtime ? `${runtime} min` : '';
   }
 
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
   return (
     <div 
       className="flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] bg-card rounded-lg overflow-hidden hover:scale-105 transition duration-200 cursor-pointer shadow-lg border border-border/10 hover:border-hype-purple/30"
       onClick={onClick}
     >
-      <div className="relative aspect-[2/3] w-full">
+      <div className="relative aspect-[2/3] w-full bg-gray-800">
+        {!imageLoaded && !imageError && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-t-transparent border-hype-purple rounded-full animate-spin"></div>
+          </div>
+        )}
+        
         <img 
-          src={posterUrl} 
+          src={imageError ? '/placeholder.svg' : posterUrl}
           alt={title}
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           loading="lazy"
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          decoding="async"
         />
+        
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
       </div>
       <div className="p-2 md:p-3">

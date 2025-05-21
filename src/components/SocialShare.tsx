@@ -6,9 +6,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import type { SocialShare as SocialShareType } from '@/types/movie';
 import { useToast } from '@/hooks/use-toast';
+import { Share2, Facebook, Twitter, Mail, Linkedin, WhatsApp, Copy, Share } from 'lucide-react';
 
 interface SocialShareProps {
   title: string;
@@ -22,26 +24,55 @@ const SocialShare: React.FC<SocialShareProps> = ({
   url
 }) => {
   const { toast } = useToast();
+  const shareData = { title, text: message, url };
 
   const shareOptions: SocialShareType[] = [
     {
       platform: 'facebook',
-      title: 'Share on Facebook',
+      title: 'Facebook',
       url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(message + ' ' + title)}`
     },
     {
       platform: 'twitter',
-      title: 'Share on Twitter',
+      title: 'Twitter',
       url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(message + ' ' + title)}&url=${encodeURIComponent(url)}`
     },
     {
+      platform: 'linkedin',
+      title: 'LinkedIn',
+      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`
+    },
+    {
+      platform: 'whatsapp',
+      title: 'WhatsApp',
+      url: `https://wa.me/?text=${encodeURIComponent(message + ' ' + title + ' ' + url)}`
+    },
+    {
       platform: 'email',
-      title: 'Share via Email',
+      title: 'Email',
       url: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(message + ' ' + title + '\n\n' + url)}`
     }
   ];
 
-  const handleShare = (platform: string, shareUrl: string) => {
+  const handleShare = async (platform: string, shareUrl: string) => {
+    // Try Web Share API first for mobile devices if it's the native sharing
+    if (platform === 'native' && navigator.share) {
+      try {
+        await navigator.share(shareData);
+        toast({
+          title: "Shared successfully",
+          description: "Content shared via your device",
+        });
+        return;
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          console.error('Error sharing:', error);
+        }
+        // Fall back to platform-specific sharing if Web Share API fails
+      }
+    }
+    
+    // Platform specific sharing
     if (platform === 'email') {
       window.location.href = shareUrl;
     } else {
@@ -62,29 +93,62 @@ const SocialShare: React.FC<SocialShareProps> = ({
     });
   };
 
+  // Check if Web Share API is available (mostly on mobile)
+  const canUseNativeShare = navigator.share !== undefined;
+
+  const renderPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case 'facebook': return <Facebook className="mr-2 h-4 w-4" />;
+      case 'twitter': return <Twitter className="mr-2 h-4 w-4" />;
+      case 'linkedin': return <Linkedin className="mr-2 h-4 w-4" />;
+      case 'whatsapp': return <WhatsApp className="mr-2 h-4 w-4" />;
+      case 'email': return <Mail className="mr-2 h-4 w-4" />;
+      default: return <Share className="mr-2 h-4 w-4" />;
+    }
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline">Share</Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        {shareOptions.map((option) => (
-          <DropdownMenuItem 
-            key={option.platform}
-            onClick={() => handleShare(option.platform, option.url)}
-            className="cursor-pointer"
-          >
-            {option.title}
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuItem 
-          onClick={handleCopyLink}
-          className="cursor-pointer"
+    <>
+      {canUseNativeShare ? (
+        <Button 
+          variant="outline"
+          onClick={() => handleShare('native', '')}
+          className="flex items-center"
         >
-          Copy link
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <Share2 className="mr-2 h-4 w-4" />
+          Share
+        </Button>
+      ) : (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="flex items-center">
+              <Share2 className="mr-2 h-4 w-4" />
+              Share
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {shareOptions.map((option) => (
+              <DropdownMenuItem 
+                key={option.platform}
+                onClick={() => handleShare(option.platform, option.url)}
+                className="cursor-pointer flex items-center"
+              >
+                {renderPlatformIcon(option.platform)}
+                {option.title}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem 
+              onClick={handleCopyLink}
+              className="cursor-pointer flex items-center"
+            >
+              <Copy className="mr-2 h-4 w-4" />
+              Copy link
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </>
   );
 };
 

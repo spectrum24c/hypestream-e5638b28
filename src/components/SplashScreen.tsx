@@ -1,88 +1,97 @@
-
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Film } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import PinEntry from './PinEntry';
 
 interface SplashScreenProps {
-  onComplete: () => void;
+  onAnimationComplete: () => void;
 }
 
-const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
-  const [progress, setProgress] = useState(0);
+const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete }) => {
+  const [isVisible, setIsVisible] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showPinEntry, setShowPinEntry] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [pinEnabled, setPinEnabled] = useState(false);
 
   useEffect(() => {
-    // Calculate the increment needed to reach 100% in 6 seconds
-    // If we update every 20ms, we need (6000ms / 20ms) = 300 steps
-    // So each step should increase progress by (100 / 300) = 0.333
-    const increment = 0.333;
-    
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        const newProgress = prev + increment;
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            onComplete();
-          }, 500);
-          return 100;
+    const checkAuthAndPin = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          setUserEmail(session.user.email || '');
+          
+          // Check if user has PIN enabled
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('pin_enabled')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (profile?.pin_enabled) {
+            setPinEnabled(true);
+          }
         }
-        return newProgress;
-      });
-    }, 20);
+      } catch (error) {
+        console.error('Error checking auth and PIN:', error);
+      }
+    };
 
-    return () => clearInterval(interval);
-  }, [onComplete]);
+    // Simulate loading and animation
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      setTimeout(async () => {
+        await checkAuthAndPin();
+        setIsLoading(false);
+        
+        // Show PIN entry if user has PIN enabled, otherwise complete animation
+        if (pinEnabled && userEmail) {
+          setShowPinEntry(true);
+        } else {
+          onAnimationComplete();
+        }
+      }, 500);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [onAnimationComplete, pinEnabled, userEmail]);
+
+  const handlePinSuccess = () => {
+    setShowPinEntry(false);
+    onAnimationComplete();
+  };
+
+  const handlePinBack = () => {
+    setShowPinEntry(false);
+    // Sign out user to force regular login
+    supabase.auth.signOut();
+    onAnimationComplete();
+  };
+
+  if (showPinEntry) {
+    return (
+      <PinEntry
+        onSuccess={handlePinSuccess}
+        onBack={handlePinBack}
+        userEmail={userEmail}
+      />
+    );
+  }
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-hype-dark flex flex-col items-center justify-center"
-    >
-      <motion.div 
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex flex-col items-center space-y-6"
-      >
-        <div className="relative flex items-center justify-center">
-          <Film size={56} className="text-hype-purple" />
-          <div className="absolute -inset-2 rounded-full bg-hype-purple/20 animate-pulse-slow"></div>
-        </div>
-
-        <motion.h1 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="text-4xl font-bold text-white"
-        >
-          HypeStream
-        </motion.h1>
-        
-        <motion.div 
-          initial={{ width: "60%", opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="w-60 h-1.5 bg-hype-gray/30 rounded-full overflow-hidden"
-        >
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            className="h-full bg-gradient-to-r from-hype-purple to-hype-teal rounded-full"
-          ></motion.div>
-        </motion.div>
-        
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
-          className="text-muted-foreground"
-        >
-          Loading your experience...
-        </motion.p>
-      </motion.div>
-    </motion.div>
+    <div className={cn(
+      "fixed inset-0 flex items-center justify-center z-50 bg-hype-dark transition-opacity duration-500",
+      isVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+    )}>
+      {isLoading ? (
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-hype-purple"></div>
+      ) : (
+        <p className="text-2xl text-white">Loading...</p>
+      )}
+    </div>
   );
 };
 

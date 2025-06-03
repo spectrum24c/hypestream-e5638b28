@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, LogOut, Trash2, Bookmark, Settings } from 'lucide-react';
+import { User, LogOut, Trash2, Bookmark, Settings, Lock } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -33,6 +33,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ session, onSignOut, onDeleteAccount
             <Link to="/favorites" className="text-sm hover:underline flex items-center">
               <Bookmark className="mr-2 h-4 w-4" />
               My Favorites
+            </Link>
+            <Link to="/pin-settings" className="text-sm hover:underline flex items-center">
+              <Lock className="mr-2 h-4 w-4" />
+              PIN
             </Link>
             <Link to="/settings" className="text-sm hover:underline flex items-center">
               <Settings className="mr-2 h-4 w-4" />

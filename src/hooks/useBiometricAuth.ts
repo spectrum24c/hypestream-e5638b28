@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { BiometricAuth, BiometricAuthenticationStatus } from '@capacitor-community/biometric-auth';
+import { BiometricAuth, BiometricAuthenticationStatus } from '@capacitor/biometric-auth';
 import { Device } from '@capacitor/device';
 import { isCapacitorNative } from '@/utils/mobileUtils';
 import { useToast } from '@/hooks/use-toast';
@@ -35,7 +35,7 @@ export const useBiometricAuth = () => {
         return;
       }
 
-      const result = await BiometricAuth.isAvailable();
+      const result = await BiometricAuth.checkBiometry();
       setIsAvailable(result.isAvailable);
       setIsSupported(true);
 
@@ -60,18 +60,14 @@ export const useBiometricAuth = () => {
     }
 
     try {
-      const result = await BiometricAuth.verify({
+      const result = await BiometricAuth.authenticate({
         reason,
         title: 'Biometric Authentication',
         subtitle: 'Use your biometric to authenticate',
         description: 'Place your finger on the sensor or look at the camera'
       });
 
-      if (result.isVerified) {
-        return { success: true };
-      } else {
-        return { success: false, error: 'Authentication failed' };
-      }
+      return { success: true };
     } catch (error: any) {
       console.error('Biometric authentication error:', error);
       

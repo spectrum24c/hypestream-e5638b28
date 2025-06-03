@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { SocialShare as SocialShareType } from '@/types/movie';
 import { useToast } from '@/hooks/use-toast';
-import { Share2, Facebook, Twitter, Mail, Linkedin, WhatsApp, Copy, Share } from 'lucide-react';
+import { Share2, Facebook, Twitter, Mail, Linkedin, MessageCircle, Copy, Share } from 'lucide-react';
 
 interface SocialShareProps {
   title: string;
@@ -38,6 +38,15 @@ const SocialShare: React.FC<SocialShareProps> = ({
       url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(message + ' ' + title)}&url=${encodeURIComponent(url)}`
     },
     {
+      platform: 'email',
+      title: 'Email',
+      url: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(message + ' ' + title + '\n\n' + url)}`
+    }
+  ];
+
+  // Additional share options that don't match the strict type
+  const additionalShareOptions = [
+    {
       platform: 'linkedin',
       title: 'LinkedIn',
       url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`
@@ -46,11 +55,6 @@ const SocialShare: React.FC<SocialShareProps> = ({
       platform: 'whatsapp',
       title: 'WhatsApp',
       url: `https://wa.me/?text=${encodeURIComponent(message + ' ' + title + ' ' + url)}`
-    },
-    {
-      platform: 'email',
-      title: 'Email',
-      url: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(message + ' ' + title + '\n\n' + url)}`
     }
   ];
 
@@ -101,7 +105,7 @@ const SocialShare: React.FC<SocialShareProps> = ({
       case 'facebook': return <Facebook className="mr-2 h-4 w-4" />;
       case 'twitter': return <Twitter className="mr-2 h-4 w-4" />;
       case 'linkedin': return <Linkedin className="mr-2 h-4 w-4" />;
-      case 'whatsapp': return <WhatsApp className="mr-2 h-4 w-4" />;
+      case 'whatsapp': return <MessageCircle className="mr-2 h-4 w-4" />;
       case 'email': return <Mail className="mr-2 h-4 w-4" />;
       default: return <Share className="mr-2 h-4 w-4" />;
     }
@@ -128,6 +132,16 @@ const SocialShare: React.FC<SocialShareProps> = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             {shareOptions.map((option) => (
+              <DropdownMenuItem 
+                key={option.platform}
+                onClick={() => handleShare(option.platform, option.url)}
+                className="cursor-pointer flex items-center"
+              >
+                {renderPlatformIcon(option.platform)}
+                {option.title}
+              </DropdownMenuItem>
+            ))}
+            {additionalShareOptions.map((option) => (
               <DropdownMenuItem 
                 key={option.platform}
                 onClick={() => handleShare(option.platform, option.url)}

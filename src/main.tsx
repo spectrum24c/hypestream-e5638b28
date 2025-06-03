@@ -66,7 +66,7 @@ const Root = () => {
     <React.StrictMode>
       <BrowserRouter>
         {showSplash ? (
-          <SplashScreen onComplete={handleSplashComplete} />
+          <SplashScreen onAnimationComplete={handleSplashComplete} />
         ) : (
           <App />
         )}

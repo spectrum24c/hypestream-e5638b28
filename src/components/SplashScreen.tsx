@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +16,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete }) => {
   const [showPinEntry, setShowPinEntry] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const [pinEnabled, setPinEnabled] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAuthAndPin = async () => {

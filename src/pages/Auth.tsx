@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,9 +18,7 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, AlertTriangle, Fingerprint } from 'lucide-react';
-import BiometricAuth from '@/components/auth/BiometricAuth';
-import { isCapacitorNative } from '@/utils/mobileUtils';
+import { Eye, EyeOff, AlertTriangle } from 'lucide-react';
 
 const passwordSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters")
@@ -33,15 +32,10 @@ const Auth = () => {
   const [session, setSession] = useState<any>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showBiometricAuth, setShowBiometricAuth] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if we're on mobile
-    setIsMobile(isCapacitorNative());
-    
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
@@ -108,12 +102,6 @@ const Auth = () => {
     }
   };
 
-  const handleBiometricAuthSuccess = () => {
-    setShowBiometricAuth(false);
-    // Proceed with regular sign in flow or navigate to home
-    navigate('/');
-  };
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -143,29 +131,6 @@ const Auth = () => {
                 <h1 className="text-2xl font-bold mb-6 text-center">
                   {isSignUp ? 'Create an Account' : 'Sign In to Your Account'}
                 </h1>
-
-                {/* Biometric Auth Button for Mobile */}
-                {isMobile && !isSignUp && (
-                  <div className="mb-6">
-                    <Button
-                      onClick={() => setShowBiometricAuth(true)}
-                      className="w-full bg-hype-purple hover:bg-hype-purple/90 mb-4"
-                    >
-                      <Fingerprint className="mr-2 h-4 w-4" />
-                      Quick Sign In
-                    </Button>
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-card px-2 text-muted-foreground">
-                          Or continue with email
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
                 <form onSubmit={handleAuth} className="space-y-6">
                   <div>
@@ -252,15 +217,6 @@ const Auth = () => {
             )}
           </div>
         </div>
-
-        {/* Biometric Authentication Dialog */}
-        <BiometricAuth
-          isOpen={showBiometricAuth}
-          onClose={() => setShowBiometricAuth(false)}
-          onSuccess={handleBiometricAuthSuccess}
-          title="Quick Sign In"
-          description="Use biometric authentication or PIN to sign in quickly"
-        />
       </main>
       <Footer />
     </div>

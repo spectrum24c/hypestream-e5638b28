@@ -26,22 +26,24 @@ const UserMenu: React.FC<UserMenuProps> = ({ session, onSignOut, onDeleteAccount
             <div className="font-medium">
               {session.user.email}
             </div>
-            <Link to="/profile" className="text-sm hover:underline flex items-center">
-              <User className="mr-2 h-4 w-4" />
-              View Profile
-            </Link>
-            <Link to="/favorites" className="text-sm hover:underline flex items-center">
-              <Bookmark className="mr-2 h-4 w-4" />
-              My Favorites
-            </Link>
-            <Link to="/pin-settings" className="text-sm hover:underline flex items-center">
-              <Lock className="mr-2 h-4 w-4" />
-              PIN
-            </Link>
-            <Link to="/settings" className="text-sm hover:underline flex items-center">
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </Link>
+            <div className="grid gap-2">
+              <Link to="/profile" className="text-sm hover:underline flex items-center p-2 rounded hover:bg-accent">
+                <User className="mr-2 h-4 w-4" />
+                View Profile
+              </Link>
+              <Link to="/favorites" className="text-sm hover:underline flex items-center p-2 rounded hover:bg-accent">
+                <Bookmark className="mr-2 h-4 w-4" />
+                My Favorites
+              </Link>
+              <Link to="/pin-settings" className="text-sm hover:underline flex items-center p-2 rounded hover:bg-accent">
+                <Lock className="mr-2 h-4 w-4" />
+                PIN Settings
+              </Link>
+              <Link to="/settings" className="text-sm hover:underline flex items-center p-2 rounded hover:bg-accent">
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </Link>
+            </div>
             <hr className="border-border" />
             <Button 
               variant="outline" 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
@@ -123,8 +122,7 @@ const UserSettingsPage: React.FC = () => {
             <div className="flex items-center justify-end mb-6">
               <TabsList>
                 <TabsTrigger value="preferences">Preferences</TabsTrigger>
-                <TabsTrigger value="security">Security</TabsTrigger>
-                <TabsTrigger value="account">Account</TabsTrigger>
+                <TabsTrigger value="pin">PIN</TabsTrigger>
               </TabsList>
             </div>
             
@@ -137,27 +135,12 @@ const UserSettingsPage: React.FC = () => {
               />
             </TabsContent>
             
-            <TabsContent value="security" className="mt-0">
+            <TabsContent value="pin" className="mt-0">
               <div className="max-w-2xl mx-auto">
-                <h2 className="text-2xl font-bold mb-6">Security Settings</h2>
+                <h2 className="text-2xl font-bold mb-6">PIN Settings</h2>
                 <div className="bg-card border border-border rounded-xl p-6">
                   {session && <PinManagement userId={session.user.id} />}
                 </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="account" className="mt-0">
-              <div className="max-w-2xl mx-auto">
-                <h2 className="text-2xl font-bold mb-6">Account Settings</h2>
-                <p className="text-muted-foreground">
-                  Account settings are managed on the Profile page.
-                </p>
-                <button
-                  className="text-hype-purple hover:underline mt-2"
-                  onClick={() => navigate('/profile')}
-                >
-                  Go to Profile
-                </button>
               </div>
             </TabsContent>
           </Tabs>

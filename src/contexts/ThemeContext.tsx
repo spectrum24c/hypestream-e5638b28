@@ -141,19 +141,17 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     // Save to localStorage for all users
     localStorage.setItem('selectedTheme', themeId);
     
-    // Try to save to Supabase for authenticated users (if column exists)
+    // Save to Supabase for authenticated users
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Attempt to update profile with selected theme
-        // This will fail silently if the column doesn't exist yet
         await supabase
           .from('profiles')
-          .update({ selected_theme: themeId } as any)
+          .update({ selected_theme: themeId })
           .eq('id', user.id);
       }
     } catch (error) {
-      console.log('Theme saved to localStorage only (database column not yet available)');
+      console.error('Error saving theme to database:', error);
     }
   };
 
@@ -175,16 +173,15 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
             // Try to get theme from user profile
             const { data: profile } = await supabase
               .from('profiles')
-              .select('*')
+              .select('selected_theme')
               .eq('id', user.id)
               .single();
             
-            // Check if the profile has the selected_theme field
-            if (profile && (profile as any).selected_theme) {
-              savedThemeId = (profile as any).selected_theme;
+            if (profile?.selected_theme) {
+              savedThemeId = profile.selected_theme;
             }
           } catch (error) {
-            console.log('Using localStorage theme (database column not yet available)');
+            console.log('Using localStorage theme');
           }
         }
         

@@ -52,6 +52,7 @@ export type Database = {
           id: string
           pin_enabled: boolean | null
           pin_hash: string | null
+          selected_theme: string | null
           username: string | null
         }
         Insert: {
@@ -60,6 +61,7 @@ export type Database = {
           id: string
           pin_enabled?: boolean | null
           pin_hash?: string | null
+          selected_theme?: string | null
           username?: string | null
         }
         Update: {
@@ -68,6 +70,7 @@ export type Database = {
           id?: string
           pin_enabled?: boolean | null
           pin_hash?: string | null
+          selected_theme?: string | null
           username?: string | null
         }
         Relationships: []

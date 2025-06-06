@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -9,6 +8,7 @@ import MobileNavigation from './navbar/MobileNavigation';
 import SearchBar from './navbar/SearchBar';
 import UserMenu from './navbar/UserMenu';
 import NotificationsMenu from './navbar/NotificationsMenu';
+import ThemeSelector from './navbar/ThemeSelector';
 import useIsMobile from '@/hooks/useIsMobile';
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/types/movie';
@@ -247,6 +247,8 @@ const Navbar = () => {
                 markAsRead={markNotificationsAsRead}
               />
             )}
+
+            <ThemeSelector />
 
             <UserMenu 
               session={session} 

@@ -59,10 +59,6 @@ html, body, #root {
     --hype-orange: 25 95% 53%;
     --hype-teal: 166 71% 43%;
     --hype-dark: 225 14% 10%;
-
-    /* Theme gradient variables */
-    --gradient-hero: linear-gradient(to right, hsl(277 99% 53%), hsl(25 95% 53%));
-    --gradient-button: linear-gradient(to right, hsl(277 99% 53%), hsl(25 95% 53%));
   }
   
   body {
@@ -88,15 +84,6 @@ html, body, #root {
 @layer components {
   .nav-link {
     @apply px-3 py-2 rounded-md text-sm font-medium text-white hover:text-hype-purple transition-colors;
-  }
-
-  /* Dynamic gradient classes */
-  .gradient-hero {
-    background: var(--gradient-hero);
-  }
-
-  .gradient-button {
-    background: var(--gradient-button);
   }
 }
 

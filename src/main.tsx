@@ -10,13 +10,9 @@ import { initPerformanceOptimizations } from "./utils/performanceOptimizer";
 import { useToast } from "./hooks/use-toast";
 
 // Initialize performance optimizations
-try {
-  initPerformanceOptimizations();
-} catch (error) {
-  console.error('Error initializing performance optimizations:', error);
-}
+initPerformanceOptimizations();
 
-// PWA Service Worker Registration with error handling
+// PWA Service Worker Registration
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
@@ -70,7 +66,7 @@ const Root = () => {
     <React.StrictMode>
       <BrowserRouter>
         {showSplash ? (
-          <SplashScreen onAnimationComplete={handleSplashComplete} />
+          <SplashScreen onComplete={handleSplashComplete} />
         ) : (
           <App />
         )}
@@ -79,10 +75,4 @@ const Root = () => {
   );
 };
 
-// Add error boundary for the root
-const rootElement = document.getElementById("root");
-if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(<Root />);
-} else {
-  console.error('Root element not found');
-}
+ReactDOM.createRoot(document.getElementById("root")!).render(<Root />);

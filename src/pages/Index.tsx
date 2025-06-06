@@ -72,6 +72,20 @@ const Index = () => {
   const categoryFromParams = searchParams.get('category');
   const genreFromParams = searchParams.get('genre');
 
+  // Add event listener for opening movie player from similar content
+  useEffect(() => {
+    const handleOpenMoviePlayer = (event: CustomEvent) => {
+      setSelectedMovie(event.detail);
+      setShouldPlayMovie(false);
+    };
+
+    window.addEventListener('openMoviePlayer', handleOpenMoviePlayer as EventListener);
+    
+    return () => {
+      window.removeEventListener('openMoviePlayer', handleOpenMoviePlayer as EventListener);
+    };
+  }, []);
+
   // Get continue watching data from localStorage
   useEffect(() => {
     try {

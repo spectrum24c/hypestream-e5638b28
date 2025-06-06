@@ -10,9 +10,13 @@ import { initPerformanceOptimizations } from "./utils/performanceOptimizer";
 import { useToast } from "./hooks/use-toast";
 
 // Initialize performance optimizations
-initPerformanceOptimizations();
+try {
+  initPerformanceOptimizations();
+} catch (error) {
+  console.error('Error initializing performance optimizations:', error);
+}
 
-// PWA Service Worker Registration
+// PWA Service Worker Registration with error handling
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
@@ -75,4 +79,10 @@ const Root = () => {
   );
 };
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<Root />);
+// Add error boundary for the root
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(<Root />);
+} else {
+  console.error('Root element not found');
+}

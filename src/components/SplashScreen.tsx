@@ -12,54 +12,83 @@ interface SplashScreenProps {
 
 const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete }) => {
   const [isVisible, setIsVisible] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
   const [showPinEntry, setShowPinEntry] = useState(false);
   const [userEmail, setUserEmail] = useState('');
-  const [pinEnabled, setPinEnabled] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const checkAuthAndPin = async () => {
+    let isMounted = true;
+    
+    const initializeApp = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          setUserEmail(session.user.email || '');
-          
-          // Check if user has PIN enabled
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('pin_enabled')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profile?.pin_enabled) {
-            setPinEnabled(true);
+        // Simplified initialization - don't block on auth checks
+        const timer = setTimeout(() => {
+          if (isMounted) {
+            setIsVisible(false);
+            // Quick transition to main app
+            setTimeout(() => {
+              if (isMounted) {
+                setIsInitializing(false);
+                onAnimationComplete();
+              }
+            }, 300);
           }
+        }, 1500); // Reduced from 2000ms to 1500ms
+
+        // Check auth in background without blocking
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session?.user && isMounted) {
+            setUserEmail(session.user.email || '');
+            
+            // Check PIN setting without blocking the main flow
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('pin_enabled')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (profile?.pin_enabled && isMounted && !isInitializing) {
+              // Only show PIN if we haven't already completed initialization
+              clearTimeout(timer);
+              setIsVisible(false);
+              setTimeout(() => {
+                if (isMounted) {
+                  setShowPinEntry(true);
+                }
+              }, 300);
+            }
+          }
+        } catch (error) {
+          console.error('Error checking auth during splash:', error);
+          // Don't block app loading on auth errors
         }
+
+        return () => {
+          clearTimeout(timer);
+        };
       } catch (error) {
-        console.error('Error checking auth and PIN:', error);
+        console.error('Error during app initialization:', error);
+        // Ensure app loads even if there are errors
+        if (isMounted) {
+          setIsVisible(false);
+          setTimeout(() => {
+            if (isMounted) {
+              onAnimationComplete();
+            }
+          }, 300);
+        }
       }
     };
 
-    // Simulate loading and animation
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-      setTimeout(async () => {
-        await checkAuthAndPin();
-        setIsLoading(false);
-        
-        // Show PIN entry if user has PIN enabled, otherwise complete animation
-        if (pinEnabled && userEmail) {
-          setShowPinEntry(true);
-        } else {
-          onAnimationComplete();
-        }
-      }, 500);
-    }, 2000);
+    initializeApp();
 
-    return () => clearTimeout(timer);
-  }, [onAnimationComplete, pinEnabled, userEmail]);
+    return () => {
+      isMounted = false;
+    };
+  }, [onAnimationComplete]);
 
   const handlePinSuccess = () => {
     setShowPinEntry(false);
@@ -69,7 +98,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete }) => {
   const handlePinBack = () => {
     setShowPinEntry(false);
     // Sign out user to force regular login
-    supabase.auth.signOut();
+    supabase.auth.signOut().catch(console.error);
     onAnimationComplete();
   };
 
@@ -85,14 +114,13 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAnimationComplete }) => {
 
   return (
     <div className={cn(
-      "fixed inset-0 flex items-center justify-center z-50 bg-hype-dark transition-opacity duration-500",
+      "fixed inset-0 flex items-center justify-center z-50 bg-hype-dark transition-opacity duration-300",
       isVisible ? "opacity-100" : "opacity-0 pointer-events-none"
     )}>
-      {isLoading ? (
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-hype-purple"></div>
-      ) : (
-        <p className="text-2xl text-white">Loading...</p>
-      )}
+      <div className="flex flex-col items-center space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hype-purple"></div>
+        <p className="text-lg text-white">Loading HypeStream...</p>
+      </div>
     </div>
   );
 };

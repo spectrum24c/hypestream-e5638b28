@@ -138,46 +138,53 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     setCurrentTheme(theme);
     applyTheme(theme);
     
-    // Save to localStorage for non-authenticated users
+    // Save to localStorage for all users
     localStorage.setItem('selectedTheme', themeId);
     
-    // Save to Supabase for authenticated users
+    // Try to save to Supabase for authenticated users (if column exists)
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Attempt to update profile with selected theme
+        // This will fail silently if the column doesn't exist yet
         await supabase
           .from('profiles')
-          .update({ selected_theme: themeId })
+          .update({ selected_theme: themeId } as any)
           .eq('id', user.id);
       }
     } catch (error) {
-      console.error('Error saving theme to database:', error);
+      console.log('Theme saved to localStorage only (database column not yet available)');
     }
   };
 
   useEffect(() => {
     const loadTheme = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
         let savedThemeId = 'default';
         
+        // First try localStorage
+        const localTheme = localStorage.getItem('selectedTheme');
+        if (localTheme) {
+          savedThemeId = localTheme;
+        }
+
+        // Then try to get from user profile if authenticated
+        const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          // Try to get theme from user profile
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('selected_theme')
-            .eq('id', user.id)
-            .single();
-          
-          if (profile?.selected_theme) {
-            savedThemeId = profile.selected_theme;
-          }
-        } else {
-          // Get theme from localStorage for non-authenticated users
-          const localTheme = localStorage.getItem('selectedTheme');
-          if (localTheme) {
-            savedThemeId = localTheme;
+          try {
+            // Try to get theme from user profile
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', user.id)
+              .single();
+            
+            // Check if the profile has the selected_theme field
+            if (profile && (profile as any).selected_theme) {
+              savedThemeId = (profile as any).selected_theme;
+            }
+          } catch (error) {
+            console.log('Using localStorage theme (database column not yet available)');
           }
         }
         

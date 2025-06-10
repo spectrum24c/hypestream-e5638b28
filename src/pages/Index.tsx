@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import ContinueWatching from '@/components/ContinueWatching';
 import AdvancedFilters from '@/components/AdvancedFilters';
 import CategorySection from '@/components/CategorySection';
+import { initPerformanceOptimizations, fetchWithCache } from '@/utils/performanceOptimizer';
 
 // Sample genres for filtering
 const genres = [
@@ -72,37 +73,12 @@ const Index = () => {
   const categoryFromParams = searchParams.get('category');
   const genreFromParams = searchParams.get('genre');
 
-  // Add event listener for opening movie player from similar content
+  // Initialize performance optimizations
   useEffect(() => {
-    const handleOpenMoviePlayer = (event: CustomEvent) => {
-      setSelectedMovie(event.detail);
-      setShouldPlayMovie(false);
-    };
-
-    window.addEventListener('openMoviePlayer', handleOpenMoviePlayer as EventListener);
-    
-    return () => {
-      window.removeEventListener('openMoviePlayer', handleOpenMoviePlayer as EventListener);
-    };
+    initPerformanceOptimizations();
   }, []);
 
-  // Get continue watching data from localStorage
-  useEffect(() => {
-    try {
-      const watchHistoryStr = localStorage.getItem('watchHistory');
-      if (watchHistoryStr) {
-        const watchHistory = JSON.parse(watchHistoryStr);
-        // Sort by last watched, most recent first
-        const sorted = watchHistory.sort((a: WatchHistory, b: WatchHistory) => {
-          return parseInt(b.last_watched) - parseInt(a.last_watched);
-        });
-        setContinueWatchingItems(sorted);
-      }
-    } catch (error) {
-      console.error('Error loading watch history:', error);
-    }
-  }, []);
-
+  // Remove the event listener for opening movie player from similar content
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
@@ -199,12 +175,12 @@ const Index = () => {
           setIsSearching(false);
           setViewingCategory(null);
           const [trendingData, newReleasesData, popularMoviesData, topRatedShowsData, horrorMoviesData, comedyMoviesData] = await Promise.all([
-            fetchFromTMDB(apiPaths.fetchTrending),
-            fetchFromTMDB(apiPaths.fetchPopularMovies),
-            fetchFromTMDB(apiPaths.fetchMoviesList(28)),
-            fetchFromTMDB(apiPaths.fetchTVList(18)),
-            fetchFromTMDB(apiPaths.fetchMoviesList(27)),
-            fetchFromTMDB(apiPaths.fetchMoviesList(35)),
+            fetchWithCache(apiPaths.fetchTrending),
+            fetchWithCache(apiPaths.fetchPopularMovies),
+            fetchWithCache(apiPaths.fetchMoviesList(28)),
+            fetchWithCache(apiPaths.fetchTVList(18)),
+            fetchWithCache(apiPaths.fetchMoviesList(27)),
+            fetchWithCache(apiPaths.fetchMoviesList(35)),
           ]);
           
           if (trendingData && typeof trendingData === 'object' && 'results' in trendingData) {

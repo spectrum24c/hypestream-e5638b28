@@ -4,7 +4,6 @@ import { Heart, Play, Film, X, ArrowLeft, Monitor } from 'lucide-react';
 import { Button } from './ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import SimilarContent from './SimilarContent';
 
 interface MoviePlayerProps {
   movie: {
@@ -36,7 +35,6 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
   const [session, setSession] = useState(null);
   const [movieDetails, setMovieDetails] = useState<any>(null);
   const [genres, setGenres] = useState<string[]>([]);
-  const [similarContent, setSimilarContent] = useState<any[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -111,27 +109,6 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
       }
     };
     
-    // Load similar content
-    const loadSimilarContent = async () => {
-      if (!movie) return;
-      
-      try {
-        const isTVShow = movie.media_type === 'tv' || !!movie.first_air_date;
-        const similarEndpoint = isTVShow 
-          ? `https://api.themoviedb.org/3/tv/${movie.id}/similar?api_key=62c59007d93c96aa3cca9f3422d51af5&language=en-US&page=1`
-          : `https://api.themoviedb.org/3/movie/${movie.id}/similar?api_key=62c59007d93c96aa3cca9f3422d51af5&language=en-US&page=1`;
-        
-        const data = await fetchFromTMDB(similarEndpoint);
-        
-        if (data.results && data.results.length > 0) {
-          // Take first 6 similar items
-          setSimilarContent(data.results.slice(0, 6));
-        }
-      } catch (error) {
-        console.error('Error loading similar content:', error);
-      }
-    };
-    
     // Fetch complete movie/TV details
     const fetchDetails = async () => {
       if (!movie) return;
@@ -174,7 +151,6 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
     checkFavorite();
     loadTrailer();
     fetchDetails();
-    loadSimilarContent();
   }, [movie, autoPlayTrailer]);
 
   if (!movie) return null;
@@ -418,6 +394,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
                 src={posterPath} 
                 alt={title} 
                 className="w-full md:w-1/3 rounded-lg object-cover h-auto md:h-[350px]"
+                loading="lazy"
               />
               <div className="flex-1">
                 <h2 className="text-2xl font-bold mb-2">{title}</h2>
@@ -452,14 +429,6 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
                     </Button>
                   )}
                 </div>
-                
-                {/* Similar Content Section */}
-                {similarContent.length > 0 && (
-                  <SimilarContent 
-                    items={similarContent}
-                    onItemClick={handleSimilarContentClick}
-                  />
-                )}
               </div>
             </div>
           </div>

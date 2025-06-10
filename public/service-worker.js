@@ -1,11 +1,14 @@
 
-const CACHE_NAME = 'hypestream-cache-v1';
+const CACHE_NAME = 'hypestream-cache-v2';
 const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
   '/lovable-uploads/8eee155a-5511-42f0-83bb-7ef906513992.png',
 ];
+
+// Network timeout for slow connections
+const NETWORK_TIMEOUT = 8000;
 
 // Install a service worker
 self.addEventListener('install', event => {
@@ -15,36 +18,86 @@ self.addEventListener('install', event => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
       })
+      .catch(error => {
+        console.error('Cache installation failed:', error);
+      })
   );
+  // Skip waiting to activate immediately
+  self.skipWaiting();
 });
 
-// Cache and return requests
+// Helper function to add network timeout
+const fetchWithTimeout = (request, timeout = NETWORK_TIMEOUT) => {
+  return Promise.race([
+    fetch(request),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Network timeout')), timeout)
+    )
+  ]);
+};
+
+// Cache and return requests with network-first strategy for API calls
 self.addEventListener('fetch', event => {
-  // Skip cross-origin requests
-  if (event.request.url.startsWith(self.location.origin) || 
-      event.request.url.includes('image.tmdb.org')) {
+  const url = new URL(event.request.url);
+  
+  // Skip cross-origin requests except for TMDB
+  if (!url.origin.includes(self.location.origin) && 
+      !url.origin.includes('image.tmdb.org') && 
+      !url.origin.includes('api.themoviedb.org')) {
+    return;
+  }
+  
+  // Handle API requests with network-first strategy
+  if (url.origin.includes('api.themoviedb.org')) {
     event.respondWith(
-      caches.match(event.request)
+      fetchWithTimeout(event.request)
         .then(response => {
-          // Cache hit - return response
-          if (response) {
-            return response;
+          // Clone and cache successful API responses
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
           }
-          
-          // Clone the request because it's a one-time use stream
-          const fetchRequest = event.request.clone();
-          
-          return fetch(fetchRequest).then(response => {
+          return response;
+        })
+        .catch(() => {
+          // Fallback to cache if network fails
+          return caches.match(event.request)
+            .then(cachedResponse => {
+              if (cachedResponse) {
+                console.log('Serving cached API response for:', event.request.url);
+                return cachedResponse;
+              }
+              // Return a basic error response for API calls
+              return new Response(JSON.stringify({ 
+                error: 'Network unavailable', 
+                results: [] 
+              }), {
+                status: 200,
+                headers: { 'Content-Type': 'application/json' }
+              });
+            });
+        })
+    );
+    return;
+  }
+  
+  // Handle image and static assets with cache-first strategy
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
+        
+        // Try network with timeout
+        return fetchWithTimeout(event.request)
+          .then(response => {
             // Check if we received a valid response
             if (!response || response.status !== 200 || response.type !== 'basic') {
-              // Don't cache non-success responses or non-basic type responses
-              // But still return the response for API calls etc.
-              if (response && response.url && 
-                  (response.url.includes('api.themoviedb.org') || 
-                   response.url.includes('youtube.com'))) {
-                return response;
-              }
-              
               return response;
             }
             
@@ -53,38 +106,55 @@ self.addEventListener('fetch', event => {
             
             caches.open(CACHE_NAME)
               .then(cache => {
-                // Don't cache API responses that might change frequently
-                if (!event.request.url.includes('api.themoviedb.org')) {
-                  cache.put(event.request, responseToCache);
-                }
+                cache.put(event.request, responseToCache);
               });
             
             return response;
+          })
+          .catch(() => {
+            // Fallback for images
+            if (event.request.url.includes('/images/') || 
+                event.request.url.includes('.jpg') || 
+                event.request.url.includes('.png') || 
+                event.request.url.includes('.webp') ||
+                event.request.url.includes('image.tmdb.org')) {
+              return caches.match('/placeholder.svg') || 
+                     new Response('Image unavailable', { status: 404 });
+            }
+            
+            // For other requests, try to return any cached version
+            return caches.match(event.request.url);
           });
-        })
-        .catch(() => {
-          // If both cache and network fail, return a fallback
-          if (event.request.url.includes('/images/') || event.request.url.includes('.jpg') || 
-              event.request.url.includes('.png') || event.request.url.includes('.webp')) {
-            return caches.match('/placeholder.svg');
-          }
-        })
-    );
-  }
+      })
+  );
 });
 
-// Update a service worker
+// Update a service worker and clean old caches
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    Promise.all([
+      // Clean up old caches
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            if (cacheWhitelist.indexOf(cacheName) === -1) {
+              console.log('Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      // Take control of all clients immediately
+      self.clients.claim()
+    ])
   );
+});
+
+// Handle background sync for failed requests (if supported)
+self.addEventListener('sync', event => {
+  if (event.tag === 'background-sync') {
+    console.log('Background sync triggered');
+    // Handle any queued requests here
+  }
 });

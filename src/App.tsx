@@ -1,5 +1,6 @@
 
 import { Routes, Route } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import Profile from '@/pages/Profile';
@@ -14,11 +15,43 @@ import Support from '@/pages/Support';
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
 import { useHardwareBackButton, useStatusBarCustomization } from '@/utils/mobileUtils';
+import { useToast } from "@/hooks/use-toast";
 
 function App() {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const { toast } = useToast();
+  
   // Use mobile-specific hooks
   useHardwareBackButton();
   useStatusBarCustomization(true);
+
+  // Handle online/offline status
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      toast({
+        title: "You're back online",
+        description: "Connected to the internet",
+      });
+    };
+    
+    const handleOffline = () => {
+      setIsOnline(false);
+      toast({
+        title: "You're offline",
+        description: "Some features may be limited",
+        variant: "destructive"
+      });
+    };
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [toast]);
 
   return (
     <div className="app">

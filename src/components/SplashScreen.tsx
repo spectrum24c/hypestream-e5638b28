@@ -11,10 +11,12 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Calculate the increment needed to reach 100% in 6 seconds
-    // If we update every 20ms, we need (6000ms / 20ms) = 300 steps
-    // So each step should increase progress by (100 / 300) = 0.333
-    const increment = 0.333;
+    // Faster loading for mobile devices (4 seconds instead of 6)
+    const isMobile = window.innerWidth < 768;
+    const duration = isMobile ? 4000 : 6000;
+    const updateInterval = 50; // Update every 50ms for smoother animation
+    const totalSteps = duration / updateInterval;
+    const increment = 100 / totalSteps;
     
     const interval = setInterval(() => {
       setProgress(prev => {
@@ -23,12 +25,12 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
           clearInterval(interval);
           setTimeout(() => {
             onComplete();
-          }, 500);
+          }, 300); // Shorter delay for mobile
           return 100;
         }
         return newProgress;
       });
-    }, 20);
+    }, updateInterval);
 
     return () => clearInterval(interval);
   }, [onComplete]);
@@ -38,24 +40,28 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-hype-dark flex flex-col items-center justify-center"
+      className="fixed inset-0 z-50 bg-hype-dark flex flex-col items-center justify-center px-4"
+      style={{ 
+        minHeight: '100vh',
+        minHeight: '100dvh' // Better mobile viewport height
+      }}
     >
       <motion.div 
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="flex flex-col items-center space-y-6"
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="flex flex-col items-center space-y-6 w-full max-w-sm"
       >
         <div className="relative flex items-center justify-center">
-          <Film size={56} className="text-hype-purple" />
+          <Film size={48} className="text-hype-purple sm:w-14 sm:h-14" />
           <div className="absolute -inset-2 rounded-full bg-hype-purple/20 animate-pulse-slow"></div>
         </div>
 
         <motion.h1 
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="text-4xl font-bold text-white"
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="text-3xl sm:text-4xl font-bold text-white text-center"
         >
           HypeStream
         </motion.h1>
@@ -63,21 +69,22 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         <motion.div 
           initial={{ width: "60%", opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.6 }}
-          className="w-60 h-1.5 bg-hype-gray/30 rounded-full overflow-hidden"
+          transition={{ duration: 0.4, delay: 0.3 }}
+          className="w-full max-w-60 h-1.5 bg-hype-gray/30 rounded-full overflow-hidden"
         >
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             className="h-full bg-gradient-to-r from-hype-purple to-hype-teal rounded-full"
+            transition={{ ease: "linear" }}
           ></motion.div>
         </motion.div>
         
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
-          className="text-muted-foreground"
+          transition={{ duration: 0.4, delay: 0.4 }}
+          className="text-muted-foreground text-center text-sm sm:text-base"
         >
           Loading your experience...
         </motion.p>
@@ -87,3 +94,4 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
 };
 
 export default SplashScreen;
+

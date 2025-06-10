@@ -11,7 +11,7 @@ import { initPerformanceOptimizations } from "./utils/performanceOptimizer";
 // Initialize performance optimizations
 initPerformanceOptimizations();
 
-// PWA Service Worker Registration
+// PWA Service Worker Registration with better error handling
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
@@ -20,6 +20,7 @@ if ('serviceWorker' in navigator) {
       })
       .catch(error => {
         console.log('ServiceWorker registration failed: ', error);
+        // Don't block the app if service worker fails
       });
   });
 }
@@ -44,4 +45,11 @@ const Root: React.FC = () => {
   );
 };
 
-ReactDOM.createRoot(document.getElementById("root")!).render(<Root />);
+// Ensure the root element exists before rendering
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  ReactDOM.createRoot(rootElement).render(<Root />);
+} else {
+  console.error("Root element not found");
+}
+

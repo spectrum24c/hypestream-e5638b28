@@ -3,18 +3,13 @@
  * Performance Optimizer
  * 
  * This utility provides methods for improving application performance and reducing
- * loading times, especially for bad network conditions. It implements techniques like:
- * - Image optimization and lazy loading
- * - Script loading prioritization
- * - Network request batching and retry logic
- * - Browser cache management
- * - Connection quality detection
+ * loading times, especially for mobile devices and bad network conditions.
  */
 
 // --------------- Network Quality Detection ---------------
 
 /**
- * Detects network connection quality
+ * Detects network connection quality with mobile-first approach
  */
 export const getNetworkQuality = (): 'slow' | 'fast' => {
   // Check if Network Information API is available
@@ -26,33 +21,57 @@ export const getNetworkQuality = (): 'slow' | 'fast' => {
       return 'slow';
     }
     
-    // Consider slow if downlink is very low
-    if (connection.downlink && connection.downlink < 1.5) {
+    // Consider slow if downlink is very low (common on mobile)
+    if (connection.downlink && connection.downlink < 2) {
       return 'slow';
     }
   }
   
-  return 'fast';
+  // Default to slow for mobile devices to be safe
+  const isMobile = window.innerWidth < 768;
+  return isMobile ? 'slow' : 'fast';
+};
+
+// --------------- Mobile Detection ---------------
+
+/**
+ * Detects if the device is mobile
+ */
+export const isMobileDevice = (): boolean => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+         window.innerWidth < 768;
 };
 
 // --------------- Image Optimization ---------------
 
 /**
- * Determines the optimal image size based on the container size, device DPR, and network quality
+ * Determines the optimal image size for mobile devices
  */
 export const getOptimalImageSize = (containerWidth: number): string => {
   const dpr = window.devicePixelRatio || 1;
   const networkQuality = getNetworkQuality();
+  const isMobile = isMobileDevice();
   
-  // Reduce image quality for slow networks
-  const qualityMultiplier = networkQuality === 'slow' ? 0.7 : 1;
+  // Aggressive quality reduction for mobile and slow networks
+  let qualityMultiplier = 1;
+  if (isMobile && networkQuality === 'slow') {
+    qualityMultiplier = 0.5;
+  } else if (isMobile || networkQuality === 'slow') {
+    qualityMultiplier = 0.7;
+  }
+  
   const targetWidth = Math.round(containerWidth * dpr * qualityMultiplier);
   
-  // Common image size breakpoints
-  const sizes = [300, 600, 900, 1200, 1800, 2400];
+  // Mobile-optimized size breakpoints
+  const sizes = [200, 400, 600, 800, 1200, 1600];
   
-  // For slow networks, cap at smaller sizes
-  const maxSize = networkQuality === 'slow' ? 900 : 2400;
+  // Cap at smaller sizes for mobile and slow networks
+  let maxSize = 1600;
+  if (isMobile && networkQuality === 'slow') {
+    maxSize = 600;
+  } else if (isMobile || networkQuality === 'slow') {
+    maxSize = 800;
+  }
   
   // Find the smallest size that's still larger than our target
   for (const size of sizes) {
@@ -61,18 +80,26 @@ export const getOptimalImageSize = (containerWidth: number): string => {
     }
   }
   
-  // Default to appropriate size based on network
-  return networkQuality === 'slow' ? '600' : `${sizes[sizes.length - 1]}`;
+  // Default based on device and network
+  if (isMobile && networkQuality === 'slow') return '400';
+  if (isMobile || networkQuality === 'slow') return '600';
+  return '800';
 };
 
 /**
- * Preloads critical images with network-aware prioritization
+ * Preloads critical images with mobile-aware prioritization
  */
 export const preloadCriticalImages = (urls: string[]): void => {
   const networkQuality = getNetworkQuality();
+  const isMobile = isMobileDevice();
   
-  // Limit preloading on slow networks
-  const maxPreloads = networkQuality === 'slow' ? 2 : urls.length;
+  // Limit preloading aggressively on mobile with slow networks
+  let maxPreloads = urls.length;
+  if (isMobile && networkQuality === 'slow') {
+    maxPreloads = 1;
+  } else if (isMobile || networkQuality === 'slow') {
+    maxPreloads = 2;
+  }
   
   urls.slice(0, maxPreloads).forEach(url => {
     const link = document.createElement('link');
@@ -82,7 +109,7 @@ export const preloadCriticalImages = (urls: string[]): void => {
     
     // Set fetchpriority for modern browsers
     if ('fetchPriority' in HTMLImageElement.prototype) {
-      (link as any).fetchPriority = networkQuality === 'slow' ? 'low' : 'high';
+      (link as any).fetchPriority = (isMobile && networkQuality === 'slow') ? 'low' : 'high';
     }
     
     document.head.appendChild(link);
@@ -92,7 +119,7 @@ export const preloadCriticalImages = (urls: string[]): void => {
 // --------------- Network Optimization ---------------
 
 /**
- * Retry mechanism for failed requests
+ * Retry mechanism with mobile-optimized settings
  */
 const retryRequest = async <T>(
   fn: () => Promise<T>,
@@ -105,24 +132,34 @@ const retryRequest = async <T>(
     if (retries > 0) {
       console.log(`Request failed, retrying in ${delay}ms. Retries left: ${retries}`);
       await new Promise(resolve => setTimeout(resolve, delay));
-      return retryRequest(fn, retries - 1, delay * 2); // Exponential backoff
+      return retryRequest(fn, retries - 1, Math.min(delay * 1.5, 5000)); // Cap max delay
     }
     throw error;
   }
 };
 
 /**
- * Batches multiple fetch requests to reduce network overhead with retry logic
+ * Mobile-optimized request batching
  */
 export const batchRequests = async <T>(
   urls: string[],
   options?: RequestInit
 ): Promise<T[]> => {
   const networkQuality = getNetworkQuality();
-  const maxConcurrent = networkQuality === 'slow' ? 2 : 6;
-  const retries = networkQuality === 'slow' ? 5 : 3;
+  const isMobile = isMobileDevice();
   
-  // Process requests in batches to avoid overwhelming slow connections
+  // Very conservative concurrency for mobile
+  let maxConcurrent = 6;
+  let retries = 3;
+  
+  if (isMobile && networkQuality === 'slow') {
+    maxConcurrent = 1;
+    retries = 5;
+  } else if (isMobile || networkQuality === 'slow') {
+    maxConcurrent = 2;
+    retries = 4;
+  }
+  
   const results: T[] = [];
   
   for (let i = 0; i < urls.length; i += maxConcurrent) {
@@ -130,7 +167,10 @@ export const batchRequests = async <T>(
     
     const batchPromises = batch.map(url =>
       retryRequest(
-        () => fetch(url, options).then(response => {
+        () => fetch(url, {
+          ...options,
+          signal: AbortSignal.timeout(isMobile ? 20000 : 15000)
+        }).then(response => {
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
@@ -140,18 +180,23 @@ export const batchRequests = async <T>(
       )
     );
     
-    const batchResults = await Promise.all(batchPromises);
-    results.push(...batchResults);
+    try {
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
+    } catch (error) {
+      console.error('Batch request failed:', error);
+      // Continue with remaining batches
+    }
   }
   
   return results;
 };
 
-// Cache for API responses with network-aware TTL
+// Cache with mobile-optimized TTL
 const apiCache = new Map<string, { data: any; timestamp: number; ttl: number }>();
 
 /**
- * Makes a fetch request with caching and network-aware TTL
+ * Mobile-optimized fetch with caching
  */
 export const fetchWithCache = async <T>(
   url: string,
@@ -161,11 +206,17 @@ export const fetchWithCache = async <T>(
   const cacheKey = `${url}-${JSON.stringify(options)}`;
   const now = Date.now();
   const networkQuality = getNetworkQuality();
+  const isMobile = isMobileDevice();
   
-  // Longer cache duration for slow networks
-  const CACHE_DURATION = networkQuality === 'slow' ? 15 * 60 * 1000 : 5 * 60 * 1000; // 15 min vs 5 min
+  // Longer cache for mobile devices
+  let cacheDuration = 5 * 60 * 1000; // 5 min default
+  if (isMobile && networkQuality === 'slow') {
+    cacheDuration = 30 * 60 * 1000; // 30 min for mobile + slow
+  } else if (isMobile || networkQuality === 'slow') {
+    cacheDuration = 15 * 60 * 1000; // 15 min
+  }
   
-  // Check for a valid cached response
+  // Check cache first
   if (!bypassCache && apiCache.has(cacheKey)) {
     const cachedData = apiCache.get(cacheKey)!;
     if (now - cachedData.timestamp < cachedData.ttl) {
@@ -174,15 +225,15 @@ export const fetchWithCache = async <T>(
     }
   }
   
-  // Fetch new data with retry logic
+  // Fetch with mobile-optimized timeout and retries
   console.log('Fetching fresh data for:', url);
-  const retries = networkQuality === 'slow' ? 5 : 3;
+  const timeout = isMobile ? 25000 : 15000;
+  const retries = isMobile && networkQuality === 'slow' ? 5 : 3;
   
   const data = await retryRequest(async () => {
     const response = await fetch(url, {
       ...options,
-      // Add timeout for slow networks
-      signal: AbortSignal.timeout(networkQuality === 'slow' ? 30000 : 15000)
+      signal: AbortSignal.timeout(timeout)
     });
     
     if (!response.ok) {
@@ -192,164 +243,58 @@ export const fetchWithCache = async <T>(
     return response.json();
   }, retries);
   
-  // Cache the response with network-aware TTL
+  // Cache with mobile-optimized TTL
   apiCache.set(cacheKey, {
     data,
     timestamp: now,
-    ttl: CACHE_DURATION
+    ttl: cacheDuration
   });
   
   return data as T;
 };
 
-// --------------- Script Optimization ---------------
+// --------------- Init Function ---------------
 
 /**
- * Loads JavaScript resources with proper prioritization and network awareness
+ * Initialize mobile-optimized performance settings
  */
-export const loadScript = (
-  src: string,
-  async = true,
-  defer = true,
-  priority = 'low'
-): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = src;
-    script.async = async;
-    script.defer = defer;
-    
-    const networkQuality = getNetworkQuality();
-    
-    // Set the fetchpriority attribute for browsers that support it
-    if ('fetchPriority' in HTMLImageElement.prototype) {
-      (script as any).fetchPriority = networkQuality === 'slow' ? 'low' : priority;
-    }
-    
-    // Add timeout for slow networks
-    const timeout = setTimeout(() => {
-      reject(new Error(`Script load timeout: ${src}`));
-    }, networkQuality === 'slow' ? 30000 : 15000);
-    
-    script.onload = () => {
-      clearTimeout(timeout);
-      resolve();
-    };
-    script.onerror = () => {
-      clearTimeout(timeout);
-      reject(new Error(`Failed to load script: ${src}`));
-    };
-    
-    document.head.appendChild(script);
-  });
-};
-
-// --------------- Resource Hints ---------------
-
-/**
- * Adds DNS prefetch for external domains with network awareness
- */
-export const addDnsPrefetch = (domains: string[]): void => {
+export const initPerformanceOptimizations = (): void => {
   const networkQuality = getNetworkQuality();
+  const isMobile = isMobileDevice();
   
-  // Limit DNS prefetches on slow networks
-  const maxPrefetches = networkQuality === 'slow' ? 2 : domains.length;
+  console.log(`Device: ${isMobile ? 'Mobile' : 'Desktop'}, Network: ${networkQuality}`);
   
+  // Minimal DNS prefetch for mobile
+  const domains = [
+    'https://image.tmdb.org',
+    'https://api.themoviedb.org'
+  ];
+  
+  if (!isMobile || networkQuality === 'fast') {
+    domains.push(
+      'https://fonts.googleapis.com',
+      'https://fonts.gstatic.com'
+    );
+  }
+  
+  // Add DNS prefetch with mobile limits
+  const maxPrefetches = isMobile && networkQuality === 'slow' ? 1 : domains.length;
   domains.slice(0, maxPrefetches).forEach(domain => {
     const link = document.createElement('link');
     link.rel = 'dns-prefetch';
     link.href = domain;
     document.head.appendChild(link);
   });
-};
-
-/**
- * Adds preconnect hints for important external resources
- */
-export const addPreconnect = (urls: string[], crossOrigin = true): void => {
-  const networkQuality = getNetworkQuality();
   
-  // Limit preconnects on slow networks
-  const maxPreconnects = networkQuality === 'slow' ? 2 : urls.length;
-  
-  urls.slice(0, maxPreconnects).forEach(url => {
+  // Preconnect to critical domains only
+  ['https://image.tmdb.org', 'https://api.themoviedb.org'].slice(0, isMobile ? 1 : 2).forEach(url => {
     const link = document.createElement('link');
     link.rel = 'preconnect';
     link.href = url;
-    if (crossOrigin) {
-      link.crossOrigin = 'anonymous';
-    }
+    link.crossOrigin = 'anonymous';
     document.head.appendChild(link);
   });
+  
+  console.log(`Performance optimizations initialized for ${isMobile ? 'mobile' : 'desktop'} with ${networkQuality} network`);
 };
 
-// --------------- Service Worker Communication ---------------
-
-/**
- * Registers service worker with cache strategies for offline support
- */
-export const registerServiceWorker = async (): Promise<void> => {
-  if ('serviceWorker' in navigator) {
-    try {
-      const registration = await navigator.serviceWorker.register('/service-worker.js');
-      console.log('Service Worker registered successfully:', registration);
-      
-      // Listen for updates
-      registration.addEventListener('updatefound', () => {
-        console.log('Service Worker update available');
-      });
-    } catch (error) {
-      console.error('Service Worker registration failed:', error);
-    }
-  }
-};
-
-// --------------- Init Function ---------------
-
-/**
- * Initialize performance optimizations with network awareness
- */
-export const initPerformanceOptimizations = (): void => {
-  const networkQuality = getNetworkQuality();
-  
-  console.log(`Network quality detected: ${networkQuality}`);
-  
-  // Add DNS prefetch for common external domains
-  addDnsPrefetch([
-    'https://image.tmdb.org',
-    'https://api.themoviedb.org',
-    'https://fonts.googleapis.com',
-    'https://fonts.gstatic.com'
-  ]);
-  
-  // Add preconnect hints
-  addPreconnect([
-    'https://image.tmdb.org',
-    'https://api.themoviedb.org'
-  ]);
-  
-  // Register service worker for offline support
-  registerServiceWorker();
-  
-  // Preload critical assets (reduced for slow networks)
-  preloadCriticalImages([
-    // Add paths to critical hero images or logos
-  ]);
-  
-  // Register performance observer to monitor long tasks
-  if ('PerformanceObserver' in window) {
-    const longTaskObserver = new PerformanceObserver((list) => {
-      list.getEntries().forEach((entry) => {
-        console.warn('Long task detected:', entry.duration, 'ms');
-      });
-    });
-    
-    try {
-      longTaskObserver.observe({ entryTypes: ['longtask'] });
-    } catch (error) {
-      console.warn('Long task observer not supported');
-    }
-  }
-  
-  console.log(`Performance optimizations initialized for ${networkQuality} network`);
-};

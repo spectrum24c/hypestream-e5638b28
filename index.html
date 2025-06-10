@@ -3,7 +3,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
     <title>HypeStream - Watch Movies & TV Shows</title>
     <meta name="description" content="Stream the latest movies and TV shows on HypeStream" />
     <meta name="author" content="HypeStream" />
@@ -19,7 +19,12 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="HypeStream">
+    <meta name="mobile-web-app-capable" content="yes">
 
+    <!-- Mobile optimization -->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    
     <!-- Preconnect to domains -->
     <link rel="preconnect" href="https://api.themoviedb.org">
     <link rel="preconnect" href="https://image.tmdb.org">
@@ -39,19 +44,50 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@hypestream" />
     <meta name="twitter:image" content="/lovable-uploads/8eee155a-5511-42f0-83bb-7ef906513992.png" />
+
+    <!-- Prevent FOUC (Flash of Unstyled Content) -->
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #121212;
+        color: white;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      #root {
+        min-height: 100vh;
+        min-height: 100dvh;
+      }
+      .loading-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        min-height: 100dvh;
+        background: #121212;
+        color: white;
+        font-size: 18px;
+      }
+    </style>
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="loading-fallback">
+        Loading HypeStream...
+      </div>
+    </div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
     
     <!-- Add a noscript tag for users with JavaScript disabled -->
     <noscript>
-      <div style="padding: 20px; text-align: center; color: white; background: #121212;">
-        You need to enable JavaScript to run this app.
+      <div style="padding: 20px; text-align: center; color: white; background: #121212; min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+        <h1>JavaScript Required</h1>
+        <p>You need to enable JavaScript to run this app.</p>
       </div>
     </noscript>
   </body>
 </html>
+

@@ -42,7 +42,6 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 bg-hype-dark flex flex-col items-center justify-center px-4"
       style={{ 
-        minHeight: '100vh',
         minHeight: '100dvh' // Better mobile viewport height
       }}
     >
@@ -94,4 +93,3 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
 };
 
 export default SplashScreen;
-

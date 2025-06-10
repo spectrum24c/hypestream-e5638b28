@@ -7,17 +7,21 @@ import "./index.css";
 import "./utils/movie-buttons-responsive.css";
 import SplashScreen from "./components/SplashScreen";
 
-// Simple performance initialization
+// Simple performance initialization without DOM manipulation
 const initBasicOptimizations = () => {
   try {
-    // Basic DNS prefetch for critical domains
-    const domains = ['https://image.tmdb.org', 'https://api.themoviedb.org'];
-    domains.forEach(domain => {
-      const link = document.createElement('link');
-      link.rel = 'dns-prefetch';
-      link.href = domain;
-      document.head.appendChild(link);
-    });
+    // Only do basic optimizations that don't conflict with React
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          })
+          .catch(error => {
+            console.log('ServiceWorker registration failed: ', error);
+          });
+      });
+    }
   } catch (error) {
     console.warn('Basic optimizations failed:', error);
   }
@@ -26,21 +30,8 @@ const initBasicOptimizations = () => {
 // Initialize basic optimizations
 initBasicOptimizations();
 
-// PWA Service Worker Registration with better error handling
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(registration => {
-        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-      })
-      .catch(error => {
-        console.log('ServiceWorker registration failed: ', error);
-        // Don't block the app if service worker fails
-      });
-  });
-}
-
-const Root: React.FC = () => {
+// Properly structured React component
+const Root = () => {
   const [showSplash, setShowSplash] = useState(true);
   
   const handleSplashComplete = () => {

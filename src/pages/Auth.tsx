@@ -62,7 +62,7 @@ const Auth = () => {
     try {
       if (isSignUp) {
         // For sign up, we'll use email and password
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -70,7 +70,39 @@ const Auth = () => {
           }
         });
 
-        if (error) throw error;
+        if (error) {
+          // Check if the error is because user already exists
+          if (error.message.includes('User already registered') || 
+              error.message.includes('already registered') ||
+              error.message.includes('already exists')) {
+            toast({
+              title: "Account already exists",
+              description: "An account with this email already exists. Please sign in instead or use a different email address.",
+              variant: "destructive",
+            });
+            return;
+          }
+          throw error;
+        }
+
+        // Check if user already exists (Supabase might return success but with existing user)
+        if (data.user && !data.user.email_confirmed_at && data.user.created_at) {
+          const userCreatedTime = new Date(data.user.created_at).getTime();
+          const now = new Date().getTime();
+          const timeDiff = now - userCreatedTime;
+          
+          // If user was created more than 5 seconds ago, they likely already existed
+          if (timeDiff > 5000) {
+            toast({
+              title: "Account already exists",
+              description: "An account with this email already exists. Please sign in instead.",
+              variant: "destructive",
+            });
+            // Switch to sign in mode
+            setIsSignUp(false);
+            return;
+          }
+        }
 
         setSuccessMessage(
           "Registration successful! Please check your email for a confirmation link to complete your signup."
@@ -86,7 +118,25 @@ const Auth = () => {
           password,
         });
 
-        if (error) throw error;
+        if (error) {
+          // Provide more specific error messages for sign in
+          if (error.message.includes('Invalid login credentials')) {
+            toast({
+              title: "Invalid credentials",
+              description: "The email or password you entered is incorrect. Please check and try again.",
+              variant: "destructive",
+            });
+          } else if (error.message.includes('Email not confirmed')) {
+            toast({
+              title: "Email not confirmed",
+              description: "Please check your email and click the confirmation link before signing in.",
+              variant: "destructive",
+            });
+          } else {
+            throw error;
+          }
+          return;
+        }
 
         navigate('/');
       }
@@ -106,6 +156,13 @@ const Auth = () => {
     setShowPassword(!showPassword);
   };
 
+  const switchMode = () => {
+    setIsSignUp(!isSignUp);
+    setSuccessMessage('');
+    setEmail('');
+    setPassword('');
+  };
+
   return (
     <div className="min-h-screen bg-hype-dark text-foreground">
       <Navbar />
@@ -120,6 +177,8 @@ const Auth = () => {
                   onClick={() => {
                     setIsSignUp(false);
                     setSuccessMessage('');
+                    setEmail('');
+                    setPassword('');
                   }}
                   className="mt-4 bg-hype-purple hover:bg-hype-purple/90 w-full"
                 >
@@ -202,10 +261,7 @@ const Auth = () => {
 
                 <div className="mt-6 text-center">
                   <button
-                    onClick={() => {
-                      setIsSignUp(!isSignUp);
-                      setSuccessMessage('');
-                    }}
+                    onClick={switchMode}
                     className="text-sm text-hype-purple hover:underline"
                   >
                     {isSignUp

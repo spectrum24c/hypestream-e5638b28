@@ -24,7 +24,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-const Root = () => {
+const Root: React.FC = () => {
   const [showSplash, setShowSplash] = useState(true);
   
   const handleSplashComplete = () => {

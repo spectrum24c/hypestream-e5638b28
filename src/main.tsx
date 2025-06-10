@@ -6,10 +6,25 @@ import App from "./App";
 import "./index.css";
 import "./utils/movie-buttons-responsive.css";
 import SplashScreen from "./components/SplashScreen";
-import { initPerformanceOptimizations } from "./utils/performanceOptimizer";
 
-// Initialize performance optimizations
-initPerformanceOptimizations();
+// Simple performance initialization
+const initBasicOptimizations = () => {
+  try {
+    // Basic DNS prefetch for critical domains
+    const domains = ['https://image.tmdb.org', 'https://api.themoviedb.org'];
+    domains.forEach(domain => {
+      const link = document.createElement('link');
+      link.rel = 'dns-prefetch';
+      link.href = domain;
+      document.head.appendChild(link);
+    });
+  } catch (error) {
+    console.warn('Basic optimizations failed:', error);
+  }
+};
+
+// Initialize basic optimizations
+initBasicOptimizations();
 
 // PWA Service Worker Registration with better error handling
 if ('serviceWorker' in navigator) {
@@ -52,4 +67,3 @@ if (rootElement) {
 } else {
   console.error("Root element not found");
 }
-

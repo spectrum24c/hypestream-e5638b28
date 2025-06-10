@@ -138,60 +138,6 @@ const retryRequest = async <T>(
   }
 };
 
-/**
- * Mobile-optimized request batching
- */
-export const batchRequests = async <T>(
-  urls: string[],
-  options?: RequestInit
-): Promise<T[]> => {
-  const networkQuality = getNetworkQuality();
-  const isMobile = isMobileDevice();
-  
-  // Very conservative concurrency for mobile
-  let maxConcurrent = 6;
-  let retries = 3;
-  
-  if (isMobile && networkQuality === 'slow') {
-    maxConcurrent = 1;
-    retries = 5;
-  } else if (isMobile || networkQuality === 'slow') {
-    maxConcurrent = 2;
-    retries = 4;
-  }
-  
-  const results: T[] = [];
-  
-  for (let i = 0; i < urls.length; i += maxConcurrent) {
-    const batch = urls.slice(i, i + maxConcurrent);
-    
-    const batchPromises = batch.map(url =>
-      retryRequest(
-        () => fetch(url, {
-          ...options,
-          signal: AbortSignal.timeout(isMobile ? 20000 : 15000)
-        }).then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json() as Promise<T>;
-        }),
-        retries
-      )
-    );
-    
-    try {
-      const batchResults = await Promise.all(batchPromises);
-      results.push(...batchResults);
-    } catch (error) {
-      console.error('Batch request failed:', error);
-      // Continue with remaining batches
-    }
-  }
-  
-  return results;
-};
-
 // Cache with mobile-optimized TTL
 const apiCache = new Map<string, { data: any; timestamp: number; ttl: number }>();
 
@@ -259,42 +205,45 @@ export const fetchWithCache = async <T>(
  * Initialize mobile-optimized performance settings
  */
 export const initPerformanceOptimizations = (): void => {
-  const networkQuality = getNetworkQuality();
-  const isMobile = isMobileDevice();
-  
-  console.log(`Device: ${isMobile ? 'Mobile' : 'Desktop'}, Network: ${networkQuality}`);
-  
-  // Minimal DNS prefetch for mobile
-  const domains = [
-    'https://image.tmdb.org',
-    'https://api.themoviedb.org'
-  ];
-  
-  if (!isMobile || networkQuality === 'fast') {
-    domains.push(
-      'https://fonts.googleapis.com',
-      'https://fonts.gstatic.com'
-    );
+  try {
+    const networkQuality = getNetworkQuality();
+    const isMobile = isMobileDevice();
+    
+    console.log(`Device: ${isMobile ? 'Mobile' : 'Desktop'}, Network: ${networkQuality}`);
+    
+    // Minimal DNS prefetch for mobile
+    const domains = [
+      'https://image.tmdb.org',
+      'https://api.themoviedb.org'
+    ];
+    
+    if (!isMobile || networkQuality === 'fast') {
+      domains.push(
+        'https://fonts.googleapis.com',
+        'https://fonts.gstatic.com'
+      );
+    }
+    
+    // Add DNS prefetch with mobile limits
+    const maxPrefetches = isMobile && networkQuality === 'slow' ? 1 : domains.length;
+    domains.slice(0, maxPrefetches).forEach(domain => {
+      const link = document.createElement('link');
+      link.rel = 'dns-prefetch';
+      link.href = domain;
+      document.head.appendChild(link);
+    });
+    
+    // Preconnect to critical domains only
+    ['https://image.tmdb.org', 'https://api.themoviedb.org'].slice(0, isMobile ? 1 : 2).forEach(url => {
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = url;
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+    });
+    
+    console.log(`Performance optimizations initialized for ${isMobile ? 'mobile' : 'desktop'} with ${networkQuality} network`);
+  } catch (error) {
+    console.warn('Performance optimization failed:', error);
   }
-  
-  // Add DNS prefetch with mobile limits
-  const maxPrefetches = isMobile && networkQuality === 'slow' ? 1 : domains.length;
-  domains.slice(0, maxPrefetches).forEach(domain => {
-    const link = document.createElement('link');
-    link.rel = 'dns-prefetch';
-    link.href = domain;
-    document.head.appendChild(link);
-  });
-  
-  // Preconnect to critical domains only
-  ['https://image.tmdb.org', 'https://api.themoviedb.org'].slice(0, isMobile ? 1 : 2).forEach(url => {
-    const link = document.createElement('link');
-    link.rel = 'preconnect';
-    link.href = url;
-    link.crossOrigin = 'anonymous';
-    document.head.appendChild(link);
-  });
-  
-  console.log(`Performance optimizations initialized for ${isMobile ? 'mobile' : 'desktop'} with ${networkQuality} network`);
 };
-

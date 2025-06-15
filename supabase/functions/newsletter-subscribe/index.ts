@@ -23,7 +23,8 @@ serve(async (req: Request) => {
   try {
     const { subscriberEmail }: SubscribeRequest = await req.json();
 
-    const emailResponse = await resend.emails.send({
+    // Send notification email to admin
+    await resend.emails.send({
       from: "HypeStream <onboarding@resend.dev>",
       to: ["awokojorichmond@gmail.com"],
       subject: "New Newsletter Subscription",
@@ -33,8 +34,36 @@ serve(async (req: Request) => {
       `,
     });
 
+    // Send confirmation email to subscriber
+    await resend.emails.send({
+      from: "HypeStream <onboarding@resend.dev>",
+      to: [subscriberEmail],
+      subject: "Welcome to HypeStream Newsletter!",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #7C3AED;">Welcome to HypeStream!</h2>
+          <p>Thank you for subscribing to our newsletter. You'll now receive updates about:</p>
+          <ul style="list-style-type: none; padding: 0;">
+            <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+              <span style="position: absolute; left: 0; color: #7C3AED;">✓</span>
+              New movie and TV show releases
+            </li>
+            <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+              <span style="position: absolute; left: 0; color: #7C3AED;">✓</span>
+              Exclusive content and behind-the-scenes
+            </li>
+            <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+              <span style="position: absolute; left: 0; color: #7C3AED;">✓</span>
+              Special promotions and events
+            </li>
+          </ul>
+          <p>Stay tuned for our latest updates!</p>
+        </div>
+      `,
+    });
+
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, message: "Subscription successful and confirmation sent." }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: any) {

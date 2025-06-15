@@ -1,3 +1,4 @@
+
 const CACHE_NAME = 'hypestream-cache-v3';
 const urlsToCache = [
   '/',
@@ -38,6 +39,11 @@ const fetchWithTimeout = (request, timeout = NETWORK_TIMEOUT) => {
 // Cache and return requests with mobile-optimized strategy
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
+
+  // Bypass Vite's internal requests to allow live preview to work.
+  if (url.pathname.startsWith('/@vite/') || url.pathname.startsWith('/@react-refresh')) {
+    return;
+  }
   
   // Skip cross-origin requests except for TMDB and allow all same-origin.
   // The gptengineer script is also excluded to prevent interference with the live editor.

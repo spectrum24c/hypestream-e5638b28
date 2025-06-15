@@ -50,7 +50,6 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           id: string
-          language: string | null
           pin_enabled: boolean | null
           pin_hash: string | null
           selected_theme: string | null
@@ -60,7 +59,6 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           id: string
-          language?: string | null
           pin_enabled?: boolean | null
           pin_hash?: string | null
           selected_theme?: string | null
@@ -70,7 +68,6 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           id?: string
-          language?: string | null
           pin_enabled?: boolean | null
           pin_hash?: string | null
           selected_theme?: string | null

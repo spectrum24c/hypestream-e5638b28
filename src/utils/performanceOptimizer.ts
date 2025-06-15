@@ -87,9 +87,9 @@ export const getOptimalImageSize = (containerWidth: number): string => {
 };
 
 /**
- * React-safe image preloading that returns URLs for React components to handle
+ * Preloads critical images with mobile-aware prioritization
  */
-export const getCriticalImageUrls = (urls: string[]): string[] => {
+export const preloadCriticalImages = (urls: string[]): void => {
   const networkQuality = getNetworkQuality();
   const isMobile = isMobileDevice();
   
@@ -101,7 +101,19 @@ export const getCriticalImageUrls = (urls: string[]): string[] => {
     maxPreloads = 2;
   }
   
-  return urls.slice(0, maxPreloads);
+  urls.slice(0, maxPreloads).forEach(url => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = url;
+    
+    // Set fetchpriority for modern browsers
+    if ('fetchPriority' in HTMLImageElement.prototype) {
+      (link as any).fetchPriority = (isMobile && networkQuality === 'slow') ? 'low' : 'high';
+    }
+    
+    document.head.appendChild(link);
+  });
 };
 
 // --------------- Network Optimization ---------------
@@ -190,7 +202,7 @@ export const fetchWithCache = async <T>(
 // --------------- Init Function ---------------
 
 /**
- * Initialize performance optimizations without DOM manipulation
+ * Initialize mobile-optimized performance settings without DOM manipulation
  */
 export const initPerformanceOptimizations = (): void => {
   try {
@@ -199,7 +211,6 @@ export const initPerformanceOptimizations = (): void => {
     
     console.log(`Device: ${isMobile ? 'Mobile' : 'Desktop'}, Network: ${networkQuality}`);
     console.log(`Performance optimizations initialized for ${isMobile ? 'mobile' : 'desktop'} with ${networkQuality} network`);
-    
   } catch (error) {
     console.warn('Performance optimization failed:', error);
   }

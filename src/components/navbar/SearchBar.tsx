@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiPaths, fetchFromTMDB } from '@/services/tmdbApi';
@@ -19,17 +19,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onToggle,
   className = ''
 }) => {
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [searchResults, setSearchResults] = React.useState<Movie[]>([]);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = React.useState(false);
-  const [isSearching, setIsSearching] = React.useState(false);
-  const [showResults, setShowResults] = React.useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Movie[]>([]);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const navigate = useNavigate();
-  const searchRef = React.useRef<HTMLDivElement>(null);
-  const resultsRef = React.useRef<HTMLDivElement>(null);
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         searchRef.current && 
@@ -50,13 +50,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
     };
   }, [isMobileSearchOpen, searchQuery]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isMobileSearchOpen && inputRef.current) {
       inputRef.current.focus();
     }
   }, [isMobileSearchOpen]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchSearchResults = async () => {
       if (!searchQuery.trim() || searchQuery.length < 2) {
         setSearchResults([]);

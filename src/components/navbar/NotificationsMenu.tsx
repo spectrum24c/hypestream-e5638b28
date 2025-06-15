@@ -1,4 +1,5 @@
-import * as React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { Bell } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Notification } from '@/types/movie';
@@ -19,13 +20,13 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
   unreadCount: initialUnreadCount,
   markAsRead
 }) => {
-  const [notifications, setNotifications] = React.useState<Notification[]>(initialNotifications);
-  const [unreadCount, setUnreadCount] = React.useState(initialUnreadCount);
-  const [userPreferences, setUserPreferences] = React.useState<any>(null);
+  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
+  const [userPreferences, setUserPreferences] = useState<any>(null);
   const navigate = useNavigate();
   
   // Load user preferences and notifications from local storage on startup
-  React.useEffect(() => {
+  useEffect(() => {
     const storedPreferences = localStorage.getItem('userPreferences');
     if (storedPreferences) {
       try {
@@ -52,7 +53,7 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
   }, []);
 
   // Save notifications to localStorage whenever they change
-  React.useEffect(() => {
+  useEffect(() => {
     if (notifications.length > 0) {
       localStorage.setItem('notifications', JSON.stringify(notifications));
     }
@@ -250,7 +251,7 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
   };
   
   // Simulate getting a new notification periodically based on user preferences
-  React.useEffect(() => {
+  useEffect(() => {
     if (!userPreferences || !userPreferences.enableNotifications) {
       return;
     }

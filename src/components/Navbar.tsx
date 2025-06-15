@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,16 +14,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/types/movie';
 
 const Navbar = () => {
-  const [isScrolled, setIsScrolled] = React.useState(false);
-  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const [session, setSession] = React.useState<any>(null);
-  const [notifications, setNotifications] = React.useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = React.useState(0);
-  const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [session, setSession] = useState<any>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const isMobile = useIsMobile();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
@@ -32,7 +32,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
     });
@@ -159,7 +159,7 @@ const Navbar = () => {
   }, []);
 
   // Listen for changes to user preferences
-  React.useEffect(() => {
+  useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'userPreferences' || e.key === 'notificationsEnabled') {
         try {

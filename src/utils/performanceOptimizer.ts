@@ -87,9 +87,9 @@ export const getOptimalImageSize = (containerWidth: number): string => {
 };
 
 /**
- * Preloads critical images with mobile-aware prioritization (React-safe)
+ * React-safe image preloading that returns URLs for React components to handle
  */
-export const preloadCriticalImages = (urls: string[]): void => {
+export const getCriticalImageUrls = (urls: string[]): string[] => {
   const networkQuality = getNetworkQuality();
   const isMobile = isMobileDevice();
   
@@ -101,23 +101,7 @@ export const preloadCriticalImages = (urls: string[]): void => {
     maxPreloads = 2;
   }
   
-  urls.slice(0, maxPreloads).forEach(url => {
-    // Use React-safe preloading without direct DOM manipulation
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'image';
-    link.href = url;
-    
-    // Set fetchpriority for modern browsers
-    if ('fetchPriority' in HTMLImageElement.prototype) {
-      (link as any).fetchPriority = (isMobile && networkQuality === 'slow') ? 'low' : 'high';
-    }
-    
-    // Only append if head exists and not already added
-    if (document.head && !document.head.querySelector(`link[href="${url}"]`)) {
-      document.head.appendChild(link);
-    }
-  });
+  return urls.slice(0, maxPreloads);
 };
 
 // --------------- Network Optimization ---------------
@@ -216,18 +200,6 @@ export const initPerformanceOptimizations = (): void => {
     console.log(`Device: ${isMobile ? 'Mobile' : 'Desktop'}, Network: ${networkQuality}`);
     console.log(`Performance optimizations initialized for ${isMobile ? 'mobile' : 'desktop'} with ${networkQuality} network`);
     
-    // Register service worker without DOM conflicts
-    if ('serviceWorker' in navigator && typeof window !== 'undefined') {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(registration => {
-            console.log('ServiceWorker registration successful:', registration.scope);
-          })
-          .catch(error => {
-            console.log('ServiceWorker registration failed:', error);
-          });
-      });
-    }
   } catch (error) {
     console.warn('Performance optimization failed:', error);
   }

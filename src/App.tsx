@@ -35,9 +35,9 @@ function App() {
   }, []);
 
   // Handle splash screen completion
-  const handleSplashComplete = () => {
+  const handleSplashComplete = React.useCallback(() => {
     setShowSplash(false);
-  };
+  }, []);
 
   // Handle online/offline status
   useEffect(() => {

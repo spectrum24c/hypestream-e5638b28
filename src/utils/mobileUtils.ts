@@ -22,11 +22,12 @@ export const isCapacitorNative = (): boolean => {
  * Custom hook to handle the hardware back button on Android devices
  */
 export const useHardwareBackButton = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  // Only use navigation hooks if we're in a native environment
+  const navigate = isCapacitorNative() ? useNavigate() : null;
+  const location = isCapacitorNative() ? useLocation() : null;
   
   useEffect(() => {
-    if (!isCapacitorNative()) return;
+    if (!isCapacitorNative() || !navigate || !location) return;
     
     // This would be imported from Capacitor plugins
     // We'll just set up the structure here

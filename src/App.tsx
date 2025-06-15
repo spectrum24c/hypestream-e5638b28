@@ -1,4 +1,3 @@
-
 import { Routes, Route } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Index from '@/pages/Index';
@@ -12,6 +11,7 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import CookiePolicy from '@/pages/CookiePolicy';
 import UserSettings from '@/pages/UserSettings';
 import Support from '@/pages/Support';
+import LanguagePage from "@/pages/LanguagePage";
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
 import { useHardwareBackButton, useStatusBarCustomization } from '@/utils/mobileUtils';
@@ -66,6 +66,7 @@ function App() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/support" element={<Support />} />
+        <Route path="/language" element={<LanguagePage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />

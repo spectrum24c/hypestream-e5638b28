@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { User, LogOut, Trash2, Bookmark, Settings } from 'lucide-react';
+import { User, LogOut, Trash2, Bookmark, Settings, Languages } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -37,6 +37,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ session, onSignOut, onDeleteAccount
             <Link to="/settings" className="text-sm hover:underline flex items-center">
               <Settings className="mr-2 h-4 w-4" />
               Settings
+            </Link>
+            <Link to="/language" className="text-sm hover:underline flex items-center">
+              <Languages className="mr-2 h-4 w-4" />
+              Language
             </Link>
             <hr className="border-border" />
             <Button 

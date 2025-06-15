@@ -31,11 +31,16 @@ function App() {
 
   // Initialize performance optimizations
   useEffect(() => {
-    initPerformanceOptimizations();
+    try {
+      initPerformanceOptimizations();
+    } catch (error) {
+      console.warn('Performance optimizations failed:', error);
+    }
   }, []);
 
   // Handle splash screen completion
   const handleSplashComplete = React.useCallback(() => {
+    console.log('Splash screen completed');
     setShowSplash(false);
   }, []);
 

@@ -59,23 +59,14 @@
         min-height: 100dvh;
       }
       .loading-fallback {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        min-height: 100dvh;
-        background: #121212;
-        color: white;
-        font-size: 18px;
+        display: none;
       }
     </style>
   </head>
 
   <body>
     <div id="root">
-      <div class="loading-fallback">
-        Loading HypeStream...
-      </div>
+      <div class="loading-fallback"></div>
     </div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
@@ -90,4 +81,3 @@
     </noscript>
   </body>
 </html>
-

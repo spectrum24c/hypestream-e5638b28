@@ -1,6 +1,7 @@
 
-import * as React from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { ChevronDown } from 'lucide-react';
 import { categories } from '@/data/categories';
 import {
   NavigationMenu,
@@ -10,6 +11,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import { cn } from '@/lib/utils';
 
 const DesktopNavigation: React.FC = () => {
   return (

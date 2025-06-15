@@ -202,7 +202,7 @@ export const fetchWithCache = async <T>(
 // --------------- Init Function ---------------
 
 /**
- * Initialize mobile-optimized performance settings without DOM manipulation
+ * Initialize mobile-optimized performance settings
  */
 export const initPerformanceOptimizations = (): void => {
   try {
@@ -210,6 +210,38 @@ export const initPerformanceOptimizations = (): void => {
     const isMobile = isMobileDevice();
     
     console.log(`Device: ${isMobile ? 'Mobile' : 'Desktop'}, Network: ${networkQuality}`);
+    
+    // Minimal DNS prefetch for mobile
+    const domains = [
+      'https://image.tmdb.org',
+      'https://api.themoviedb.org'
+    ];
+    
+    if (!isMobile || networkQuality === 'fast') {
+      domains.push(
+        'https://fonts.googleapis.com',
+        'https://fonts.gstatic.com'
+      );
+    }
+    
+    // Add DNS prefetch with mobile limits
+    const maxPrefetches = isMobile && networkQuality === 'slow' ? 1 : domains.length;
+    domains.slice(0, maxPrefetches).forEach(domain => {
+      const link = document.createElement('link');
+      link.rel = 'dns-prefetch';
+      link.href = domain;
+      document.head.appendChild(link);
+    });
+    
+    // Preconnect to critical domains only
+    ['https://image.tmdb.org', 'https://api.themoviedb.org'].slice(0, isMobile ? 1 : 2).forEach(url => {
+      const link = document.createElement('link');
+      link.rel = 'preconnect';
+      link.href = url;
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+    });
+    
     console.log(`Performance optimizations initialized for ${isMobile ? 'mobile' : 'desktop'} with ${networkQuality} network`);
   } catch (error) {
     console.warn('Performance optimization failed:', error);

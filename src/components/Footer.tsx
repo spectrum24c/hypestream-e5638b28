@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Facebook, Twitter, Instagram, Mail, Youtube } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -26,28 +27,45 @@ const Footer = () => {
     setIsSubmitting(true);
     
     try {
-      // Send email notification to awokojorichmond@gmail.com
-      const response = await fetch('/api/newsletter-subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          subscriberEmail: email,
-          notificationEmail: 'awokojorichmond@gmail.com'
-        }),
+      console.log('Starting newsletter subscription process for:', email);
+      
+      // Save subscriber to database
+      const { error: saveError } = await supabase.functions.invoke('save-newsletter-subscriber', {
+        body: {
+          email: email,
+          adminEmail: 'awokojorichmond@gmail.com',
+          userId: null
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to subscribe');
+      if (saveError) {
+        console.error('Error saving subscriber:', saveError);
+        throw saveError;
       }
+
+      console.log('Subscriber saved successfully, sending confirmation emails...');
+
+      // Send confirmation emails
+      const { error: emailError } = await supabase.functions.invoke('newsletter-confirm', {
+        body: {
+          email: email,
+          adminEmail: 'awokojorichmond@gmail.com'
+        }
+      });
+
+      if (emailError) {
+        console.error('Error sending emails:', emailError);
+        throw emailError;
+      }
+
+      console.log('Newsletter subscription completed successfully');
 
       // Clear the form
       setEmail('');
       
       toast({
         title: "Successfully subscribed!",
-        description: "Thank you for subscribing to our newsletter",
+        description: "Thank you for subscribing to our newsletter. Check your email for confirmation.",
         variant: "default"
       });
       

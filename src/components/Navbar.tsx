@@ -9,7 +9,7 @@ import MobileNavigation from './navbar/MobileNavigation';
 import SearchBar from './navbar/SearchBar';
 import UserMenu from './navbar/UserMenu';
 import NotificationsMenu from './navbar/NotificationsMenu';
-import useIsMobile from '@/hooks/useIsMobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { Notification } from '@/types/movie';
 

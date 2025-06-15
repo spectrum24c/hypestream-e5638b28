@@ -14,16 +14,16 @@ import Support from '@/pages/Support';
 import LanguagePage from "@/pages/LanguagePage";
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
-import { useHardwareBackButton, useStatusBarCustomization } from '@/utils/mobileUtils';
+import { useSafeHardwareBackButton, useSafeStatusBarCustomization } from '@/utils/safeMobileUtils';
 import { useToast } from "@/hooks/use-toast";
 
 function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { toast } = useToast();
   
-  // Use mobile-specific hooks
-  useHardwareBackButton();
-  useStatusBarCustomization(true);
+  // Use safe mobile-specific hooks
+  useSafeHardwareBackButton();
+  useSafeStatusBarCustomization(true);
 
   // Handle online/offline status
   useEffect(() => {

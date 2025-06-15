@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Facebook, Twitter, Instagram, Mail, Youtube } from 'lucide-react';
 
 const Footer = () => {
@@ -26,22 +26,25 @@ const Footer = () => {
     setIsSubmitting(true);
     
     try {
-      // Send email notification to awokojorichmond@gmail.com
-      const response = await fetch('/api/newsletter-subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          subscriberEmail: email,
-          notificationEmail: 'awokojorichmond@gmail.com'
-        }),
+      const adminEmail = "hypestream127@gmail.com";
+      
+      console.log("Submitting newsletter subscription for:", email, "to admin:", adminEmail);
+      
+      // Call the newsletter-confirm edge function first to send emails
+      await supabase.functions.invoke('newsletter-confirm', {
+        body: { email, adminEmail }
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to subscribe');
+      
+      // Then call save-newsletter-subscriber edge function to save to database
+      const { error } = await supabase.functions.invoke('save-newsletter-subscriber', {
+        body: { email, adminEmail }
+      });
+      
+      if (error) {
+        console.error("Error from save-newsletter-subscriber:", error);
+        throw error;
       }
-
+      
       // Clear the form
       setEmail('');
       
@@ -118,7 +121,7 @@ const Footer = () => {
             <ul className="space-y-2">
               <li><Link to="/faqs" className="text-gray-400 hover:text-white transition-colors">FAQs</Link></li>
               <li><Link to="/support" className="text-gray-400 hover:text-white transition-colors">Support</Link></li>
-              <li><a href="mailto:awokojorichmond@gmail.com" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
+              <li><a href="mailto:hypestream127@gmail.com" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
             </ul>
           </div>
           
@@ -148,7 +151,7 @@ const Footer = () => {
             <a href="#" className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors">
               <Youtube size={18} />
             </a>
-            <a href="mailto:awokojorichmond@gmail.com" className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors">
+            <a href="mailto:hypestream127@gmail.com" className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors">
               <Mail size={18} />
             </a>
           </div>

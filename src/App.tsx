@@ -1,5 +1,5 @@
 
-import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
@@ -17,12 +17,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { useHardwareBackButton, useStatusBarCustomization } from '@/utils/mobileUtils';
 import { useToast } from "@/hooks/use-toast";
 
-// Create a wrapper component that uses the mobile hooks inside Router context
-function AppContent() {
+function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { toast } = useToast();
   
-  // Use mobile-specific hooks (now inside Router context)
+  // Use mobile-specific hooks
   useHardwareBackButton();
   useStatusBarCustomization(true);
 
@@ -71,14 +70,6 @@ function AppContent() {
       </Routes>
       <Toaster />
     </div>
-  );
-}
-
-function App() {
-  return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
   );
 }
 

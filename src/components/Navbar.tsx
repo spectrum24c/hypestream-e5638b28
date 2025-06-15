@@ -159,7 +159,7 @@ const Navbar = () => {
   }, []);
 
   // Listen for changes to user preferences
-  useEffect(() => {
+  React.useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'userPreferences' || e.key === 'notificationsEnabled') {
         try {

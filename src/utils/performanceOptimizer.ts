@@ -87,7 +87,7 @@ export const getOptimalImageSize = (containerWidth: number): string => {
 };
 
 /**
- * Preloads critical images with mobile-aware prioritization
+ * Preloads critical images with mobile-aware prioritization (React-safe)
  */
 export const preloadCriticalImages = (urls: string[]): void => {
   const networkQuality = getNetworkQuality();
@@ -102,6 +102,7 @@ export const preloadCriticalImages = (urls: string[]): void => {
   }
   
   urls.slice(0, maxPreloads).forEach(url => {
+    // Use React-safe preloading without direct DOM manipulation
     const link = document.createElement('link');
     link.rel = 'preload';
     link.as = 'image';
@@ -112,7 +113,10 @@ export const preloadCriticalImages = (urls: string[]): void => {
       (link as any).fetchPriority = (isMobile && networkQuality === 'slow') ? 'low' : 'high';
     }
     
-    document.head.appendChild(link);
+    // Only append if head exists and not already added
+    if (document.head && !document.head.querySelector(`link[href="${url}"]`)) {
+      document.head.appendChild(link);
+    }
   });
 };
 
@@ -202,7 +206,7 @@ export const fetchWithCache = async <T>(
 // --------------- Init Function ---------------
 
 /**
- * Initialize mobile-optimized performance settings without DOM manipulation
+ * Initialize performance optimizations without DOM manipulation
  */
 export const initPerformanceOptimizations = (): void => {
   try {
@@ -211,6 +215,19 @@ export const initPerformanceOptimizations = (): void => {
     
     console.log(`Device: ${isMobile ? 'Mobile' : 'Desktop'}, Network: ${networkQuality}`);
     console.log(`Performance optimizations initialized for ${isMobile ? 'mobile' : 'desktop'} with ${networkQuality} network`);
+    
+    // Register service worker without DOM conflicts
+    if ('serviceWorker' in navigator && typeof window !== 'undefined') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful:', registration.scope);
+          })
+          .catch(error => {
+            console.log('ServiceWorker registration failed:', error);
+          });
+      });
+    }
   } catch (error) {
     console.warn('Performance optimization failed:', error);
   }

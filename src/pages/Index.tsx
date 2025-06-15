@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import * as React from 'react';
 import { useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
@@ -41,32 +42,32 @@ const genres = [
 ];
 
 const Index = () => {
-  const [trendingContent, setTrendingContent] = useState<Movie[]>([]);
-  const [newReleases, setNewReleases] = useState<Movie[]>([]);
-  const [popularMovies, setPopularMovies] = useState<Movie[]>([]);
-  const [topRatedShows, setTopRatedShows] = useState<Movie[]>([]);
-  const [horrorMovies, setHorrorMovies] = useState<Movie[]>([]);
-  const [comedyMovies, setComedyMovies] = useState<Movie[]>([]);
-  const [searchResults, setSearchResults] = useState<Movie[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [session, setSession] = useState(null);
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
-  const [shouldPlayMovie, setShouldPlayMovie] = useState(false);
-  const [viewAllContent, setViewAllContent] = useState<Movie[]>([]);
-  const [viewingCategory, setViewingCategory] = useState<string | null>(null);
+  const [trendingContent, setTrendingContent] = React.useState<Movie[]>([]);
+  const [newReleases, setNewReleases] = React.useState<Movie[]>([]);
+  const [popularMovies, setPopularMovies] = React.useState<Movie[]>([]);
+  const [topRatedShows, setTopRatedShows] = React.useState<Movie[]>([]);
+  const [horrorMovies, setHorrorMovies] = React.useState<Movie[]>([]);
+  const [comedyMovies, setComedyMovies] = React.useState<Movie[]>([]);
+  const [searchResults, setSearchResults] = React.useState<Movie[]>([]);
+  const [isSearching, setIsSearching] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [loadingMore, setLoadingMore] = React.useState(false);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [hasMore, setHasMore] = React.useState(true);
+  const [session, setSession] = React.useState(null);
+  const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
+  const [shouldPlayMovie, setShouldPlayMovie] = React.useState(false);
+  const [viewAllContent, setViewAllContent] = React.useState<Movie[]>([]);
+  const [viewingCategory, setViewingCategory] = React.useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   
   // New state for Continue Watching and filters
-  const [continueWatchingItems, setContinueWatchingItems] = useState<WatchHistory[]>([]);
-  const [activeFilters, setActiveFilters] = useState<any>(null);
-  const [originalContent, setOriginalContent] = useState<Movie[]>([]);  // Store original unfiltered content
+  const [continueWatchingItems, setContinueWatchingItems] = React.useState<WatchHistory[]>([]);
+  const [activeFilters, setActiveFilters] = React.useState<any>(null);
+  const [originalContent, setOriginalContent] = React.useState<Movie[]>([]);  // Store original unfiltered content
 
   const searchQueryFromState = location.state?.searchQuery || '';
   const selectedMovieIdFromState = location.state?.selectedMovieId;
@@ -74,12 +75,12 @@ const Index = () => {
   const genreFromParams = searchParams.get('genre');
 
   // Initialize performance optimizations
-  useEffect(() => {
+  React.useEffect(() => {
     initPerformanceOptimizations();
   }, []);
 
   // Remove the event listener for opening movie player from similar content
-  useEffect(() => {
+  React.useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
     });
@@ -93,7 +94,7 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (selectedMovieIdFromState) {
       const fetchMovieDetails = async () => {
         try {
@@ -115,7 +116,7 @@ const Index = () => {
     }
   }, [selectedMovieIdFromState]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchMovieData = async () => {
       setLoading(true);
       setCurrentPage(1);

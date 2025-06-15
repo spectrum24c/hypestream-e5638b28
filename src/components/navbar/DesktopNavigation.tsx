@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { categories } from '@/data/categories';

@@ -1,4 +1,3 @@
-
 const CACHE_NAME = 'hypestream-cache-v3';
 const urlsToCache = [
   '/',
@@ -46,39 +45,27 @@ self.addEventListener('fetch', event => {
   }
   
   // Skip cross-origin requests except for TMDB and allow all same-origin.
-  // The gptengineer script is also excluded to prevent interference with the live editor.
   if (!url.origin.includes(self.location.origin) && 
       !url.origin.includes('image.tmdb.org') && 
       !url.origin.includes('api.themoviedb.org')) {
     return;
   }
   
-  // Handle main HTML requests with network-first strategy
+  // Handle main HTML requests with a stale-while-revalidate strategy
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetchWithTimeout(event.request, 10000)
-        .then(response => {
-          if (response && response.status === 200) {
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-          }
-          return response;
-        })
-        .catch(() => {
-          return caches.match('/index.html')
-            .then(cachedResponse => {
-              if (cachedResponse) {
-                return cachedResponse;
-              }
-              return new Response('App unavailable offline', { 
-                status: 503,
-                headers: { 'Content-Type': 'text/html' }
-              });
-            });
-        })
+      caches.open(CACHE_NAME).then(cache => {
+        return cache.match(event.request).then(cachedResponse => {
+          const fetchPromise = fetch(event.request).then(networkResponse => {
+            if (networkResponse && networkResponse.status === 200) {
+              cache.put(event.request, networkResponse.clone());
+            }
+            return networkResponse;
+          });
+          // Return cached response if available, otherwise wait for network
+          return cachedResponse || fetchPromise;
+        });
+      })
     );
     return;
   }

@@ -1,11 +1,10 @@
 
-import React, { useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from 'react-router-dom';
 import App from "./App";
 import "./index.css";
 import "./utils/movie-buttons-responsive.css";
-import SplashScreen from "./components/SplashScreen";
 
 // Simple performance initialization without DOM manipulation
 const initBasicOptimizations = () => {
@@ -30,31 +29,75 @@ const initBasicOptimizations = () => {
 // Initialize basic optimizations
 initBasicOptimizations();
 
-// Properly structured React component
-const Root = () => {
-  const [showSplash, setShowSplash] = useState(true);
-  
-  const handleSplashComplete = () => {
-    setShowSplash(false);
-  };
-  
-  if (showSplash) {
-    return <SplashScreen onComplete={handleSplashComplete} />;
+// Error Boundary Component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
   }
-  
-  return (
-    <React.StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </React.StrictMode>
-  );
-};
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#121212',
+          color: 'white',
+          flexDirection: 'column',
+          padding: '20px',
+          textAlign: 'center'
+        }}>
+          <h1>Something went wrong</h1>
+          <p>Please refresh the page to try again.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              background: '#8B5CF6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer'
+            }}
+          >
+            Refresh Page
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 // Ensure the root element exists before rendering
 const rootElement = document.getElementById("root");
 if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(<Root />);
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ErrorBoundary>
+    </React.StrictMode>
+  );
 } else {
   console.error("Root element not found");
 }

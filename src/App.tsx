@@ -1,7 +1,6 @@
 
 import * as React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import Profile from '@/pages/Profile';
@@ -13,7 +12,6 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import CookiePolicy from '@/pages/CookiePolicy';
 import UserSettings from '@/pages/UserSettings';
 import Support from '@/pages/Support';
-import SplashScreen from '@/components/SplashScreen';
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
 import { useHardwareBackButton, useStatusBarCustomization } from '@/utils/mobileUtils';
@@ -21,8 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { initPerformanceOptimizations } from '@/utils/performanceOptimizer';
 
 function App() {
-  const [showSplash, setShowSplash] = useState(true);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = React.useState(navigator.onLine);
   const { toast } = useToast();
   
   // Use mobile-specific hooks
@@ -30,7 +27,7 @@ function App() {
   useStatusBarCustomization(true);
 
   // Initialize performance optimizations
-  useEffect(() => {
+  React.useEffect(() => {
     try {
       initPerformanceOptimizations();
     } catch (error) {
@@ -38,14 +35,8 @@ function App() {
     }
   }, []);
 
-  // Handle splash screen completion
-  const handleSplashComplete = React.useCallback(() => {
-    console.log('Splash screen completed');
-    setShowSplash(false);
-  }, []);
-
   // Handle online/offline status
-  useEffect(() => {
+  React.useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
       toast({
@@ -72,12 +63,6 @@ function App() {
     };
   }, [toast]);
 
-  // Show splash screen first
-  if (showSplash) {
-    return <SplashScreen onComplete={handleSplashComplete} />;
-  }
-
-  // Show main app after splash
   return (
     <div className="app">
       <Routes>

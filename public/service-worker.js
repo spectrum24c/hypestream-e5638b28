@@ -1,4 +1,3 @@
-
 const CACHE_NAME = 'hypestream-cache-v3';
 const urlsToCache = [
   '/',
@@ -40,11 +39,11 @@ const fetchWithTimeout = (request, timeout = NETWORK_TIMEOUT) => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   
-  // Skip cross-origin requests except for TMDB and allow all same-origin
+  // Skip cross-origin requests except for TMDB and allow all same-origin.
+  // The gptengineer script is also excluded to prevent interference with the live editor.
   if (!url.origin.includes(self.location.origin) && 
       !url.origin.includes('image.tmdb.org') && 
-      !url.origin.includes('api.themoviedb.org') &&
-      !url.origin.includes('cdn.gpteng.co')) {
+      !url.origin.includes('api.themoviedb.org')) {
     return;
   }
   
@@ -177,4 +176,3 @@ self.addEventListener('sync', event => {
     console.log('Background sync triggered');
   }
 });
-

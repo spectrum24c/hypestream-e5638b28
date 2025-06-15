@@ -21,7 +21,7 @@ function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { toast } = useToast();
   
-  // Use mobile-specific hooks (now properly inside Router context)
+  // Use mobile-specific hooks
   useHardwareBackButton();
   useStatusBarCustomization(true);
 

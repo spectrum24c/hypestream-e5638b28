@@ -1,5 +1,5 @@
 
-import React from 'react';
+import * as React from 'react';
 import { User, LogOut, Trash2, Bookmark, Settings } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';

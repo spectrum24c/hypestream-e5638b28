@@ -21,14 +21,10 @@ serve(async (req) => {
   }
 
   try {
+    // Use the service role key to bypass RLS for writing to the database.
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      {
-        global: {
-          headers: { Authorization: req.headers.get("Authorization")! },
-        },
-      }
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
     // Get the request body
@@ -37,7 +33,6 @@ serve(async (req) => {
     console.log("Received subscription request for:", email, "to admin:", adminEmail);
 
     // Insert directly into the newsletter_subscribers table
-    // Without trying to call the non-existent function
     const { error: insertError } = await supabaseClient
       .from("newsletter_subscribers")
       .insert({
@@ -48,7 +43,7 @@ serve(async (req) => {
       });
 
     if (insertError) {
-      console.error("Error inserting subscriber:", insertError);
+      console.error("Error inserting subscriber:", JSON.stringify(insertError, null, 2));
       throw insertError;
     }
 
@@ -60,7 +55,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error in save-newsletter-subscriber:", JSON.stringify(error, null, 2));
     return new Response(
       JSON.stringify({
         success: false,

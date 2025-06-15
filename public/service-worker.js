@@ -1,4 +1,3 @@
-
 const CACHE_NAME = 'hypestream-cache-v3';
 const urlsToCache = [
   '/',
@@ -78,34 +77,41 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // Handle API requests with network-first strategy
+  // Handle API requests with cache-first strategy to resolve online loading issues
   if (url.origin.includes('api.themoviedb.org')) {
     event.respondWith(
-      fetchWithTimeout(event.request, 12000)
+      caches.match(event.request)
         .then(response => {
-          if (response && response.status === 200) {
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
+          if (response) {
+            console.log('Serving cached API response for:', event.request.url);
+            return response;
           }
-          return response;
-        })
-        .catch(() => {
-          return caches.match(event.request)
-            .then(cachedResponse => {
-              if (cachedResponse) {
-                console.log('Serving cached API response for:', event.request.url);
-                return cachedResponse;
+          
+          return fetchWithTimeout(event.request, 12000)
+            .then(networkResponse => {
+              if (networkResponse && networkResponse.status === 200) {
+                const responseToCache = networkResponse.clone();
+                caches.open(CACHE_NAME)
+                  .then(cache => {
+                    cache.put(event.request, responseToCache);
+                  });
               }
-              return new Response(JSON.stringify({ 
-                error: 'Network unavailable', 
-                results: [] 
-              }), {
-                status: 200,
-                headers: { 'Content-Type': 'application/json' }
-              });
+              return networkResponse;
+            })
+            .catch(() => {
+              return caches.match(event.request)
+                .then(cachedResponse => {
+                  if (cachedResponse) {
+                    return cachedResponse;
+                  }
+                  return new Response(JSON.stringify({ 
+                    error: 'Network unavailable', 
+                    results: [] 
+                  }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' }
+                  });
+                });
             });
         })
     );
@@ -177,4 +183,3 @@ self.addEventListener('sync', event => {
     console.log('Background sync triggered');
   }
 });
-

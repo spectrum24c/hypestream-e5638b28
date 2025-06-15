@@ -17,12 +17,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { useHardwareBackButton, useStatusBarCustomization } from '@/utils/mobileUtils';
 import { useToast } from "@/hooks/use-toast";
 
-// Create a separate component that uses the mobile hooks
-function AppContent() {
+function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { toast } = useToast();
   
-  // Use mobile-specific hooks (these need to be inside Router context)
+  // Use mobile-specific hooks (now properly inside Router context)
   useHardwareBackButton();
   useStatusBarCustomization(true);
 
@@ -55,7 +54,7 @@ function AppContent() {
   }, [toast]);
 
   return (
-    <>
+    <div className="app">
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
@@ -70,14 +69,6 @@ function AppContent() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
-    </>
-  );
-}
-
-function App() {
-  return (
-    <div className="app">
-      <AppContent />
     </div>
   );
 }

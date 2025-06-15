@@ -40,13 +40,13 @@ const Root = () => {
   
   return (
     <React.StrictMode>
-      <BrowserRouter>
-        {showSplash ? (
-          <SplashScreen onComplete={handleSplashComplete} />
-        ) : (
+      {showSplash ? (
+        <SplashScreen onComplete={handleSplashComplete} />
+      ) : (
+        <BrowserRouter>
           <App />
-        )}
-      </BrowserRouter>
+        </BrowserRouter>
+      )}
     </React.StrictMode>
   );
 };

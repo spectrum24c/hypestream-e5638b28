@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
+// Available languages
 const LANGUAGES = [
   { code: "en", name: "English" },
   { code: "es", name: "Spanish" },
@@ -31,12 +32,12 @@ const LanguagePage = () => {
 
   useEffect(() => {
     if (session && session.user) {
-      // Try to load language from user's metadata
+      // Try to load language from user's profile in DB
       supabase
         .from("profiles")
         .select("language")
         .eq("id", session.user.id)
-        .single()
+        .maybeSingle()
         .then(({ data }) => {
           if (data && data.language) {
             setSelected(data.language);

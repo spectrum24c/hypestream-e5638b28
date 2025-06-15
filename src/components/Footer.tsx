@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Facebook, Twitter, Instagram, Mail, Youtube } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
@@ -26,20 +27,16 @@ const Footer = () => {
     setIsSubmitting(true);
     
     try {
-      // Send email notification to awokojorichmond@gmail.com
-      const response = await fetch('/api/newsletter-subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          subscriberEmail: email,
-          notificationEmail: 'awokojorichmond@gmail.com'
-        }),
+      // Call the Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('send-newsletter-email', {
+        body: {
+          email: email,
+          adminEmail: 'awokojorichmond@gmail.com'
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to subscribe');
+      if (error) {
+        throw error;
       }
 
       // Clear the form
@@ -47,7 +44,7 @@ const Footer = () => {
       
       toast({
         title: "Successfully subscribed!",
-        description: "Thank you for subscribing to our newsletter",
+        description: "Thank you for subscribing to our newsletter. You'll receive updates soon!",
         variant: "default"
       });
       

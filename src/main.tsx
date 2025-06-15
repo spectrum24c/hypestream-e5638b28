@@ -38,14 +38,14 @@ const Root = () => {
     setShowSplash(false);
   };
   
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+  
   return (
     <React.StrictMode>
       <BrowserRouter>
-        {showSplash ? (
-          <SplashScreen onComplete={handleSplashComplete} />
-        ) : (
-          <App />
-        )}
+        <App />
       </BrowserRouter>
     </React.StrictMode>
   );

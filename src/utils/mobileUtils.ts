@@ -1,10 +1,11 @@
+
 /**
  * Mobile Utilities
  * 
  * This module handles mobile-specific features like hardware back button,
  * status bar customization, and other native capabilities.
  */
-import { useEffect, useState } from 'react';
+import * as React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 /**
@@ -25,7 +26,7 @@ export const useHardwareBackButton = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isCapacitorNative()) return;
     
     // This would be imported from Capacitor plugins
@@ -57,7 +58,7 @@ export const useHardwareBackButton = () => {
 export const useStatusBarCustomization = (
   isDarkBackground: boolean = true
 ) => {
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isCapacitorNative()) return;
     
     // This would use the StatusBar plugin from Capacitor
@@ -94,9 +95,9 @@ export const disableFullscreenMode = () => {
  * Check if device is online
  */
 export const useOnlineStatus = () => {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = React.useState(navigator.onLine);
   
-  useEffect(() => {
+  React.useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     

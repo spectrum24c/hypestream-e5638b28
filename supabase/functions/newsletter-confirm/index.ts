@@ -1,6 +1,4 @@
 
-// Supabase Edge Function to send newsletter subscription email via Resend
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -12,32 +10,42 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface SubscribeRequest {
-  subscriberEmail: string;
+interface EmailRequest {
+  email: string;
+  adminEmail: string;
 }
 
-serve(async (req: Request) => {
+serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
-  try {
-    const { subscriberEmail }: SubscribeRequest = await req.json();
 
+  try {
+    const { email, adminEmail }: EmailRequest = await req.json();
+    
     // Send notification email to admin
-    await resend.emails.send({
-      from: "HypeStream <onboarding@resend.dev>",
-      to: ["awokojorichmond@gmail.com"],
+    const adminEmailResponse = await resend.emails.send({
+      from: "HypeStream Newsletter <onboarding@resend.dev>",
+      to: [adminEmail],
       subject: "New Newsletter Subscription",
       html: `
-        <h3>New Subscription</h3>
-        <p><strong>Email:</strong> ${subscriberEmail}</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #7C3AED;">New Newsletter Subscription</h2>
+          <p>A new user has subscribed to the HypeStream newsletter:</p>
+          <div style="background-color: #F3F4F6; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+          </div>
+          <p>You can now send updates to this user.</p>
+        </div>
       `,
     });
 
     // Send confirmation email to subscriber
-    await resend.emails.send({
+    const userEmailResponse = await resend.emails.send({
       from: "HypeStream <onboarding@resend.dev>",
-      to: [subscriberEmail],
+      to: [email],
       subject: "Welcome to HypeStream Newsletter!",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -62,14 +70,30 @@ serve(async (req: Request) => {
       `,
     });
 
+    console.log("Admin email sent:", adminEmailResponse);
+    console.log("User confirmation email sent:", userEmailResponse);
+
     return new Response(
-      JSON.stringify({ success: true, message: "Subscription successful and confirmation sent." }),
-      { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      JSON.stringify({ 
+        success: true, 
+        message: "Newsletter subscription confirmation sent successfully" 
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
     );
-  } catch (error: any) {
+  } catch (error) {
+    console.error("Error:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      JSON.stringify({
+        success: false,
+        error: error.message || "An unknown error occurred",
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      }
     );
   }
 });

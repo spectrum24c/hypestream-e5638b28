@@ -1,5 +1,5 @@
 
-import * as React from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';

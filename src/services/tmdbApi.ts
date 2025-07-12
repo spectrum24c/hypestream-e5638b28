@@ -21,6 +21,54 @@ export interface Genre {
   name: string;
 }
 
+export interface CastMember {
+  id: number;
+  name: string;
+  character: string;
+  profile_path: string | null;
+  order: number;
+}
+
+export interface CrewMember {
+  id: number;
+  name: string;
+  job: string;
+  department: string;
+  profile_path: string | null;
+}
+
+export interface PersonDetails {
+  id: number;
+  name: string;
+  biography: string;
+  birthday: string | null;
+  deathday: string | null;
+  place_of_birth: string | null;
+  profile_path: string | null;
+  known_for_department: string;
+  also_known_as: string[];
+}
+
+export interface SearchFilters {
+  year?: number;
+  primary_release_year?: number;
+  first_air_date_year?: number;
+}
+
+export interface DiscoverFilters {
+  genres?: number[];
+  year?: number;
+  first_air_date_year?: number;
+  release_date_gte?: string;
+  release_date_lte?: string;
+  first_air_date_gte?: string;
+  first_air_date_lte?: string;
+  vote_average_gte?: number;
+  vote_average_lte?: number;
+  with_cast?: string;
+  with_crew?: string;
+}
+
 export const apiPaths = {
   fetchAllCategories: `${tmdbApiEndpoint}/genre/movie/list?api_key=${apiKeys.tmdb}`,
   fetchMoviesList: (id: number) => `${tmdbApiEndpoint}/discover/movie?api_key=${apiKeys.tmdb}&with_genres=${id}`,
@@ -39,6 +87,51 @@ export const apiPaths = {
   fetchTVGenres: `${tmdbApiEndpoint}/genre/tv/list?api_key=${apiKeys.tmdb}&language=en-US`,
   fetchAnime: `${tmdbApiEndpoint}/discover/tv?api_key=${apiKeys.tmdb}&language=en-US&with_keywords=210024`,
   fetchAnimeByGenre: (genreId: number) => `${tmdbApiEndpoint}/discover/tv?api_key=${apiKeys.tmdb}&language=en-US&with_keywords=210024&with_genres=${genreId}`,
+  
+  // Cast & Crew endpoints
+  fetchMovieCredits: (movieId: string) => `${tmdbApiEndpoint}/movie/${movieId}/credits?api_key=${apiKeys.tmdb}&language=en-US`,
+  fetchTVCredits: (tvId: string) => `${tmdbApiEndpoint}/tv/${tvId}/credits?api_key=${apiKeys.tmdb}&language=en-US`,
+  fetchPersonDetails: (personId: string) => `${tmdbApiEndpoint}/person/${personId}?api_key=${apiKeys.tmdb}&language=en-US`,
+  fetchPersonMovieCredits: (personId: string) => `${tmdbApiEndpoint}/person/${personId}/movie_credits?api_key=${apiKeys.tmdb}&language=en-US`,
+  fetchPersonTVCredits: (personId: string) => `${tmdbApiEndpoint}/person/${personId}/tv_credits?api_key=${apiKeys.tmdb}&language=en-US`,
+  
+  // Advanced search endpoints
+  searchMoviesAdvanced: (query: string, filters?: SearchFilters) => {
+    let url = `${tmdbApiEndpoint}/search/movie?api_key=${apiKeys.tmdb}&language=en-US&query=${encodeURIComponent(query)}`;
+    if (filters?.year) url += `&year=${filters.year}`;
+    if (filters?.primary_release_year) url += `&primary_release_year=${filters.primary_release_year}`;
+    return url;
+  },
+  searchTVAdvanced: (query: string, filters?: SearchFilters) => {
+    let url = `${tmdbApiEndpoint}/search/tv?api_key=${apiKeys.tmdb}&language=en-US&query=${encodeURIComponent(query)}`;
+    if (filters?.first_air_date_year) url += `&first_air_date_year=${filters.first_air_date_year}`;
+    return url;
+  },
+  searchPerson: (query: string) => `${tmdbApiEndpoint}/search/person?api_key=${apiKeys.tmdb}&language=en-US&query=${encodeURIComponent(query)}`,
+  
+  // Discover with advanced filters
+  discoverMovies: (filters: DiscoverFilters) => {
+    let url = `${tmdbApiEndpoint}/discover/movie?api_key=${apiKeys.tmdb}&language=en-US&sort_by=popularity.desc`;
+    if (filters.genres?.length) url += `&with_genres=${filters.genres.join(',')}`;
+    if (filters.year) url += `&year=${filters.year}`;
+    if (filters.release_date_gte) url += `&release_date.gte=${filters.release_date_gte}`;
+    if (filters.release_date_lte) url += `&release_date.lte=${filters.release_date_lte}`;
+    if (filters.vote_average_gte) url += `&vote_average.gte=${filters.vote_average_gte}`;
+    if (filters.vote_average_lte) url += `&vote_average.lte=${filters.vote_average_lte}`;
+    if (filters.with_cast) url += `&with_cast=${filters.with_cast}`;
+    if (filters.with_crew) url += `&with_crew=${filters.with_crew}`;
+    return url;
+  },
+  discoverTV: (filters: DiscoverFilters) => {
+    let url = `${tmdbApiEndpoint}/discover/tv?api_key=${apiKeys.tmdb}&language=en-US&sort_by=popularity.desc`;
+    if (filters.genres?.length) url += `&with_genres=${filters.genres.join(',')}`;
+    if (filters.first_air_date_year) url += `&first_air_date_year=${filters.first_air_date_year}`;
+    if (filters.first_air_date_gte) url += `&first_air_date.gte=${filters.first_air_date_gte}`;
+    if (filters.first_air_date_lte) url += `&first_air_date.lte=${filters.first_air_date_lte}`;
+    if (filters.vote_average_gte) url += `&vote_average.gte=${filters.vote_average_gte}`;
+    if (filters.vote_average_lte) url += `&vote_average.lte=${filters.vote_average_lte}`;
+    return url;
+  },
 };
 
 // Fetch data from TMDB API with caching
@@ -209,5 +302,91 @@ export const fetchGenres = async (type: 'movie' | 'tv'): Promise<Genre[]> => {
   } catch (error) {
     console.error(`Error fetching ${type} genres:`, error);
     return [];
+  }
+};
+
+// Advanced search with filters
+export const searchWithFilters = async (query: string, filters: DiscoverFilters & { mediaType?: 'movie' | 'tv' | 'both' }) => {
+  try {
+    const results: any[] = [];
+    
+    if (!filters.mediaType || filters.mediaType === 'both' || filters.mediaType === 'movie') {
+      const movieUrl = apiPaths.discoverMovies({
+        ...filters,
+        year: filters.year,
+        release_date_gte: filters.release_date_gte,
+        release_date_lte: filters.release_date_lte,
+      });
+      const movieData = await fetchFromTMDB(movieUrl);
+      if (movieData?.results) {
+        results.push(...movieData.results.map((item: any) => ({ ...item, media_type: 'movie' })));
+      }
+    }
+    
+    if (!filters.mediaType || filters.mediaType === 'both' || filters.mediaType === 'tv') {
+      const tvUrl = apiPaths.discoverTV({
+        ...filters,
+        first_air_date_year: filters.first_air_date_year,
+        first_air_date_gte: filters.first_air_date_gte,
+        first_air_date_lte: filters.first_air_date_lte,
+      });
+      const tvData = await fetchFromTMDB(tvUrl);
+      if (tvData?.results) {
+        results.push(...tvData.results.map((item: any) => ({ ...item, media_type: 'tv' })));
+      }
+    }
+    
+    // If there's a search query, filter results by title/name
+    if (query.trim()) {
+      const searchTerm = query.toLowerCase();
+      return results.filter(item => 
+        (item.title?.toLowerCase().includes(searchTerm) || 
+         item.name?.toLowerCase().includes(searchTerm))
+      );
+    }
+    
+    return results;
+  } catch (error) {
+    console.error("Error in advanced search:", error);
+    return [];
+  }
+};
+
+// Fetch cast and crew for movies/TV shows
+export const fetchCredits = async (id: string, type: 'movie' | 'tv') => {
+  try {
+    const url = type === 'movie' ? apiPaths.fetchMovieCredits(id) : apiPaths.fetchTVCredits(id);
+    const data = await fetchFromTMDB(url);
+    return {
+      cast: data?.cast || [],
+      crew: data?.crew || []
+    };
+  } catch (error) {
+    console.error(`Error fetching ${type} credits:`, error);
+    return { cast: [], crew: [] };
+  }
+};
+
+// Fetch person details and their works
+export const fetchPersonData = async (personId: string) => {
+  try {
+    const [details, movieCredits, tvCredits] = await Promise.all([
+      fetchFromTMDB(apiPaths.fetchPersonDetails(personId)),
+      fetchFromTMDB(apiPaths.fetchPersonMovieCredits(personId)),
+      fetchFromTMDB(apiPaths.fetchPersonTVCredits(personId))
+    ]);
+    
+    return {
+      details: details || null,
+      movieCredits: movieCredits || { cast: [], crew: [] },
+      tvCredits: tvCredits || { cast: [], crew: [] }
+    };
+  } catch (error) {
+    console.error("Error fetching person data:", error);
+    return {
+      details: null,
+      movieCredits: { cast: [], crew: [] },
+      tvCredits: { cast: [], crew: [] }
+    };
   }
 };

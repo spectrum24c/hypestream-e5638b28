@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { getOptimizedImagePath } from '@/services/tmdbApi';
+import { Button } from '@/components/ui/button';
 
 interface MovieCardProps {
   id: string;
@@ -61,7 +62,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
   return (
     <div 
-      className="flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] bg-card rounded-lg overflow-hidden hover:scale-105 transition duration-200 cursor-pointer shadow-lg border border-border/10 hover:border-hype-purple/30"
+      className="group flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] bg-card rounded-lg overflow-hidden hover:scale-105 transition duration-200 cursor-pointer shadow-lg border border-border/10 hover:border-hype-purple/30"
       onClick={onClick}
     >
       <div className="relative aspect-[2/3] w-full bg-gray-800">
@@ -82,6 +83,22 @@ const MovieCard: React.FC<MovieCardProps> = ({
         />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        
+        {/* Cast & Crew Button - appears on hover */}
+        <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            size="sm"
+            variant="secondary"
+            className="w-full text-xs bg-white/20 backdrop-blur-sm border-none text-white hover:bg-white/30"
+            onClick={(e) => {
+              e.stopPropagation();
+              const mediaType = isTVShow ? 'tv' : 'movie';
+              window.open(`/cast-crew/1?movieId=${id}&type=${mediaType}&title=${encodeURIComponent(title)}`, '_blank');
+            }}
+          >
+            Cast & Crew
+          </Button>
+        </div>
       </div>
       <div className="p-2 md:p-3">
         <h3 className="font-bold text-xs md:text-sm mb-1 truncate">{title}</h3>

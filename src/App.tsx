@@ -14,7 +14,7 @@ import UserSettings from '@/pages/UserSettings';
 import Support from '@/pages/Support';
 import CastCrew from '@/pages/CastCrew';
 import PersonDetails from '@/pages/PersonDetails';
-import AdvancedSearch from '@/pages/AdvancedSearch';
+
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
 import { useHardwareBackButton, useStatusBarCustomization } from '@/utils/mobileUtils';
@@ -69,7 +69,7 @@ function App() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/support" element={<Support />} />
-        <Route path="/search" element={<AdvancedSearch />} />
+        
         <Route path="/cast-crew/:id" element={<CastCrew />} />
         <Route path="/person/:id" element={<PersonDetails />} />
         <Route path="*" element={<NotFound />} />

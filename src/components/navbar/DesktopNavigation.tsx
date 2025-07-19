@@ -66,11 +66,6 @@ const DesktopNavigation: React.FC = () => {
             </NavigationMenuItem>
           ))}
           
-          <NavigationMenuItem>
-            <Link to="/search" className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2">
-              Advanced Search
-            </Link>
-          </NavigationMenuItem>
           
           <NavigationMenuItem>
             <Link to="/favorites" className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2">

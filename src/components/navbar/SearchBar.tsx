@@ -1,17 +1,28 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { apiPaths, fetchFromTMDB } from '@/services/tmdbApi';
+import { apiPaths, fetchFromTMDB, searchWithFilters, fetchGenres, DiscoverFilters, Genre } from '@/services/tmdbApi';
 import { Movie } from '@/types/movie';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 
 interface SearchBarProps {
   isOpen?: boolean;
   onToggle?: () => void;
   className?: string;
+}
+
+interface SearchFilters {
+  genres: number[];
+  yearRange: [number, number];
+  ratingRange: [number, number];
+  mediaType: 'all' | 'movie' | 'tv';
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ 
@@ -24,6 +35,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [genres, setGenres] = useState<Genre[]>([]);
+  const [filters, setFilters] = useState<SearchFilters>({
+    genres: [],
+    yearRange: [1990, new Date().getFullYear()],
+    ratingRange: [0, 10],
+    mediaType: 'all'
+  });
   const navigate = useNavigate();
   const searchRef = useRef<HTMLDivElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -56,6 +75,29 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
   }, [isMobileSearchOpen]);
 
+  // Load genres on component mount
+  useEffect(() => {
+    const loadGenres = async () => {
+      try {
+        const [movieGenres, tvGenres] = await Promise.all([
+          fetchGenres('movie'),
+          fetchGenres('tv')
+        ]);
+        
+        const allGenres = [...movieGenres, ...tvGenres];
+        const uniqueGenres = allGenres.filter((genre, index, self) => 
+          self.findIndex(g => g.id === genre.id) === index
+        );
+        
+        setGenres(uniqueGenres);
+      } catch (error) {
+        console.error('Error loading genres:', error);
+      }
+    };
+
+    loadGenres();
+  }, []);
+
   useEffect(() => {
     const fetchSearchResults = async () => {
       if (!searchQuery.trim() || searchQuery.length < 2) {
@@ -65,10 +107,36 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
       setIsSearching(true);
       try {
-        const data = await fetchFromTMDB(apiPaths.searchMulti(searchQuery));
-        if (data && typeof data === 'object' && 'results' in data) {
-          const results = (data.results || []) as Movie[];
-          setSearchResults(results.slice(0, 5)); // Limit to 5 results for dropdown
+        // Check if we have active filters
+        const hasFilters = filters.genres.length > 0 || 
+                          filters.yearRange[0] !== 1990 || 
+                          filters.yearRange[1] !== new Date().getFullYear() ||
+                          filters.ratingRange[0] !== 0 || 
+                          filters.ratingRange[1] !== 10 ||
+                          filters.mediaType !== 'all';
+
+        if (hasFilters) {
+          // Use advanced search with filters
+          const searchFilters: DiscoverFilters & { mediaType?: 'movie' | 'tv' | 'both' } = {
+            mediaType: filters.mediaType === 'all' ? 'both' : filters.mediaType,
+            genres: filters.genres.length > 0 ? filters.genres : undefined,
+            vote_average_gte: filters.ratingRange[0],
+            vote_average_lte: filters.ratingRange[1],
+            release_date_gte: `${filters.yearRange[0]}-01-01`,
+            release_date_lte: `${filters.yearRange[1]}-12-31`,
+            first_air_date_gte: `${filters.yearRange[0]}-01-01`,
+            first_air_date_lte: `${filters.yearRange[1]}-12-31`,
+          };
+          
+          const results = await searchWithFilters(searchQuery, searchFilters);
+          setSearchResults(results.slice(0, 5));
+        } else {
+          // Use regular search
+          const data = await fetchFromTMDB(apiPaths.searchMulti(searchQuery));
+          if (data && typeof data === 'object' && 'results' in data) {
+            const results = (data.results || []) as Movie[];
+            setSearchResults(results.slice(0, 5));
+          }
         }
       } catch (error) {
         console.error("Error searching:", error);
@@ -82,25 +150,45 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }, 300);
 
     return () => clearTimeout(debounceTimer);
-  }, [searchQuery]);
+  }, [searchQuery, filters]);
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate('/', { state: { searchQuery: searchQuery.trim() } });
+      navigate('/', { state: { searchQuery: searchQuery.trim(), filters } });
       setSearchQuery('');
       if (onToggle) onToggle();
       setIsMobileSearchOpen(false);
       setShowResults(false);
+      setShowFilters(false);
     }
   };
 
   const handleResultClick = (query: string) => {
-    navigate('/', { state: { searchQuery: query } });
+    navigate('/', { state: { searchQuery: query, filters } });
     setSearchQuery('');
     setShowResults(false);
+    setShowFilters(false);
     if (onToggle) onToggle();
     setIsMobileSearchOpen(false);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      genres: [],
+      yearRange: [1990, new Date().getFullYear()],
+      ratingRange: [0, 10],
+      mediaType: 'all'
+    });
+  };
+
+  const hasActiveFilters = () => {
+    return filters.genres.length > 0 || 
+           filters.yearRange[0] !== 1990 || 
+           filters.yearRange[1] !== new Date().getFullYear() ||
+           filters.ratingRange[0] !== 0 || 
+           filters.ratingRange[1] !== 10 ||
+           filters.mediaType !== 'all';
   };
 
   const toggleMobileSearch = () => {
@@ -226,36 +314,137 @@ const SearchBar: React.FC<SearchBarProps> = ({
         onSubmit={handleSearch} 
         className={`${isOpen ? 'hidden md:flex' : 'hidden'} items-center relative`}
       >
-        <div className="relative">
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-            <Search className="h-4 w-4" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search movies & TV shows..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setShowResults(true);
-            }}
-            onFocus={() => setShowResults(true)}
-            className={cn(
-              "bg-card/80 text-white rounded-full py-1.5 pl-9 pr-4 text-sm",
-              "border border-border/40 hover:border-hype-purple/30",
-              "w-full md:w-[200px] focus:w-[280px] transition-all duration-300",
-              "focus:outline-none focus:border-hype-purple"
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+              <Search className="h-4 w-4" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search movies & TV shows..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowResults(true);
+              }}
+              onFocus={() => setShowResults(true)}
+              className={cn(
+                "bg-card/80 text-white rounded-full py-1.5 pl-9 pr-4 text-sm",
+                "border border-border/40 hover:border-hype-purple/30",
+                "w-full md:w-[200px] focus:w-[280px] transition-all duration-300",
+                "focus:outline-none focus:border-hype-purple"
+              )}
+              autoComplete="off"
+            />
+            {searchQuery && (
+              <button 
+                type="button" 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
             )}
-            autoComplete="off"
-          />
-          {searchQuery && (
-            <button 
-              type="button" 
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
+          </div>
+          
+          {/* Filter Button */}
+          <Popover open={showFilters} onOpenChange={setShowFilters}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "rounded-full p-2 h-8 w-8",
+                  hasActiveFilters() && "bg-hype-purple/20 text-hype-purple"
+                )}
+              >
+                <Filter className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4" align="end">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium">Search Filters</h4>
+                  {hasActiveFilters() && (
+                    <Button variant="ghost" size="sm" onClick={clearFilters}>
+                      Clear all
+                    </Button>
+                  )}
+                </div>
+                
+                {/* Media Type */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Type</label>
+                  <Select value={filters.mediaType} onValueChange={(value: 'all' | 'movie' | 'tv') => 
+                    setFilters(prev => ({ ...prev, mediaType: value }))
+                  }>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="movie">Movies</SelectItem>
+                      <SelectItem value="tv">TV Shows</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Genres */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Genres</label>
+                  <div className="flex flex-wrap gap-1">
+                    {genres.slice(0, 8).map((genre) => (
+                      <Badge
+                        key={genre.id}
+                        variant={filters.genres.includes(genre.id) ? "default" : "outline"}
+                        className="cursor-pointer text-xs"
+                        onClick={() => {
+                          setFilters(prev => ({
+                            ...prev,
+                            genres: prev.genres.includes(genre.id)
+                              ? prev.genres.filter(g => g !== genre.id)
+                              : [...prev.genres, genre.id]
+                          }));
+                        }}
+                      >
+                        {genre.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Year Range */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Year: {filters.yearRange[0]} - {filters.yearRange[1]}
+                  </label>
+                  <Slider
+                    value={filters.yearRange}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, yearRange: value as [number, number] }))}
+                    min={1900}
+                    max={new Date().getFullYear()}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Rating Range */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    Rating: {filters.ratingRange[0]} - {filters.ratingRange[1]}
+                  </label>
+                  <Slider
+                    value={filters.ratingRange}
+                    onValueChange={(value) => setFilters(prev => ({ ...prev, ratingRange: value as [number, number] }))}
+                    min={0}
+                    max={10}
+                    step={0.1}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
         
         {showResults && searchResults.length > 0 && (
@@ -302,12 +491,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 ))
               )}
               <div className="border-t border-border mt-1 pt-2">
-                <button 
-                  className="w-full text-center py-2 text-sm text-hype-purple hover:underline"
-                  onClick={() => handleResultClick(searchQuery)}
-                >
-                  See all results for "{searchQuery}"
-                </button>
+                 <button 
+                   className="w-full text-center py-2 text-sm text-hype-purple hover:underline"
+                   onClick={() => handleResultClick(searchQuery)}
+                 >
+                   See all results for "{searchQuery}"
+                 </button>
               </div>
             </div>
           </div>

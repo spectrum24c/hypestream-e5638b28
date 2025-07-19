@@ -88,12 +88,6 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
           </Accordion>
 
           <Link
-            to="/search"
-            className="text-foreground hover:text-white py-2"
-          >
-            Advanced Search
-          </Link>
-          <Link
             to="/favorites"
             className="text-foreground hover:text-white py-2"
           >

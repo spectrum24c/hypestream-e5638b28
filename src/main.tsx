@@ -11,7 +11,7 @@ import SplashScreen from "./components/SplashScreen";
 const initBasicOptimizations = () => {
   try {
     // Only do basic optimizations that don't conflict with React
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
           .then(registration => {
@@ -27,12 +27,14 @@ const initBasicOptimizations = () => {
   }
 };
 
-// Initialize basic optimizations
-initBasicOptimizations();
+// Initialize basic optimizations only in production
+if (process.env.NODE_ENV === 'production') {
+  initBasicOptimizations();
+}
 
 // Properly structured React component
 const Root = () => {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(false); // Changed to false for development
   
   const handleSplashComplete = () => {
     setShowSplash(false);
@@ -54,7 +56,9 @@ const Root = () => {
 // Ensure the root element exists before rendering
 const rootElement = document.getElementById("root");
 if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(<Root />);
+  console.log("Initializing React app...");
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(<Root />);
 } else {
-  console.error("Root element not found");
+  console.error("Root element not found - cannot initialize React app");
 }

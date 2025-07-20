@@ -14,6 +14,7 @@ import UserSettings from '@/pages/UserSettings';
 import Support from '@/pages/Support';
 import CastCrew from '@/pages/CastCrew';
 import PersonDetails from '@/pages/PersonDetails';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -24,9 +25,13 @@ function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { toast } = useToast();
   
-  // Use mobile-specific hooks
-  useHardwareBackButton();
-  useStatusBarCustomization(true);
+  // Use mobile-specific hooks with error handling
+  try {
+    useHardwareBackButton();
+    useStatusBarCustomization(true);
+  } catch (error) {
+    console.warn('Mobile utils failed:', error);
+  }
 
   // Handle online/offline status
   useEffect(() => {
@@ -57,25 +62,27 @@ function App() {
   }, [toast]);
 
   return (
-    <div className="app">
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/favorites" element={<Favorites />} />
-        <Route path="/faqs" element={<FAQs />} />
-        <Route path="/settings" element={<UserSettings />} />
-        <Route path="/terms-of-use" element={<TermsOfUse />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/cookie-policy" element={<CookiePolicy />} />
-        <Route path="/support" element={<Support />} />
-        
-        <Route path="/cast-crew/:id" element={<CastCrew />} />
-        <Route path="/person/:id" element={<PersonDetails />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <Toaster />
-    </div>
+    <ErrorBoundary>
+      <div className="app">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/faqs" element={<FAQs />} />
+          <Route path="/settings" element={<UserSettings />} />
+          <Route path="/terms-of-use" element={<TermsOfUse />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
+          <Route path="/support" element={<Support />} />
+          
+          <Route path="/cast-crew/:id" element={<CastCrew />} />
+          <Route path="/person/:id" element={<PersonDetails />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <Toaster />
+      </div>
+    </ErrorBoundary>
   );
 }
 

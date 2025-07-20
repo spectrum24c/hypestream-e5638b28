@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from 'react-router-dom';
 import App from "./App";
@@ -11,7 +11,7 @@ import SplashScreen from "./components/SplashScreen";
 const initBasicOptimizations = () => {
   try {
     // Only do basic optimizations that don't conflict with React
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && import.meta.env.PROD) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
           .then(registration => {
@@ -30,31 +30,31 @@ const initBasicOptimizations = () => {
 // Initialize basic optimizations
 initBasicOptimizations();
 
-// Properly structured React component
-const Root = () => {
-  const [showSplash, setShowSplash] = useState(true);
+// Main App component that handles splash screen logic
+const AppWithSplash = () => {
+  const [showSplash, setShowSplash] = React.useState(!import.meta.env.DEV);
   
-  const handleSplashComplete = () => {
+  const handleSplashComplete = React.useCallback(() => {
     setShowSplash(false);
-  };
+  }, []);
   
-  return (
-    <React.StrictMode>
-      <BrowserRouter>
-        {showSplash ? (
-          <SplashScreen onComplete={handleSplashComplete} />
-        ) : (
-          <App />
-        )}
-      </BrowserRouter>
-    </React.StrictMode>
-  );
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+  
+  return <App />;
 };
 
 // Ensure the root element exists before rendering
 const rootElement = document.getElementById("root");
 if (rootElement) {
-  ReactDOM.createRoot(rootElement).render(<Root />);
+  ReactDOM.createRoot(rootElement).render(
+    <React.StrictMode>
+      <BrowserRouter>
+        <AppWithSplash />
+      </BrowserRouter>
+    </React.StrictMode>
+  );
 } else {
   console.error("Root element not found");
 }

@@ -27,7 +27,7 @@ serve(async (req) => {
     // Send notification email to your SMTP server email
     const adminEmailResponse = await resend.emails.send({
       from: "HypeStream Newsletter <onboarding@resend.dev>",
-      to: ["hypestream127@gmil.com"],
+      to: ["hypestream127@gmail.com"],
       subject: "New Newsletter Subscription",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

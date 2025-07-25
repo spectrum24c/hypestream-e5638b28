@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
@@ -191,20 +190,13 @@ const Navbar = () => {
   };
 
   const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    // This function is no longer needed as UserMenu handles it directly
+    console.log('Sign out handled by UserMenu');
   };
 
   const handleDeleteAccount = async () => {
-    console.log('Delete account requested');
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.error('Error deleting account:', error);
-    }
+    // This function is no longer needed as UserMenu handles it directly
+    console.log('Delete account handled by UserMenu');
   };
 
   const markNotificationsAsRead = async () => {

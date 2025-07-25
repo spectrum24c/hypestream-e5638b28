@@ -24,10 +24,10 @@ serve(async (req) => {
   try {
     const { email, adminEmail }: EmailRequest = await req.json();
     
-    // Send notification email to admin
+    // Send notification email to your SMTP server email
     const adminEmailResponse = await resend.emails.send({
       from: "HypeStream Newsletter <onboarding@resend.dev>",
-      to: [adminEmail],
+      to: ["hypestream127@gmil.com"],
       subject: "New Newsletter Subscription",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -37,7 +37,7 @@ serve(async (req) => {
             <p><strong>Email:</strong> ${email}</p>
             <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
           </div>
-          <p>You can now send updates to this user.</p>
+          <p>You can now send updates to this user through your SMTP server.</p>
         </div>
       `,
     });

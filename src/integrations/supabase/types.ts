@@ -50,6 +50,33 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscribers: {
+        Row: {
+          admin_email: string
+          created_at: string
+          email: string
+          id: string
+          subscribed_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_email: string
+          created_at?: string
+          email: string
+          id?: string
+          subscribed_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_email?: string
+          created_at?: string
+          email?: string
+          id?: string
+          subscribed_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

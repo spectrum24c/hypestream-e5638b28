@@ -66,7 +66,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: `${window.location.origin}/auth`,
           }
         });
 
@@ -126,10 +126,10 @@ const Auth = () => {
               description: "The email or password you entered is incorrect. Please check and try again.",
               variant: "destructive",
             });
-          } else if (error.message.includes('Email not confirmed')) {
+          } else if (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed')) {
             toast({
               title: "Email not confirmed",
-              description: "Please check your email and click the confirmation link before signing in.",
+              description: "Please check your email and click the confirmation link before signing in. If you don't see the email, check your spam folder.",
               variant: "destructive",
             });
           } else {

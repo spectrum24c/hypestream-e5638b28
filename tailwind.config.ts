@@ -63,28 +63,20 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-        // Custom theme colors for HypeStream - using CSS variables
-        'hype-purple': 'hsl(var(--hype-purple))',
-        'hype-orange': 'hsl(var(--hype-orange))',
-        'hype-teal': 'hsl(var(--hype-teal))',
-        'hype-dark': 'hsl(var(--hype-dark))'
+        hype: {
+          purple: '#6923D0',
+          orange: '#FF6B00',
+          dark: '#121212',
+          teal: '#1DB2A2',
+          magenta: '#FF2E63',
+          gray: '#2A2A2A',
+          'light-gray': '#E5E5E5'
+        }
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
-			},
-			boxShadow: {
-				'glow': 'var(--shadow-glow)',
-				'card': 'var(--shadow-card)',
-			},
-			backgroundImage: {
-				'gradient-primary': 'var(--gradient-primary)',
-				'gradient-secondary': 'var(--gradient-secondary)',
-				'gradient-dark': 'var(--gradient-dark)',
-			},
-			transitionTimingFunction: {
-				'spring': 'var(--ease-spring)',
 			},
 			keyframes: {
 				'accordion-down': {

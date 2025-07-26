@@ -59,18 +59,6 @@ html, body, #root {
     --hype-orange: 25 95% 53%;
     --hype-teal: 166 71% 43%;
     --hype-dark: 225 14% 10%;
-    
-    /* Enhanced gradients for modern design */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--hype-purple)), hsl(var(--hype-teal)));
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--hype-orange)), hsl(var(--hype-purple)));
-    --gradient-dark: linear-gradient(135deg, hsl(var(--hype-dark)), hsl(225 20% 15%));
-    
-    /* Enhanced shadows */
-    --shadow-glow: 0 0 30px hsl(var(--hype-purple) / 0.3);
-    --shadow-card: 0 10px 40px -10px hsl(0 0% 0% / 0.4);
-    
-    /* Animation easing */
-    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
   
   body {

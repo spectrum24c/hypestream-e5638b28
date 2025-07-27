@@ -73,7 +73,7 @@ const Profile = () => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('user_id', userId)
         .single();
       
       if (error) throw error;
@@ -107,7 +107,7 @@ const Profile = () => {
           username: username.trim() || null,
           avatar_url: avatarUrl
         })
-        .eq('id', session.user.id);
+        .eq('user_id', session.user.id);
       
       if (error) throw error;
       
@@ -166,7 +166,7 @@ const Profile = () => {
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: urlData.publicUrl })
-        .eq('id', session.user.id);
+        .eq('user_id', session.user.id);
       
       if (updateError) throw updateError;
       
@@ -195,7 +195,7 @@ const Profile = () => {
       const { error } = await supabase
         .from('profiles')
         .update({ avatar_url: avatarUrl })
-        .eq('id', session.user.id);
+        .eq('user_id', session.user.id);
       
       if (error) throw error;
       

@@ -14,7 +14,105 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          is_tv_show: boolean | null
+          movie_id: string
+          poster_path: string | null
+          release_date: string | null
+          title: string
+          user_id: string
+          vote_average: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_tv_show?: boolean | null
+          movie_id: string
+          poster_path?: string | null
+          release_date?: string | null
+          title: string
+          user_id: string
+          vote_average?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_tv_show?: boolean | null
+          movie_id?: string
+          poster_path?: string | null
+          release_date?: string | null
+          title?: string
+          user_id?: string
+          vote_average?: number | null
+        }
+        Relationships: []
+      }
+      newsletter_subscribers: {
+        Row: {
+          admin_email: string
+          created_at: string
+          email: string
+          id: string
+          subscribed_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_email: string
+          created_at?: string
+          email: string
+          id?: string
+          subscribed_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_email?: string
+          created_at?: string
+          email?: string
+          id?: string
+          subscribed_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          language: string | null
+          pin_enabled: boolean | null
+          pin_hash: string | null
+          selected_theme: string | null
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          language?: string | null
+          pin_enabled?: boolean | null
+          pin_hash?: string | null
+          selected_theme?: string | null
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          language?: string | null
+          pin_enabled?: boolean | null
+          pin_hash?: string | null
+          selected_theme?: string | null
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

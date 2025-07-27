@@ -45,10 +45,10 @@ const Footer = () => {
 
       console.log('Subscriber saved successfully, sending confirmation emails...');
 
-      // Send confirmation emails
-      const { error: emailError } = await supabase.functions.invoke('newsletter-confirm', {
+      // Send notification emails
+      const { error: emailError } = await supabase.functions.invoke('send-newsletter-notification', {
         body: {
-          email: email,
+          subscriberEmail: email,
           adminEmail: 'hypestream127@gmail.com'
         }
       });

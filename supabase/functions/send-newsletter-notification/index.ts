@@ -1,0 +1,84 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "npm:resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
+interface NewsletterNotificationRequest {
+  subscriberEmail: string;
+  adminEmail: string;
+}
+
+const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { subscriberEmail, adminEmail }: NewsletterNotificationRequest = await req.json();
+
+    console.log(`Sending newsletter notification for subscriber: ${subscriberEmail} to admin: ${adminEmail}`);
+
+    // Send notification to admin
+    const adminEmailResponse = await resend.emails.send({
+      from: "HypeStream <onboarding@resend.dev>",
+      to: [adminEmail],
+      subject: "New Newsletter Subscriber",
+      html: `
+        <h1>New Newsletter Subscriber!</h1>
+        <p>A new user has subscribed to your newsletter:</p>
+        <p><strong>Email:</strong> ${subscriberEmail}</p>
+        <p><strong>Subscribed at:</strong> ${new Date().toLocaleString()}</p>
+        <br>
+        <p>Best regards,<br>HypeStream Team</p>
+      `,
+    });
+
+    // Send confirmation to subscriber
+    const subscriberEmailResponse = await resend.emails.send({
+      from: "HypeStream <onboarding@resend.dev>",
+      to: [subscriberEmail],
+      subject: "Welcome to HypeStream Newsletter!",
+      html: `
+        <h1>Welcome to HypeStream!</h1>
+        <p>Thank you for subscribing to our newsletter, we're excited to have you!</p>
+        <p>You'll receive updates about the latest movies, TV shows, and exclusive content.</p>
+        <p>If you ever want to unsubscribe, you can do so by replying to any of our newsletter emails.</p>
+        <br>
+        <p>Best regards,<br>The HypeStream Team</p>
+      `,
+    });
+
+    console.log("Admin email sent successfully:", adminEmailResponse);
+    console.log("Subscriber email sent successfully:", subscriberEmailResponse);
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      adminEmailId: adminEmailResponse.data?.id,
+      subscriberEmailId: subscriberEmailResponse.data?.id 
+    }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders,
+      },
+    });
+  } catch (error: any) {
+    console.error("Error in send-newsletter-notification function:", error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
+};
+
+serve(handler);

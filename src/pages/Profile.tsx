@@ -101,13 +101,15 @@ const Profile = () => {
     
     setUpdating(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          user_id: session.user.id,
           username: username.trim() || null,
           avatar_url: avatarUrl
         })
-        .eq('user_id', session.user.id);
+        .select()
+        .single();
       
       if (error) throw error;
       
@@ -116,13 +118,8 @@ const Profile = () => {
         description: "Your profile has been updated successfully",
       });
       
-      if (profile) {
-        setProfile({
-          ...profile,
-          username: username.trim() || null,
-          avatar_url: avatarUrl
-        });
-      }
+      // Update local state with the saved profile
+      setProfile(data);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({

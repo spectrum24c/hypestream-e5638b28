@@ -101,13 +101,27 @@ const Profile = () => {
     
     setUpdating(true);
     try {
+      // Prepare update data - only include fields that have values
+      const updateData: any = {
+        user_id: session.user.id,
+      };
+
+      // Only update username if it has a value (empty string becomes null)
+      const trimmedUsername = username.trim();
+      if (trimmedUsername || profile?.username) {
+        updateData.username = trimmedUsername || profile?.username;
+      }
+
+      // Only update avatar_url if there's a current avatar or if we're clearing it
+      if (avatarUrl !== undefined) {
+        updateData.avatar_url = avatarUrl;
+      } else if (profile?.avatar_url) {
+        updateData.avatar_url = profile.avatar_url;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
-        .upsert({
-          user_id: session.user.id,
-          username: username.trim() || null,
-          avatar_url: avatarUrl
-        })
+        .upsert(updateData)
         .select()
         .single();
       
@@ -120,6 +134,8 @@ const Profile = () => {
       
       // Update local state with the saved profile
       setProfile(data);
+      setUsername(data.username || '');
+      setAvatarUrl(data.avatar_url);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({

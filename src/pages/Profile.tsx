@@ -103,14 +103,18 @@ const Profile = () => {
     try {
       // Prepare update data with current form values
       const updateData: any = {
-        user_id: session.user.id,
         username: username.trim() || null, // Save whatever is in the input field
         avatar_url: avatarUrl || null, // Save current avatar URL
       };
 
       const { data, error } = await supabase
         .from('profiles')
-        .upsert(updateData)
+        .upsert({ 
+          user_id: session.user.id,
+          ...updateData 
+        }, { 
+          onConflict: 'user_id' 
+        })
         .select()
         .single();
       

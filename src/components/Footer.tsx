@@ -100,11 +100,11 @@ const Footer = () => {
             <h3 className="text-xl font-bold mb-4 text-white">Subscribe to Our Newsletter</h3>
             <p className="text-gray-400 mb-4">Get updates on the latest movies and shows. No spam, we promise!</p>
             
-            <form onSubmit={handleSubscribe} className="flex flex-col items-center gap-4">
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2">
               <Input
                 type="email"
                 placeholder="Your email address"
-                className="w-full max-w-md bg-muted border-border text-foreground"
+                className="flex-grow bg-gray-800 border-gray-700 text-white"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

@@ -97,20 +97,20 @@ serve(async (req) => {
 
     // Send email with proper headers to avoid spam
     const { error } = await resend.emails.send({
-      from: 'HypeStream <noreply@yourdomain.com>', // Replace with your verified domain
+      from: 'HypeStream Security <security@resend.dev>', // Using Resend's verified domain temporarily
       to: [user.email],
-      subject: email_action_type === 'signup' ? 'Confirm your HypeStream account' : 'Reset your HypeStream password',
+      subject: email_action_type === 'signup' ? '✓ Confirm your HypeStream account' : '🔐 Reset your HypeStream password',
       html,
+      replyTo: 'noreply@resend.dev',
       headers: {
-        'X-Priority': '1',
-        'X-MSMail-Priority': 'High',
-        'Importance': 'high',
-        'List-Unsubscribe': '<mailto:unsubscribe@yourdomain.com>',
+        'X-Entity-Ref-ID': `hypestream-${email_action_type}-${Date.now()}`,
+        'List-Unsubscribe': '<mailto:unsubscribe@resend.dev>',
         'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
       },
       tags: [
         { name: 'category', value: 'authentication' },
-        { name: 'type', value: email_action_type }
+        { name: 'type', value: email_action_type },
+        { name: 'app', value: 'hypestream' }
       ]
     });
 

@@ -101,23 +101,12 @@ const Profile = () => {
     
     setUpdating(true);
     try {
-      // Prepare update data - only include fields that have values
+      // Prepare update data with current form values
       const updateData: any = {
         user_id: session.user.id,
+        username: username.trim() || null, // Save whatever is in the input field
+        avatar_url: avatarUrl || null, // Save current avatar URL
       };
-
-      // Only update username if it has a value (empty string becomes null)
-      const trimmedUsername = username.trim();
-      if (trimmedUsername || profile?.username) {
-        updateData.username = trimmedUsername || profile?.username;
-      }
-
-      // Only update avatar_url if there's a current avatar or if we're clearing it
-      if (avatarUrl !== undefined) {
-        updateData.avatar_url = avatarUrl;
-      } else if (profile?.avatar_url) {
-        updateData.avatar_url = profile.avatar_url;
-      }
 
       const { data, error } = await supabase
         .from('profiles')

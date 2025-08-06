@@ -105,7 +105,7 @@ const Auth = () => {
         }
 
         setSuccessMessage(
-          "Thank you for signing up! Please check your spam or junk folder for the confirmation email, as it may land there. Add us to your contacts to ensure future emails reach your inbox!"
+          "Registration successful! Please check your email for a confirmation link to complete your signup."
         );
         toast({
           title: "Check your email",

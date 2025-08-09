@@ -73,10 +73,9 @@ const MovieCard: React.FC<MovieCardProps> = ({
         
         <img 
           src={imageError ? '/placeholder.svg' : posterUrl}
-          alt={`${title} poster`}
+          alt={title}
           className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           loading="lazy"
-          fetchPriority="low"
           onLoad={handleImageLoad}
           onError={handleImageError}
           decoding="async"

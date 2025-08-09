@@ -2,6 +2,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { initPerformanceOptimizations } from './utils/performanceOptimizer';
 import App from "./App";
 import "./index.css";
 import "./utils/movie-buttons-responsive.css";
@@ -30,6 +32,12 @@ const initBasicOptimizations = () => {
 // Initialize basic optimizations
 initBasicOptimizations();
 
+try {
+  initPerformanceOptimizations();
+} catch (e) {
+  console.warn('Advanced optimizations failed:', e);
+}
+
 // Main App component that handles splash screen logic
 const AppWithSplash = () => {
   const [showSplash, setShowSplash] = React.useState(!import.meta.env.DEV);
@@ -46,13 +54,18 @@ const AppWithSplash = () => {
 };
 
 // Ensure the root element exists before rendering
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 5 * 60 * 1000, retry: 1 } }
+});
 const rootElement = document.getElementById("root");
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <BrowserRouter>
-        <AppWithSplash />
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AppWithSplash />
+        </BrowserRouter>
+      </QueryClientProvider>
     </React.StrictMode>
   );
 } else {

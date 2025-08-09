@@ -19,6 +19,10 @@ export default {
 			}
 		},
 		extend: {
+        fontFamily: {
+          display: ['"Playfair Display"', 'serif'],
+          sans: ['Inter', 'system-ui', 'ui-sans-serif', 'sans-serif']
+        },
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

@@ -59,6 +59,7 @@ html, body, #root {
     --hype-orange: 25 95% 53%;
     --hype-teal: 166 71% 43%;
     --hype-dark: 225 14% 10%;
+    --font-display: 'Playfair Display', serif;
   }
   
   body {
@@ -69,7 +70,9 @@ html, body, #root {
     margin: 0;
     padding: 0;
   }
+  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.01em; }
 }
+
 
 /* Custom Banner Styles */
 .banner-overlay {

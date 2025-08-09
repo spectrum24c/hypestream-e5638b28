@@ -1,20 +1,21 @@
 
 import { Routes, Route } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import Index from '@/pages/Index';
-import Auth from '@/pages/Auth';
-import Profile from '@/pages/Profile';
-import NotFound from '@/pages/NotFound';
-import Favorites from '@/pages/Favorites';
-import FAQs from '@/pages/FAQs';
-import TermsOfUse from '@/pages/TermsOfUse';
-import PrivacyPolicy from '@/pages/PrivacyPolicy';
-import CookiePolicy from '@/pages/CookiePolicy';
-import UserSettings from '@/pages/UserSettings';
-import Support from '@/pages/Support';
-import CastCrew from '@/pages/CastCrew';
-import PersonDetails from '@/pages/PersonDetails';
+import { useEffect, useState, Suspense, lazy } from 'react';
 import ErrorBoundary from '@/components/ErrorBoundary';
+
+const Index = lazy(() => import('@/pages/Index'));
+const Auth = lazy(() => import('@/pages/Auth'));
+const Profile = lazy(() => import('@/pages/Profile'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
+const Favorites = lazy(() => import('@/pages/Favorites'));
+const FAQs = lazy(() => import('@/pages/FAQs'));
+const TermsOfUse = lazy(() => import('@/pages/TermsOfUse'));
+const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
+const CookiePolicy = lazy(() => import('@/pages/CookiePolicy'));
+const UserSettings = lazy(() => import('@/pages/UserSettings'));
+const Support = lazy(() => import('@/pages/Support'));
+const CastCrew = lazy(() => import('@/pages/CastCrew'));
+const PersonDetails = lazy(() => import('@/pages/PersonDetails'));
 
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -64,22 +65,30 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="app">
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/faqs" element={<FAQs />} />
-          <Route path="/settings" element={<UserSettings />} />
-          <Route path="/terms-of-use" element={<TermsOfUse />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/cookie-policy" element={<CookiePolicy />} />
-          <Route path="/support" element={<Support />} />
-          
-          <Route path="/cast-crew/:id" element={<CastCrew />} />
-          <Route path="/person/:id" element={<PersonDetails />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center min-h-[40vh]">
+              <div className="w-8 h-8 border-2 border-t-transparent border-hype-purple rounded-full animate-spin" />
+            </div>
+          }
+        >
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/faqs" element={<FAQs />} />
+            <Route path="/settings" element={<UserSettings />} />
+            <Route path="/terms-of-use" element={<TermsOfUse />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/support" element={<Support />} />
+            
+            <Route path="/cast-crew/:id" element={<CastCrew />} />
+            <Route path="/person/:id" element={<PersonDetails />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
         <Toaster />
       </div>
     </ErrorBoundary>

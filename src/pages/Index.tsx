@@ -16,6 +16,7 @@ import ContinueWatching from '@/components/ContinueWatching';
 import AdvancedFilters from '@/components/AdvancedFilters';
 import CategorySection from '@/components/CategorySection';
 import { initPerformanceOptimizations, fetchWithCache } from '@/utils/performanceOptimizer';
+import SEO from '@/components/SEO';
 
 // Sample genres for filtering
 const genres = [
@@ -401,6 +402,22 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-hype-dark text-foreground overflow-x-hidden w-full">
+      <SEO 
+        title="HypeStream — Stream Movies & TV Shows"
+        description="Discover trending movies and TV shows. Watch trailers and explore genres on HypeStream."
+        canonical="/"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'HypeStream',
+          url: window.location.origin,
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: `${window.location.origin}/?q={search_term_string}`,
+            'query-input': 'required name=search_term_string'
+          }
+        }}
+      />
       <Navbar />
       <main className="pb-8 pt-16 w-full">
         {!isSearching && (

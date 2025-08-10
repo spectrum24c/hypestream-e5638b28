@@ -25,7 +25,7 @@ const TermsOfUse = () => {
             <h1 className="text-3xl font-bold">Terms of Use</h1>
           </div>
           
-          <div className="bg-card border border-border rounded-xl p-6 space-y-6">
+          <div className="space-y-6">
             <section>
               <h2 className="text-xl font-bold mb-3">1. Acceptance of Terms</h2>
               <p className="text-muted-foreground">

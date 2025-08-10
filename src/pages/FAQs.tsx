@@ -117,7 +117,7 @@ const FAQs = () => {
           <h1 className="text-3xl font-bold">Frequently Asked Questions</h1>
         </div>
 
-        <div className="space-y-4">
+        <div className="bg-card rounded-lg p-6 shadow-lg">
           <Accordion type="single" collapsible className="w-full">
             {faqItems.map((faq, index) => (
               <AccordionItem key={index} value={`item-${index}`}>

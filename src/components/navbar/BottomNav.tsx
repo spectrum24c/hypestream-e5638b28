@@ -21,11 +21,11 @@ const BottomNav: React.FC = () => {
   };
 
   const itemCls = (active: boolean) =>
-    `flex flex-col items-center justify-center gap-1 text-xs ${active ? 'text-foreground' : 'text-muted-foreground'} hover:text-foreground transition-colors`;
+    `flex flex-col items-center justify-center gap-1 text-xs ${active ? 'text-hype-purple' : 'text-muted-foreground'} hover:text-foreground transition-colors`;
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 inset-x-0 z-50 border-t border-white/20 bg-white/70 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 pb-[env(safe-area-inset-bottom)]"
+      className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-border/50 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60"
       aria-label="Bottom navigation"
     >
       <ul className="grid grid-cols-5 h-14">

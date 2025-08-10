@@ -101,3 +101,17 @@ html, body, #root {
 .read-the-docs {
   color: #888;
 }
+
+/* Mobile clamp for hero description */
+@media (max-width: 767px) {
+  .hero-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .hero-desc.expanded {
+    display: block;
+    -webkit-line-clamp: initial;
+  }
+}

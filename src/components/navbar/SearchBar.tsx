@@ -75,6 +75,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
   }, [isMobileSearchOpen]);
 
+  // Open mobile search overlay when requested from other components (e.g., BottomNav)
+  useEffect(() => {
+    const handler = () => setIsMobileSearchOpen(true);
+    window.addEventListener('open-mobile-search', handler as unknown as EventListener);
+    return () => window.removeEventListener('open-mobile-search', handler as unknown as EventListener);
+  }, []);
+
   // Load genres on component mount
   useEffect(() => {
     const loadGenres = async () => {

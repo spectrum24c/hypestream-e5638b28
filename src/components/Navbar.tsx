@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import DesktopNavigation from './navbar/DesktopNavigation';
 import MobileNavigation from './navbar/MobileNavigation';
 import SearchBar from './navbar/SearchBar';
+import BottomNav from './navbar/BottomNav';
 import UserMenu from './navbar/UserMenu';
 import NotificationsMenu from './navbar/NotificationsMenu';
 import useIsMobile from '@/hooks/useIsMobile';
@@ -177,6 +178,12 @@ const Navbar = () => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Allow opening the mobile menu from other components (e.g., BottomNav)
+  useEffect(() => {
+    const handler = () => setIsMenuOpen(true);
+    window.addEventListener('open-mobile-menu', handler as unknown as EventListener);
+    return () => window.removeEventListener('open-mobile-menu', handler as unknown as EventListener);
+  }, []);
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
   };
@@ -209,67 +216,72 @@ const Navbar = () => {
   };
 
   return (
-    <header 
-      className={cn(
-        "fixed top-0 left-0 w-full z-40 transition-all duration-300",
-        isScrolled ? "bg-hype-dark/90 shadow-lg py-2" : "bg-gradient-to-b from-hype-dark/90 to-transparent py-3"
-      )}
-    >
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="flex-shrink-0">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-hype-orange to-hype-purple bg-clip-text text-transparent">
-              HypeStream
-            </h1>
-          </Link>
+    <>
+      <header 
+        className={cn(
+          "fixed top-0 left-0 w-full z-40 transition-all duration-300",
+          isScrolled ? "bg-hype-dark/90 shadow-lg py-2" : "bg-gradient-to-b from-hype-dark/90 to-transparent py-3"
+        )}
+      >
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="flex-shrink-0">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-hype-orange to-hype-purple bg-clip-text text-transparent">
+                HypeStream
+              </h1>
+            </Link>
 
-          <DesktopNavigation />
+            <DesktopNavigation />
 
-          <div className="flex items-center space-x-2 md:space-x-4">
-            <SearchBar 
-              isOpen={isMobile ? isSearchOpen : true}
-              onToggle={toggleSearch}
-              className="z-20"
-            />
-
-            {session && (
-              <NotificationsMenu
-                notifications={notifications}
-                unreadCount={unreadCount}
-                markAsRead={markNotificationsAsRead}
+            <div className="flex items-center space-x-2 md:space-x-4">
+              <SearchBar 
+                isOpen={isMobile ? isSearchOpen : true}
+                onToggle={toggleSearch}
+                className="z-20"
               />
-            )}
 
-            <UserMenu 
-              session={session} 
-              onSignOut={handleSignOut}
-              onDeleteAccount={handleDeleteAccount}
-            />
+              {session && (
+                <NotificationsMenu
+                  notifications={notifications}
+                  unreadCount={unreadCount}
+                  markAsRead={markNotificationsAsRead}
+                />
+              )}
 
-            {isMobile && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleMenu}
-                className="ml-1 text-foreground"
-                aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-              >
-                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </Button>
-            )}
+              <UserMenu 
+                session={session} 
+                onSignOut={handleSignOut}
+                onDeleteAccount={handleDeleteAccount}
+              />
+
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={toggleMenu}
+                  className="ml-1 text-foreground"
+                  aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+                >
+                  {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
 
-      {isMobile && isMenuOpen && (
-        <MobileNavigation 
-          session={session}
-          onSignOut={handleSignOut}
-          onDeleteAccount={handleDeleteAccount}
-          onClose={closeMenu}
-        />
-      )}
-    </header>
+        {isMobile && isMenuOpen && (
+          <MobileNavigation 
+            session={session}
+            onSignOut={handleSignOut}
+            onDeleteAccount={handleDeleteAccount}
+            onClose={closeMenu}
+          />
+        )}
+      </header>
+
+      {/* Mobile bottom navigation */}
+      <BottomNav />
+    </>
   );
 };
 

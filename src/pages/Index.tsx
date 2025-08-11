@@ -410,7 +410,7 @@ const Index = () => {
           />
         )}
         
-        <div className="container mx-auto px-4 mt-4">
+        <div className="container mx-auto px-0 mt-0">
           {!isSearching && continueWatchingItems.length > 0 && (
             <ContinueWatching
               items={continueWatchingItems}

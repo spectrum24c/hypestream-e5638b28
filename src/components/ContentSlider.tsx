@@ -65,7 +65,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items, onViewAll }
   return (
     <div className="py-3">
       {/* Section Title */}
-      <div className="flex items-center justify-between mb-2 px-2">
+      <div className="flex items-center justify-between mb-2 px-0">
         <h2 className="text-xl md:text-2xl font-bold text-white">{title}</h2>
         <Button 
           variant="ghost" 
@@ -92,7 +92,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({ title, items, onViewAll }
         {/* Slider */}
         <div
           ref={sliderRef}
-          className="flex space-x-2 overflow-x-auto pb-4 px-2 hide-scrollbar"
+          className="flex space-x-2 overflow-x-auto pb-4 px-0 hide-scrollbar"
           onScroll={() => {
             if (sliderRef.current && sliderRef.current.scrollLeft > 20) {
               setShowLeftArrow(true);

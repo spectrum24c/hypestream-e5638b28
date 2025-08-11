@@ -16,7 +16,7 @@ const BottomNav: React.FC = () => {
   };
   const itemCls = (active: boolean) => `flex flex-col items-center justify-center gap-1 text-xs ${active ? 'text-hype-purple' : 'text-muted-foreground'} hover:text-foreground transition-colors`;
   return <nav aria-label="Bottom navigation" className=" md:hidden fixed bottom-0 inset-x-0 z-40 backdrop-blur px-0 bg-[#000a0e]/0">
-      <ul className="grid grid-cols-5 h-14">
+      <ul className="grid grid-cols-5 h-12">
         <li className="flex items-center justify-center">
           <Link to="/" className={itemCls(isActive(p => p === '/'))} aria-current={pathname === '/' ? 'page' : undefined}>
             <Home className="h-5 w-5" />

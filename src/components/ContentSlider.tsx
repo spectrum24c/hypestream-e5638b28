@@ -63,7 +63,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
   };
   return <div className="py-3">
       {/* Section Title */}
-      <div className="flex items-center justify-between mb-2 px-[9px] mx-[10px]">
+      <div className="flex items-center justify-between mb-2 px-[9px] mx-0">
         <h2 className="text-xl md:text-2xl font-bold text-white">{title}</h2>
         <Button variant="ghost" onClick={handleViewAll} className="text-sm text-hype-purple hover:text-hype-purple/80">
           View All

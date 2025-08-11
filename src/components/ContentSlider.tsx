@@ -21,7 +21,9 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
   const navigate = useNavigate();
   const scroll = (direction: 'left' | 'right') => {
     if (!sliderRef.current) return;
-    const { current } = sliderRef;
+    const {
+      current
+    } = sliderRef;
     const isMobile = window.innerWidth < 640;
     const scrollAmount = isMobile ? current.clientWidth : current.clientWidth * 0.75;
     if (direction === 'left') {
@@ -61,7 +63,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
   };
   return <div className="py-3">
       {/* Section Title */}
-      <div className="flex items-center justify-between mb-2 px-[9px]">
+      <div className="flex items-center justify-between mb-2 px-[9px] mx-[10px]">
         <h2 className="text-xl md:text-2xl font-bold text-white">{title}</h2>
         <Button variant="ghost" onClick={handleViewAll} className="text-sm text-hype-purple hover:text-hype-purple/80">
           View All
@@ -83,11 +85,9 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
           setShowLeftArrow(false);
         }
       }}>
-          {items.map(item => (
-            <div key={item.id} className="snap-start shrink-0 basis-[calc(50%-0.25rem)] sm:basis-auto">
+          {items.map(item => <div key={item.id} className="snap-start shrink-0 basis-[calc(50%-0.25rem)] sm:basis-auto">
               <MovieCard id={item.id} title={item.title || item.name || 'Unknown Title'} posterPath={item.poster_path} releaseDate={item.release_date || item.first_air_date} voteAverage={item.vote_average} isTVShow={item.media_type === 'tv' || !!item.first_air_date} runtime={item.runtime} numberOfSeasons={item.number_of_seasons} genreIds={item.genre_ids} onClick={() => handleMovieClick(item)} overview={item.overview} />
-            </div>
-          ))}
+            </div>)}
         </div>
 
         {/* Right Arrow */}

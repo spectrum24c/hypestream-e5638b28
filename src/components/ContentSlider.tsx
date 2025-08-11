@@ -21,10 +21,9 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
   const navigate = useNavigate();
   const scroll = (direction: 'left' | 'right') => {
     if (!sliderRef.current) return;
-    const {
-      current
-    } = sliderRef;
-    const scrollAmount = current.clientWidth * 0.75;
+    const { current } = sliderRef;
+    const isMobile = window.innerWidth < 640;
+    const scrollAmount = isMobile ? current.clientWidth : current.clientWidth * 0.75;
     if (direction === 'left') {
       current.scrollBy({
         left: -scrollAmount,
@@ -77,14 +76,18 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
           </button>}
 
         {/* Slider */}
-        <div ref={sliderRef} className="flex space-x-2 overflow-x-auto pb-4 px-0 hide-scrollbar" onScroll={() => {
+        <div ref={sliderRef} className="flex space-x-2 overflow-x-auto pb-4 px-3 hide-scrollbar snap-x snap-mandatory" onScroll={() => {
         if (sliderRef.current && sliderRef.current.scrollLeft > 20) {
           setShowLeftArrow(true);
         } else {
           setShowLeftArrow(false);
         }
       }}>
-          {items.map(item => <MovieCard key={item.id} id={item.id} title={item.title || item.name || 'Unknown Title'} posterPath={item.poster_path} releaseDate={item.release_date || item.first_air_date} voteAverage={item.vote_average} isTVShow={item.media_type === 'tv' || !!item.first_air_date} runtime={item.runtime} numberOfSeasons={item.number_of_seasons} genreIds={item.genre_ids} onClick={() => handleMovieClick(item)} overview={item.overview} />)}
+          {items.map(item => (
+            <div key={item.id} className="snap-start shrink-0 basis-[calc(50%-0.25rem)] sm:basis-auto">
+              <MovieCard id={item.id} title={item.title || item.name || 'Unknown Title'} posterPath={item.poster_path} releaseDate={item.release_date || item.first_air_date} voteAverage={item.vote_average} isTVShow={item.media_type === 'tv' || !!item.first_air_date} runtime={item.runtime} numberOfSeasons={item.number_of_seasons} genreIds={item.genre_ids} onClick={() => handleMovieClick(item)} overview={item.overview} />
+            </div>
+          ))}
         </div>
 
         {/* Right Arrow */}

@@ -78,13 +78,13 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
           </button>}
 
         {/* Slider */}
-        <div ref={sliderRef} className="flex space-x-2 overflow-x-auto pb-4 px-3 hide-scrollbar snap-x snap-mandatory" onScroll={() => {
+        <div ref={sliderRef} onScroll={() => {
         if (sliderRef.current && sliderRef.current.scrollLeft > 20) {
           setShowLeftArrow(true);
         } else {
           setShowLeftArrow(false);
         }
-      }}>
+      }} className="flex space-x-2 overflow-x-auto pb-4 hide-scrollbar snap-x snap-mandatory px-px">
           {items.map(item => <div key={item.id} className="snap-start shrink-0 basis-[calc(50%-0.25rem)] sm:basis-auto">
               <MovieCard id={item.id} title={item.title || item.name || 'Unknown Title'} posterPath={item.poster_path} releaseDate={item.release_date || item.first_air_date} voteAverage={item.vote_average} isTVShow={item.media_type === 'tv' || !!item.first_air_date} runtime={item.runtime} numberOfSeasons={item.number_of_seasons} genreIds={item.genre_ids} onClick={() => handleMovieClick(item)} overview={item.overview} />
             </div>)}

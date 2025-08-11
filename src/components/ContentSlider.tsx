@@ -78,7 +78,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
           </button>}
 
         {/* Slider */}
-        <div ref={sliderRef} className="flex space-x-2 overflow-x-auto pb-4 px-4 hide-scrollbar md:snap-x md:snap-mandatory" onScroll={() => {
+        <div ref={sliderRef} className="flex space-x-2 overflow-x-auto pb-4 px-2 hide-scrollbar md:snap-x md:snap-mandatory" onScroll={() => {
         if (sliderRef.current && sliderRef.current.scrollLeft > 20) {
           setShowLeftArrow(true);
         } else {

@@ -11,7 +11,13 @@ const BottomNav: React.FC = () => {
     window.dispatchEvent(new Event('open-mobile-menu'));
   };
   const itemCls = (active: boolean) => `flex flex-col items-center justify-center gap-1 text-xs ${active ? 'text-hype-purple' : 'text-muted-foreground'} hover:text-foreground transition-colors`;
-  return <nav aria-label="Bottom navigation" className=" md:hidden fixed bottom-0 inset-x-0 z-40 backdrop-blur px-0 bg-[#000a0e]/0">
+  return <nav aria-label="Bottom navigation" className="md:hidden fixed bottom-0 inset-x-0 z-40 backdrop-blur px-0 bg-[#000a0e]/0" style={{
+    position: 'fixed',
+    bottom: '0',
+    left: '0',
+    right: '0',
+    zIndex: 40
+  }}>
       <ul className="grid grid-cols-4 h-12">
         <li className="flex items-center justify-center">
           <Link to="/" className={itemCls(isActive(p => p === '/'))} aria-current={pathname === '/' ? 'page' : undefined}>

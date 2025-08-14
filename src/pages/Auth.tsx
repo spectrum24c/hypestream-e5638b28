@@ -66,7 +66,7 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth`,
+            emailRedirectTo: `${window.location.origin}/`,
           }
         });
 

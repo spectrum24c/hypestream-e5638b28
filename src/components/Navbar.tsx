@@ -185,7 +185,12 @@ const Navbar = () => {
     return () => window.removeEventListener('open-mobile-menu', handler as unknown as EventListener);
   }, []);
   const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
+    if (isMobile) {
+      // For mobile, dispatch the event to open mobile search overlay
+      window.dispatchEvent(new Event('open-mobile-search'));
+    } else {
+      setIsSearchOpen(!isSearchOpen);
+    }
   };
 
   const toggleMenu = () => {

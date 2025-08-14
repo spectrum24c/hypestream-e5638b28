@@ -77,7 +77,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   // Open mobile search overlay when requested from other components (e.g., BottomNav)
   useEffect(() => {
-    const handler = () => setIsMobileSearchOpen(true);
+    const handler = () => {
+      setIsMobileSearchOpen(true);
+      window.dispatchEvent(new Event('search-overlay-open'));
+    };
     window.addEventListener('open-mobile-search', handler as unknown as EventListener);
     return () => window.removeEventListener('open-mobile-search', handler as unknown as EventListener);
   }, []);
@@ -168,6 +171,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       setIsMobileSearchOpen(false);
       setShowResults(false);
       setShowFilters(false);
+      window.dispatchEvent(new Event('close-mobile-search'));
     }
   };
 
@@ -178,6 +182,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setShowFilters(false);
     if (onToggle) onToggle();
     setIsMobileSearchOpen(false);
+    window.dispatchEvent(new Event('close-mobile-search'));
   };
 
   const clearFilters = () => {
@@ -207,6 +212,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setIsMobileSearchOpen(false);
     setSearchQuery('');
     setShowResults(false);
+    window.dispatchEvent(new Event('close-mobile-search'));
   };
 
   return (

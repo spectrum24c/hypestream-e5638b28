@@ -1,11 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Layers, List, User } from 'lucide-react';
 const BottomNav: React.FC = () => {
   const location = useLocation();
   const pathname = location.pathname;
   const search = location.search;
+  const [isSearchActive, setIsSearchActive] = useState(false);
   const isActive = (matcher: (path: string, search: string) => boolean) => matcher(pathname, search);
+
+  // Hide bottom nav on auth page
+  const shouldHide = pathname === '/auth' || isSearchActive;
+
+  // Listen for search overlay state changes
+  useEffect(() => {
+    const handleSearchOpen = () => setIsSearchActive(true);
+    const handleSearchClose = () => setIsSearchActive(false);
+    
+    // Listen for mobile search overlay events
+    const handleMobileSearchOpen = () => setIsSearchActive(true);
+    
+    // Listen for navigation events that should close search
+    const handleNavigation = () => setIsSearchActive(false);
+    
+    window.addEventListener('open-mobile-search', handleMobileSearchOpen);
+    window.addEventListener('close-mobile-search', handleSearchClose);
+    window.addEventListener('search-overlay-open', handleSearchOpen);
+    window.addEventListener('search-overlay-close', handleSearchClose);
+    
+    // Listen for location changes to close search overlay
+    setIsSearchActive(false);
+    
+    return () => {
+      window.removeEventListener('open-mobile-search', handleMobileSearchOpen);
+      window.removeEventListener('close-mobile-search', handleSearchClose);
+      window.removeEventListener('search-overlay-open', handleSearchOpen);
+      window.removeEventListener('search-overlay-close', handleSearchClose);
+    };
+  }, [pathname]);
+
+  if (shouldHide) {
+    return null;
+  }
   const openMobileMenu = () => {
     // Notify Navbar to open MobileNavigation (categories, etc.)
     window.dispatchEvent(new Event('open-mobile-menu'));

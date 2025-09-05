@@ -6,7 +6,6 @@ import App from "./App";
 import "./index.css";
 import "./utils/movie-buttons-responsive.css";
 import SplashScreen from "./components/SplashScreen";
-import { useTheme } from './hooks/useTheme';
 
 // Simple performance initialization without DOM manipulation
 const initBasicOptimizations = () => {
@@ -34,9 +33,6 @@ initBasicOptimizations();
 // Main App component that handles splash screen logic
 const AppWithSplash = () => {
   const [showSplash, setShowSplash] = React.useState(!import.meta.env.DEV);
-  
-  // Initialize theme
-  useTheme();
   
   const handleSplashComplete = React.useCallback(() => {
     setShowSplash(false);

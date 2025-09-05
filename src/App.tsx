@@ -12,6 +12,7 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import CookiePolicy from '@/pages/CookiePolicy';
 import UserSettings from '@/pages/UserSettings';
 import Support from '@/pages/Support';
+import Themes from '@/pages/Themes';
 import CastCrew from '@/pages/CastCrew';
 import PersonDetails from '@/pages/PersonDetails';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -71,6 +72,7 @@ function App() {
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/faqs" element={<FAQs />} />
           <Route path="/settings" element={<UserSettings />} />
+          <Route path="/themes" element={<Themes />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />

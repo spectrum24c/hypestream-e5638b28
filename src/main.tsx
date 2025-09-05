@@ -2,6 +2,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from 'react-router-dom';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import App from "./App";
 import "./index.css";
 import "./utils/movie-buttons-responsive.css";
@@ -51,7 +52,9 @@ if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
       <BrowserRouter>
-        <AppWithSplash />
+        <ThemeProvider>
+          <AppWithSplash />
+        </ThemeProvider>
       </BrowserRouter>
     </React.StrictMode>
   );

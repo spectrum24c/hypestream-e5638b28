@@ -14,6 +14,7 @@ import UserSettings from '@/pages/UserSettings';
 import Support from '@/pages/Support';
 import CastCrew from '@/pages/CastCrew';
 import PersonDetails from '@/pages/PersonDetails';
+import ThemesPage from '@/pages/Themes';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 import './App.css';
@@ -71,6 +72,7 @@ function App() {
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/faqs" element={<FAQs />} />
           <Route path="/settings" element={<UserSettings />} />
+          <Route path="/themes" element={<ThemesPage />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />

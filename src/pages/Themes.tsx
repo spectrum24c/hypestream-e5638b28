@@ -5,18 +5,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useTheme } from '@/contexts/ThemeContext';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
-
 const Themes = () => {
-  const { currentTheme, setTheme, themes } = useTheme();
-
+  const {
+    currentTheme,
+    setTheme,
+    themes
+  } = useTheme();
   const getPreviewStyle = (colors: any) => ({
     background: `hsl(${colors.background})`,
     color: `hsl(${colors.foreground})`,
     border: `1px solid hsl(${colors.border})`
   });
-
-  return (
-    <>
+  return <>
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
         <div className="container mx-auto px-4 py-8">
@@ -39,44 +39,31 @@ const Themes = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {themes.map((theme) => (
-                <div
-                  key={theme.id}
-                  className="flex flex-col items-center space-y-4 cursor-pointer group"
-                  onClick={() => setTheme(theme.id)}
-                >
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {themes.map(theme => <div key={theme.id} className="flex flex-col items-center space-y-4 cursor-pointer group" onClick={() => setTheme(theme.id)}>
                   {/* Theme Circle */}
                   <div className="relative">
-                    <div 
-                      className="w-20 h-20 rounded-full border-4 hover:scale-110 transition-all duration-200 flex items-center justify-center relative overflow-hidden"
-                      style={{
-                        background: `linear-gradient(135deg, hsl(${theme.colors.primary}), hsl(${theme.colors.secondary}))`,
-                        borderColor: currentTheme.id === theme.id ? `hsl(${currentTheme.colors.primary})` : `hsl(${theme.colors.border})`
-                      }}
-                    >
+                    <div className="w-20 h-20 rounded-full border-4 hover:scale-110 transition-all duration-200 flex items-center justify-center relative overflow-hidden" style={{
+                  background: `linear-gradient(135deg, hsl(${theme.colors.primary}), hsl(${theme.colors.secondary}))`,
+                  borderColor: currentTheme.id === theme.id ? `hsl(${currentTheme.colors.primary})` : `hsl(${theme.colors.border})`
+                }}>
                       {/* Color segments */}
-                      <div 
-                        className="absolute inset-0 w-1/2"
-                        style={{ background: `hsl(${theme.colors.primary})` }}
-                      />
-                      <div 
-                        className="absolute inset-0 left-1/2 w-1/2"
-                        style={{ background: `hsl(${theme.colors.secondary})` }}
-                      />
-                      <div 
-                        className="absolute bottom-0 left-1/4 w-1/2 h-1/2"
-                        style={{ background: `hsl(${theme.colors.accent})` }}
-                      />
+                      <div className="absolute inset-0 w-1/2" style={{
+                    background: `hsl(${theme.colors.primary})`
+                  }} />
+                      <div className="absolute inset-0 left-1/2 w-1/2" style={{
+                    background: `hsl(${theme.colors.secondary})`
+                  }} />
+                      <div className="absolute bottom-0 left-1/4 w-1/2 h-1/2" style={{
+                    background: `hsl(${theme.colors.accent})`
+                  }} />
                       
                       {/* Check mark for selected theme */}
-                      {currentTheme.id === theme.id && (
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                      {currentTheme.id === theme.id && <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                           <div className="bg-white rounded-full p-1">
                             <Check className="h-3 w-3 text-black" />
                           </div>
-                        </div>
-                      )}
+                        </div>}
                     </div>
                   </div>
                   
@@ -97,25 +84,20 @@ const Themes = () => {
                   
                   {/* Color palette preview */}
                   <div className="flex gap-1">
-                    <div 
-                      className="h-3 w-3 rounded-full border"
-                      style={{ background: `hsl(${theme.colors.primary})` }}
-                    />
-                    <div 
-                      className="h-3 w-3 rounded-full border"
-                      style={{ background: `hsl(${theme.colors.secondary})` }}
-                    />
-                    <div 
-                      className="h-3 w-3 rounded-full border"
-                      style={{ background: `hsl(${theme.colors.accent})` }}
-                    />
-                    <div 
-                      className="h-3 w-3 rounded-full border"
-                      style={{ background: `hsl(${theme.colors.muted})` }}
-                    />
+                    <div className="h-3 w-3 rounded-full border" style={{
+                  background: `hsl(${theme.colors.primary})`
+                }} />
+                    <div className="h-3 w-3 rounded-full border" style={{
+                  background: `hsl(${theme.colors.secondary})`
+                }} />
+                    <div className="h-3 w-3 rounded-full border" style={{
+                  background: `hsl(${theme.colors.accent})`
+                }} />
+                    <div className="h-3 w-3 rounded-full border" style={{
+                  background: `hsl(${theme.colors.muted})`
+                }} />
                   </div>
-                </div>
-              ))}
+                </div>)}
             </div>
 
             <div className="text-center mt-8">
@@ -126,8 +108,6 @@ const Themes = () => {
           </div>
         </div>
       </div>
-    </>
-  );
+    </>;
 };
-
 export default Themes;

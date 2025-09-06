@@ -3,6 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ProfileProvider } from '@/contexts/ProfileContext';
 import App from "./App";
 import "./index.css";
 import "./utils/movie-buttons-responsive.css";
@@ -53,7 +54,9 @@ if (rootElement) {
     <React.StrictMode>
       <BrowserRouter>
         <ThemeProvider>
-          <AppWithSplash />
+          <ProfileProvider>
+            <AppWithSplash />
+          </ProfileProvider>
         </ThemeProvider>
       </BrowserRouter>
     </React.StrictMode>

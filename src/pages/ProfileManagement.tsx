@@ -253,7 +253,13 @@ const ProfileManagement = () => {
                            variant={currentProfile?.id === profile.id ? "default" : "outline"} 
                            size="sm" 
                            className="flex-1"
-                           onClick={() => switchProfile(profile)}
+                           onClick={() => {
+                             switchProfile(profile);
+                             toast({
+                               title: "Profile Switched",
+                               description: `Now using ${profile.username || 'Unnamed Profile'}`,
+                             });
+                           }}
                          >
                            {currentProfile?.id === profile.id ? (
                              <>

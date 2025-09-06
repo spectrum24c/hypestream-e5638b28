@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 interface Profile {
   id: string;
@@ -32,7 +31,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
     const initializeProfile = async () => {
@@ -46,12 +44,16 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     initializeProfile();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
-        await loadProfiles(session.user.id);
+        // Use setTimeout to defer the profile loading to avoid React DOM issues
+        setTimeout(() => {
+          loadProfiles(session.user.id);
+        }, 0);
       } else if (event === 'SIGNED_OUT') {
         setCurrentProfile(null);
         setProfiles([]);
+        setLoading(false);
       }
     });
 
@@ -68,11 +70,6 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       if (error) {
         console.error('Error loading profiles:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load profiles",
-          variant: "destructive"
-        });
         return;
       }
 
@@ -85,19 +82,20 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           ? data.find(p => p.id === savedProfileId) || data[0]
           : data[0];
         setCurrentProfile(profileToSelect);
+        setLoading(false);
+      } else {
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error loading profiles:', error);
+      setLoading(false);
     }
   };
 
   const switchProfile = (profile: Profile) => {
     setCurrentProfile(profile);
     localStorage.setItem('currentProfileId', profile.id);
-    toast({
-      title: "Profile Switched",
-      description: `Now using ${profile.username || 'Unnamed Profile'}`,
-    });
+    // Note: Toast notifications should be handled in the component that calls this
   };
 
   const refreshProfiles = async () => {

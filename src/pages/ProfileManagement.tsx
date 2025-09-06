@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Plus, Edit, Mail, Calendar, Check } from 'lucide-react';
+import { User, Plus, Edit, Mail, Calendar, Check, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { useProfile } from '@/contexts/ProfileContext';
+import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface Profile {
   id: string;
@@ -26,6 +28,8 @@ const ProfileManagement = () => {
   const [isAddingProfile, setIsAddingProfile] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { currentTheme } = useTheme();
 
   useEffect(() => {
     const getUser = async () => {
@@ -50,6 +54,16 @@ const ProfileManagement = () => {
       return;
     }
 
+    // Check if user already has 6 profiles
+    if (profiles.length >= 6) {
+      toast({
+        title: "Profile Limit Reached",
+        description: "You can only have up to 6 profiles",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsAddingProfile(true);
     try {
       const { data, error } = await supabase
@@ -65,9 +79,17 @@ const ProfileManagement = () => {
 
       if (error) {
         console.error('Error adding profile:', error);
+        let errorMessage = "Failed to add profile";
+        
+        if (error.message?.includes('Maximum of 6 profiles')) {
+          errorMessage = "You can only have up to 6 profiles";
+        } else if (error.code === '23505') {
+          errorMessage = "A profile with this name already exists";
+        }
+        
         toast({
           title: "Error",
-          description: "Failed to add profile",
+          description: errorMessage,
           variant: "destructive"
         });
       } else {
@@ -96,7 +118,10 @@ const ProfileManagement = () => {
       <>
         <Navbar />
         <div className="min-h-screen bg-background pt-20 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div 
+            className="animate-spin rounded-full h-8 w-8 border-b-2"
+            style={{ borderBottomColor: `hsl(${currentTheme.colors.primary})` }}
+          ></div>
         </div>
       </>
     );
@@ -126,11 +151,20 @@ const ProfileManagement = () => {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
               <div className="flex items-center justify-center gap-2 mb-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/')}
+                  className="absolute left-4 top-24 flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Home
+                </Button>
                 <User className="h-8 w-8 text-primary" />
                 <h1 className="text-4xl font-bold text-foreground">Profile Management</h1>
               </div>
               <p className="text-muted-foreground text-lg">
-                Manage your account and create multiple profiles
+                Manage your account and create multiple profiles (up to 6)
               </p>
             </div>
 
@@ -164,9 +198,12 @@ const ProfileManagement = () => {
               
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="flex items-center gap-2">
+                  <Button 
+                    className="flex items-center gap-2"
+                    disabled={profiles.length >= 6}
+                  >
                     <Plus className="h-4 w-4" />
-                    Add Profile
+                    Add Profile {profiles.length >= 6 && '(Max Reached)'}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>

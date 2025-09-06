@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -21,6 +21,7 @@ export type Database = {
           is_tv_show: boolean | null
           movie_id: string
           poster_path: string | null
+          profile_id: string | null
           release_date: string | null
           title: string
           user_id: string
@@ -32,6 +33,7 @@ export type Database = {
           is_tv_show?: boolean | null
           movie_id: string
           poster_path?: string | null
+          profile_id?: string | null
           release_date?: string | null
           title: string
           user_id: string
@@ -43,12 +45,21 @@ export type Database = {
           is_tv_show?: boolean | null
           movie_id?: string
           poster_path?: string | null
+          profile_id?: string | null
           release_date?: string | null
           title?: string
           user_id?: string
           vote_average?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "favorites_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       newsletter_subscribers: {
         Row: {
@@ -121,7 +132,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_default_profile_id: {
+        Args: { user_uuid: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

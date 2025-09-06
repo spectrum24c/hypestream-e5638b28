@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Plus, Edit, Mail, Calendar } from 'lucide-react';
+import { User, Plus, Edit, Mail, Calendar, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
+import { useProfile } from '@/contexts/ProfileContext';
 
 interface Profile {
   id: string;
@@ -18,7 +19,7 @@ interface Profile {
 }
 
 const ProfileManagement = () => {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const { currentProfile, profiles, switchProfile, refreshProfiles, loading: profileLoading } = useProfile();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [newUsername, setNewUsername] = useState('');
@@ -31,7 +32,6 @@ const ProfileManagement = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUser(user);
-        await fetchProfiles(user.id);
       }
       setLoading(false);
     };
@@ -39,28 +39,6 @@ const ProfileManagement = () => {
     getUser();
   }, []);
 
-  const fetchProfiles = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('Error fetching profiles:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load profiles",
-          variant: "destructive"
-        });
-      } else {
-        setProfiles(data || []);
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
 
   const addProfile = async () => {
     if (!user || !newUsername.trim()) {
@@ -93,7 +71,7 @@ const ProfileManagement = () => {
           variant: "destructive"
         });
       } else {
-        setProfiles([...profiles, data]);
+        await refreshProfiles();
         setNewUsername('');
         setDialogOpen(false);
         toast({
@@ -113,7 +91,7 @@ const ProfileManagement = () => {
     }
   };
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <>
         <Navbar />
@@ -269,14 +247,25 @@ const ProfileManagement = () => {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" className="flex-1">
-                          <Edit className="h-3 w-3 mr-1" />
-                          Edit
-                        </Button>
-                      </div>
-                    </CardContent>
+                     <CardContent>
+                       <div className="flex gap-2">
+                         <Button 
+                           variant={currentProfile?.id === profile.id ? "default" : "outline"} 
+                           size="sm" 
+                           className="flex-1"
+                           onClick={() => switchProfile(profile)}
+                         >
+                           {currentProfile?.id === profile.id ? (
+                             <>
+                               <Check className="h-3 w-3 mr-1" />
+                               Active
+                             </>
+                           ) : (
+                             'Switch To'
+                           )}
+                         </Button>
+                       </div>
+                     </CardContent>
                   </Card>
                 ))
               )}

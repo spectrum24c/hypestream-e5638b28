@@ -22,6 +22,7 @@ import './App.css';
 import { Toaster } from "@/components/ui/toaster";
 import { useHardwareBackButton, useStatusBarCustomization } from '@/utils/mobileUtils';
 import { useToast } from "@/hooks/use-toast";
+import { ProfileProvider } from '@/contexts/ProfileContext';
 
 function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -65,27 +66,29 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="app">
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/favorites" element={<Favorites />} />
-          <Route path="/faqs" element={<FAQs />} />
-          <Route path="/settings" element={<UserSettings />} />
-          <Route path="/themes" element={<Themes />} />
-          <Route path="/profile-management" element={<ProfileManagement />} />
-          <Route path="/terms-of-use" element={<TermsOfUse />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/cookie-policy" element={<CookiePolicy />} />
-          <Route path="/support" element={<Support />} />
-          
-          <Route path="/cast-crew/:id" element={<CastCrew />} />
-          <Route path="/person/:id" element={<PersonDetails />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        <Toaster />
-      </div>
+      <ProfileProvider>
+        <div className="app">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/faqs" element={<FAQs />} />
+            <Route path="/settings" element={<UserSettings />} />
+            <Route path="/themes" element={<Themes />} />
+            <Route path="/profile-management" element={<ProfileManagement />} />
+            <Route path="/terms-of-use" element={<TermsOfUse />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/support" element={<Support />} />
+            
+            <Route path="/cast-crew/:id" element={<CastCrew />} />
+            <Route path="/person/:id" element={<PersonDetails />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+        </div>
+      </ProfileProvider>
     </ErrorBoundary>
   );
 }

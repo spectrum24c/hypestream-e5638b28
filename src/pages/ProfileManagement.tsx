@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Plus, Edit, Mail, Calendar, Check, ArrowLeft } from 'lucide-react';
+import { User, Plus, Edit, Mail, Calendar, Check, ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -110,6 +110,46 @@ const ProfileManagement = () => {
       });
     } finally {
       setIsAddingProfile(false);
+    }
+  };
+
+  const deleteProfile = async (profileId: string, profileName: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', profileId);
+
+      if (error) {
+        console.error('Error deleting profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete profile",
+          variant: "destructive"
+        });
+      } else {
+        await refreshProfiles();
+        // If the deleted profile was the current one, switch to first profile
+        if (currentProfile?.id === profileId && profiles.length > 1) {
+          const remainingProfile = profiles.find(p => p.id !== profileId);
+          if (remainingProfile) {
+            switchProfile(remainingProfile);
+          }
+        }
+        toast({
+          title: "Success",
+          description: `Profile "${profileName}" deleted successfully`,
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
     }
   };
 
@@ -269,8 +309,21 @@ const ProfileManagement = () => {
                     <CardHeader>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center">
-                            <User className="h-6 w-6 text-primary" />
+                          <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-primary/20">
+                            {profile.avatar_url ? (
+                              <img 
+                                src={profile.avatar_url} 
+                                alt={profile.username || `Profile ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div 
+                                className="w-full h-full flex items-center justify-center text-white font-bold text-lg"
+                                style={{ backgroundColor: `hsl(${currentTheme.colors.primary})` }}
+                              >
+                                {(profile.username || `P${index + 1}`).charAt(0).toUpperCase()}
+                              </div>
+                            )}
                           </div>
                           <div>
                             <CardTitle className="text-lg">
@@ -307,6 +360,16 @@ const ProfileManagement = () => {
                              'Switch To'
                            )}
                          </Button>
+                         {index > 0 && (
+                           <Button 
+                             variant="outline" 
+                             size="sm"
+                             onClick={() => deleteProfile(profile.id, profile.username || `Profile ${index + 1}`)}
+                             className="text-destructive hover:text-destructive"
+                           >
+                             <Trash2 className="h-3 w-3" />
+                           </Button>
+                         )}
                        </div>
                      </CardContent>
                   </Card>

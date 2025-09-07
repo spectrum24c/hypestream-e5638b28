@@ -4,6 +4,7 @@ import { Heart, Play, Film, X, ArrowLeft, Monitor } from 'lucide-react';
 import { Button } from './ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useProfile } from '@/contexts/ProfileContext';
 
 interface MoviePlayerProps {
   movie: {
@@ -36,6 +37,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
   const [movieDetails, setMovieDetails] = useState<any>(null);
   const [genres, setGenres] = useState<string[]>([]);
   const { toast } = useToast();
+  const { currentProfile } = useProfile();
 
   useEffect(() => {
     // Get auth session
@@ -199,12 +201,22 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
       return;
     }
 
+    if (!currentProfile?.id) {
+      toast({
+        title: "Profile required",
+        description: "Please select a profile to add to favorites",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { error } = await supabase
         .from('favorites')
         .insert({
           user_id: session.data.session.user.id,
+          profile_id: currentProfile.id,
           movie_id: movie.id,
           title: title,
           poster_path: movie.poster_path,

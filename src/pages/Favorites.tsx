@@ -10,6 +10,7 @@ import { ArrowLeft, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
+import { useProfile } from '@/contexts/ProfileContext';
 
 interface Favorite {
   id: string;
@@ -39,6 +40,7 @@ const Favorites = () => {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMovie, setSelectedMovie] = useState<MovieDetails | null>(null);
+  const { currentProfile } = useProfile();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,7 +51,9 @@ const Favorites = () => {
         return;
       }
       
-      fetchFavorites();
+      if (currentProfile) {
+        fetchFavorites();
+      }
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
         if (event === 'SIGNED_OUT') {
@@ -61,14 +65,20 @@ const Favorites = () => {
     };
 
     checkSession();
-  }, [navigate]);
+  }, [navigate, currentProfile]);
 
   const fetchFavorites = async () => {
+    if (!currentProfile?.id) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('favorites')
         .select('*')
+        .eq('profile_id', currentProfile.id)
         .order('created_at', { ascending: false });
       
       if (error) throw error;

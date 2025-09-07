@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
-import { FileEdit, Home, Image } from 'lucide-react';
+import { FileEdit, Home, Image, ArrowLeft } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useProfile } from '@/contexts/ProfileContext';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -33,13 +34,14 @@ const predefinedAvatars = [
 ];
 
 const Profile = () => {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [localProfile, setLocalProfile] = useState<Profile | null>(null);
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [session, setSession] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
+  const { currentProfile } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -49,8 +51,6 @@ const Profile = () => {
       setSession(currentSession);
       if (!currentSession) {
         navigate('/auth');
-      } else {
-        fetchProfile(currentSession.user.id);
       }
     });
 
@@ -67,19 +67,25 @@ const Profile = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const fetchProfile = async (userId: string) => {
+  useEffect(() => {
+    if (currentProfile) {
+      fetchProfile(currentProfile.id);
+    }
+  }, [currentProfile]);
+
+  const fetchProfile = async (profileId: string) => {
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', userId)
+        .eq('id', profileId)
         .maybeSingle();
       
       if (error) throw error;
       
       if (data) {
-        setProfile(data);
+        setLocalProfile(data);
         setUsername(data.username || '');
         setAvatarUrl(data.avatar_url);
       }
@@ -97,7 +103,7 @@ const Profile = () => {
 
   const updateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session?.user) return;
+    if (!currentProfile?.id) return;
     
     setUpdating(true);
     try {
@@ -109,12 +115,8 @@ const Profile = () => {
 
       const { data, error } = await supabase
         .from('profiles')
-        .upsert({ 
-          user_id: session.user.id,
-          ...updateData 
-        }, { 
-          onConflict: 'user_id' 
-        })
+        .update(updateData)
+        .eq('id', currentProfile.id)
         .select()
         .single();
       
@@ -126,7 +128,7 @@ const Profile = () => {
       });
       
       // Update local state with the saved profile
-      setProfile(data);
+      setLocalProfile(data);
       setUsername(data.username || '');
       setAvatarUrl(data.avatar_url);
     } catch (error) {
@@ -142,13 +144,13 @@ const Profile = () => {
   };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0 || !session?.user?.id) {
+    if (!e.target.files || e.target.files.length === 0 || !currentProfile?.id) {
       return;
     }
 
     const file = e.target.files[0];
     const fileExt = file.name.split('.').pop();
-    const fileName = `${session.user.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const fileName = `${currentProfile.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
     const filePath = `${fileName}`;
 
     try {
@@ -172,7 +174,7 @@ const Profile = () => {
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: urlData.publicUrl })
-        .eq('user_id', session.user.id);
+        .eq('id', currentProfile.id);
       
       if (updateError) throw updateError;
       
@@ -193,7 +195,7 @@ const Profile = () => {
   };
 
   const selectPredefinedAvatar = async (avatarUrl: string) => {
-    if (!session?.user?.id) return;
+    if (!currentProfile?.id) return;
     
     setUpdating(true);
     try {
@@ -201,7 +203,7 @@ const Profile = () => {
       const { error } = await supabase
         .from('profiles')
         .update({ avatar_url: avatarUrl })
-        .eq('user_id', session.user.id);
+        .eq('id', currentProfile.id);
       
       if (error) throw error;
       
@@ -235,7 +237,7 @@ const Profile = () => {
               variant="ghost" 
               className="flex items-center gap-1 text-hype-purple mr-2"
             >
-              <Home size={16} />
+              <ArrowLeft size={16} />
               <span>Back to Home</span>
             </Button>
             <h1 className="text-3xl font-bold">My Profile</h1>

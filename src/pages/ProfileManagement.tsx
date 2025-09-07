@@ -117,37 +117,53 @@ const ProfileManagement = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      // First delete all favorites associated with this profile
+      const { error: favoritesError } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('profile_id', profileId);
+
+      if (favoritesError) {
+        console.error('Error deleting profile favorites:', favoritesError);
+      }
+
+      // Then delete the profile itself
+      const { error: profileError } = await supabase
         .from('profiles')
         .delete()
         .eq('id', profileId);
 
-      if (error) {
-        console.error('Error deleting profile:', error);
+      if (profileError) {
+        console.error('Error deleting profile:', profileError);
         toast({
           title: "Error",
           description: "Failed to delete profile",
           variant: "destructive"
         });
-      } else {
-        await refreshProfiles();
-        // If the deleted profile was the current one, switch to first profile
-        if (currentProfile?.id === profileId && profiles.length > 1) {
-          const remainingProfile = profiles.find(p => p.id !== profileId);
-          if (remainingProfile) {
-            switchProfile(remainingProfile);
-          }
-        }
-        toast({
-          title: "Success",
-          description: `Profile "${profileName}" deleted successfully`,
-        });
+        return;
       }
+
+      // Update local state by refreshing profiles
+      await refreshProfiles();
+      
+      // If the deleted profile was the current one, switch to the first remaining profile
+      if (currentProfile?.id === profileId) {
+        const remainingProfiles = profiles.filter(p => p.id !== profileId);
+        if (remainingProfiles.length > 0) {
+          switchProfile(remainingProfiles[0]);
+        }
+      }
+
+      toast({
+        title: "Success",
+        description: `Profile "${profileName}" deleted successfully`,
+      });
+
     } catch (error) {
       console.error('Error:', error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "An unexpected error occurred while deleting profile",
         variant: "destructive"
       });
     }

@@ -64,6 +64,20 @@ const ProfileManagement = () => {
       return;
     }
 
+    // Check for duplicate username
+    const existingProfile = profiles.find(profile => 
+      profile.username?.toLowerCase() === newUsername.trim().toLowerCase()
+    );
+    
+    if (existingProfile) {
+      toast({
+        title: "Username Already Exists",
+        description: "You already have a profile with this username",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsAddingProfile(true);
     try {
       const { data, error } = await supabase

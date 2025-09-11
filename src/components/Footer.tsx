@@ -33,7 +33,7 @@ const Footer = () => {
       const { error: saveError } = await supabase.functions.invoke('save-newsletter-subscriber', {
         body: {
           email: email,
-          adminEmail: 'hypestream127@gmail.com',
+          adminEmail: 'awokojorichmond@gmail.com',
           userId: null
         }
       });
@@ -49,7 +49,7 @@ const Footer = () => {
       const { error: emailError } = await supabase.functions.invoke('send-newsletter-notification', {
         body: {
           subscriberEmail: email,
-          adminEmail: 'hypestream127@gmail.com'
+          adminEmail: 'awokojorichmond@gmail.com'
         }
       });
 

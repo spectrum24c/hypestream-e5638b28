@@ -37,7 +37,7 @@ serve(async (req) => {
       .from("newsletter_subscribers")
       .insert({
         email: email,
-        admin_email: "hypestream127@gmail.com",
+        admin_email: "awokojorichmond@gmail.com",
         user_id: userId || null,
         subscribed_at: new Date().toISOString(),
       });

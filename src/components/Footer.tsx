@@ -41,8 +41,18 @@ const Footer = () => {
       if (saveError) {
         console.error('Error saving subscriber:', saveError);
         
+        // Try to get the actual error response from the edge function
+        let errorData = null;
+        try {
+          if (saveError.context?.body) {
+            errorData = saveError.context.body;
+          }
+        } catch (e) {
+          console.log('Could not parse error context');
+        }
+        
         // Check if it's a duplicate subscription error
-        if (saveError.message?.includes('ALREADY_SUBSCRIBED')) {
+        if (errorData?.error === 'ALREADY_SUBSCRIBED' || saveError.message?.includes('ALREADY_SUBSCRIBED')) {
           toast({
             title: "Already subscribed",
             description: "This email has already subscribed to the newsletter",

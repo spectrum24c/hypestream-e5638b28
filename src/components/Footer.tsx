@@ -30,7 +30,7 @@ const Footer = () => {
       console.log('Starting newsletter subscription process for:', email);
       
       // Save subscriber to database
-      const { error: saveError } = await supabase.functions.invoke('save-newsletter-subscriber', {
+      const { data: functionData, error: saveError } = await supabase.functions.invoke('save-newsletter-subscriber', {
         body: {
           email: email,
           adminEmail: 'awokojorichmond@gmail.com',
@@ -40,28 +40,17 @@ const Footer = () => {
 
       if (saveError) {
         console.error('Error saving subscriber:', saveError);
-        
-        // Try to get the actual error response from the edge function
-        let errorData = null;
-        try {
-          if (saveError.context?.body) {
-            errorData = saveError.context.body;
-          }
-        } catch (e) {
-          console.log('Could not parse error context');
-        }
-        
-        // Check if it's a duplicate subscription error
-        if (errorData?.error === 'ALREADY_SUBSCRIBED' || saveError.message?.includes('ALREADY_SUBSCRIBED')) {
-          toast({
-            title: "Already subscribed",
-            description: "This email has already subscribed to the newsletter",
-            variant: "default"
-          });
-          return;
-        }
-        
         throw saveError;
+      }
+
+      // Check if this is a duplicate subscription
+      if (functionData?.error === 'ALREADY_SUBSCRIBED') {
+        toast({
+          title: "Already subscribed",
+          description: "This email has already subscribed to the newsletter",
+          variant: "default"
+        });
+        return;
       }
 
       console.log('Subscriber saved successfully, sending confirmation emails...');

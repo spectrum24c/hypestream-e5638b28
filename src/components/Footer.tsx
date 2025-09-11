@@ -40,6 +40,17 @@ const Footer = () => {
 
       if (saveError) {
         console.error('Error saving subscriber:', saveError);
+        
+        // Check if it's a duplicate subscription error
+        if (saveError.message?.includes('ALREADY_SUBSCRIBED')) {
+          toast({
+            title: "Already subscribed",
+            description: "This email has already subscribed to the newsletter",
+            variant: "default"
+          });
+          return;
+        }
+        
         throw saveError;
       }
 

@@ -32,6 +32,8 @@ const Auth = () => {
   const [session, setSession] = useState<any>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -159,11 +161,45 @@ const Auth = () => {
     setShowPassword(!showPassword);
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/change-password`,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Password reset email sent",
+        description: "Check your email for a password reset link",
+      });
+
+      setShowForgotPassword(false);
+      setResetEmail('');
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      toast({
+        title: "Password reset failed",
+        description: error.message || "An error occurred while sending reset email",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const switchMode = () => {
     setIsSignUp(!isSignUp);
     setSuccessMessage('');
     setEmail('');
     setPassword('');
+    setShowForgotPassword(false);
+    setResetEmail('');
   };
 
   return (
@@ -187,6 +223,43 @@ const Auth = () => {
                 >
                   Back to Sign In
                 </Button>
+              </div>
+            ) : showForgotPassword ? (
+              <div>
+                <h1 className="text-2xl font-bold mb-6 text-center">Reset Password</h1>
+                <form onSubmit={handleForgotPassword} className="space-y-6">
+                  <div>
+                    <label htmlFor="resetEmail" className="block text-sm font-medium mb-2">
+                      Email
+                    </label>
+                    <Input
+                      type="email"
+                      id="resetEmail"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      required
+                      className="w-full"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-hype-purple hover:bg-hype-purple/90"
+                    disabled={loading}
+                  >
+                    {loading ? 'Sending...' : 'Send Reset Email'}
+                  </Button>
+                </form>
+
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={() => setShowForgotPassword(false)}
+                    className="text-sm text-hype-purple hover:underline"
+                  >
+                    Back to Sign In
+                  </button>
+                </div>
               </div>
             ) : (
               <>
@@ -262,15 +335,24 @@ const Auth = () => {
                   </Button>
                 </form>
 
-                <div className="mt-6 text-center">
+                <div className="mt-6 text-center space-y-2">
                   <button
                     onClick={switchMode}
-                    className="text-sm text-hype-purple hover:underline"
+                    className="text-sm text-hype-purple hover:underline block w-full"
                   >
                     {isSignUp
                       ? 'Already have an account? Sign In'
                       : "Don't have an account? Sign Up"}
                   </button>
+                  
+                  {!isSignUp && (
+                    <button
+                      onClick={() => setShowForgotPassword(true)}
+                      className="text-sm text-muted-foreground hover:text-hype-purple hover:underline block w-full"
+                    >
+                      Forgot your password?
+                    </button>
+                  )}
                 </div>
               </>
             )}

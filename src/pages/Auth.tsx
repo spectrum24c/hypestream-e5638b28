@@ -213,19 +213,21 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // First, we need to get a temporary session to update the password
-      // We'll use the reset password flow but with immediate update
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth`,
+      // Update password via secure Edge Function using service role
+      const { data, error } = await supabase.functions.invoke('reset-user-password', {
+        body: { email: resetEmail, newPassword },
       });
 
-      if (resetError) {
-        throw resetError;
+      if (error) {
+        throw error;
+      }
+      if (!data?.success) {
+        throw new Error(data?.error || "Failed to update password");
       }
 
       toast({
-        title: "Password reset initiated",
-        description: "Check your email for a confirmation link to complete the password change",
+        title: "Password updated",
+        description: "You can now sign in with your new password",
       });
 
       setShowForgotPassword(false);

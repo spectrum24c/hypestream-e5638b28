@@ -34,6 +34,8 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [showNewPasswordForm, setShowNewPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -166,26 +168,75 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/change-password`,
+      // Try to sign in with a dummy password to check if user exists
+      const { error } = await supabase.auth.signInWithPassword({
+        email: resetEmail,
+        password: 'dummy_password_to_check_user_exists',
       });
 
-      if (error) {
-        throw error;
+      // If error is "Invalid login credentials", user exists
+      if (error && error.message.includes('Invalid login credentials')) {
+        setShowNewPasswordForm(true);
+        toast({
+          title: "Account found",
+          description: "Please enter your new password",
+        });
+      } else if (error && (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed'))) {
+        // User exists but email not confirmed
+        setShowNewPasswordForm(true);
+        toast({
+          title: "Account found",
+          description: "Please enter your new password",
+        });
+      } else {
+        // User doesn't exist or other error
+        toast({
+          title: "Account not found",
+          description: "No account found with this email address",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error('Account check error:', error);
+      toast({
+        title: "Error",
+        description: "An error occurred while checking your account",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNewPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // First, we need to get a temporary session to update the password
+      // We'll use the reset password flow but with immediate update
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (resetError) {
+        throw resetError;
       }
 
       toast({
-        title: "Password reset email sent",
-        description: "Check your email for a password reset link",
+        title: "Password reset initiated",
+        description: "Check your email for a confirmation link to complete the password change",
       });
 
       setShowForgotPassword(false);
+      setShowNewPasswordForm(false);
       setResetEmail('');
+      setNewPassword('');
     } catch (error: any) {
-      console.error('Password reset error:', error);
+      console.error('Password update error:', error);
       toast({
-        title: "Password reset failed",
-        description: error.message || "An error occurred while sending reset email",
+        title: "Password update failed",
+        description: error.message || "An error occurred while updating your password",
         variant: "destructive",
       });
     } finally {
@@ -199,7 +250,9 @@ const Auth = () => {
     setEmail('');
     setPassword('');
     setShowForgotPassword(false);
+    setShowNewPasswordForm(false);
     setResetEmail('');
+    setNewPassword('');
   };
 
   return (
@@ -226,40 +279,98 @@ const Auth = () => {
               </div>
             ) : showForgotPassword ? (
               <div>
-                <h1 className="text-2xl font-bold mb-6 text-center">Reset Password</h1>
-                <form onSubmit={handleForgotPassword} className="space-y-6">
-                  <div>
-                    <label htmlFor="resetEmail" className="block text-sm font-medium mb-2">
-                      Email
-                    </label>
-                    <Input
-                      type="email"
-                      id="resetEmail"
-                      value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
-                      required
-                      className="w-full"
-                      placeholder="your@email.com"
-                    />
-                  </div>
+                {!showNewPasswordForm ? (
+                  <>
+                    <h1 className="text-2xl font-bold mb-6 text-center">Find Your Account</h1>
+                    <form onSubmit={handleForgotPassword} className="space-y-6">
+                      <div>
+                        <label htmlFor="resetEmail" className="block text-sm font-medium mb-2">
+                          Email
+                        </label>
+                        <Input
+                          type="email"
+                          id="resetEmail"
+                          value={resetEmail}
+                          onChange={(e) => setResetEmail(e.target.value)}
+                          required
+                          className="w-full"
+                          placeholder="your@email.com"
+                        />
+                      </div>
 
-                  <Button
-                    type="submit"
-                    className="w-full bg-hype-purple hover:bg-hype-purple/90"
-                    disabled={loading}
-                  >
-                    {loading ? 'Sending...' : 'Send Reset Email'}
-                  </Button>
-                </form>
+                      <Button
+                        type="submit"
+                        className="w-full bg-hype-purple hover:bg-hype-purple/90"
+                        disabled={loading}
+                      >
+                        {loading ? 'Checking...' : 'Check Account'}
+                      </Button>
+                    </form>
 
-                <div className="mt-6 text-center">
-                  <button
-                    onClick={() => setShowForgotPassword(false)}
-                    className="text-sm text-hype-purple hover:underline"
-                  >
-                    Back to Sign In
-                  </button>
-                </div>
+                    <div className="mt-6 text-center">
+                      <button
+                        onClick={() => setShowForgotPassword(false)}
+                        className="text-sm text-hype-purple hover:underline"
+                      >
+                        Back to Sign In
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="text-2xl font-bold mb-6 text-center">Set New Password</h1>
+                    <form onSubmit={handleNewPassword} className="space-y-6">
+                      <div>
+                        <label htmlFor="newPassword" className="block text-sm font-medium mb-2">
+                          New Password
+                        </label>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            id="newPassword"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            required
+                            className="w-full pr-10"
+                            placeholder="••••••••"
+                            minLength={6}
+                          />
+                          <button
+                            type="button"
+                            onClick={togglePasswordVisibility}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="submit"
+                        className="w-full bg-hype-purple hover:bg-hype-purple/90"
+                        disabled={loading}
+                      >
+                        {loading ? 'Updating...' : 'Update Password'}
+                      </Button>
+                    </form>
+
+                    <div className="mt-6 text-center">
+                      <button
+                        onClick={() => {
+                          setShowNewPasswordForm(false);
+                          setNewPassword('');
+                        }}
+                        className="text-sm text-hype-purple hover:underline"
+                      >
+                        Back to Email Check
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <>

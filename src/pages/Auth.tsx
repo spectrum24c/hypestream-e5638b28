@@ -67,6 +67,9 @@ const Auth = () => {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              email_confirm: true
+            }
           }
         });
 

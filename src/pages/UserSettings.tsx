@@ -137,15 +137,34 @@ const UserSettingsPage: React.FC = () => {
             <TabsContent value="account" className="mt-0">
               <div className="max-w-2xl mx-auto">
                 <h2 className="text-2xl font-bold mb-6">Account Settings</h2>
-                <p className="text-muted-foreground">
-                  Account settings are managed on the Profile page.
-                </p>
-                <button
-                  className="text-hype-purple hover:underline mt-2"
-                  onClick={() => navigate('/profile')}
-                >
-                  Go to Profile
-                </button>
+                <div className="space-y-6">
+                  <div className="bg-card border border-border rounded-lg p-6">
+                    <h3 className="text-lg font-semibold mb-2">Security</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Manage your password and security settings.
+                    </p>
+                    <Button
+                      onClick={() => navigate('/change-password')}
+                      className="bg-hype-purple hover:bg-hype-purple/90"
+                    >
+                      Change Password
+                    </Button>
+                  </div>
+                  
+                  <div className="bg-card border border-border rounded-lg p-6">
+                    <h3 className="text-lg font-semibold mb-2">Profile Information</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Update your profile details, avatar, and personal information.
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate('/profile')}
+                      className="border-hype-purple text-hype-purple hover:bg-hype-purple/10"
+                    >
+                      Go to Profile
+                    </Button>
+                  </div>
+                </div>
               </div>
             </TabsContent>
           </Tabs>

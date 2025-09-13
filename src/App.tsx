@@ -11,6 +11,7 @@ import TermsOfUse from '@/pages/TermsOfUse';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import CookiePolicy from '@/pages/CookiePolicy';
 import UserSettings from '@/pages/UserSettings';
+import ChangePassword from '@/pages/ChangePassword';
 import Support from '@/pages/Support';
 import Themes from '@/pages/Themes';
 import ProfileManagement from '@/pages/ProfileManagement';
@@ -73,6 +74,7 @@ function App() {
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/faqs" element={<FAQs />} />
           <Route path="/settings" element={<UserSettings />} />
+          <Route path="/change-password" element={<ChangePassword />} />
           <Route path="/themes" element={<Themes />} />
           <Route path="/profile-management" element={<ProfileManagement />} />
           <Route path="/terms-of-use" element={<TermsOfUse />} />

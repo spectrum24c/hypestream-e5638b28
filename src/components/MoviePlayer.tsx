@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { imgPath, apiPaths, fetchFromTMDB, fetchGenres } from '@/services/tmdbApi';
-import { Heart, Play, Film, X, ArrowLeft, Monitor } from 'lucide-react';
+import { Heart, Play, Film, X, ArrowLeft, Monitor, Download } from 'lucide-react';
 import { Button } from './ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -424,6 +424,25 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({ movie, onClose, autoPlayTrail
                 <div className="flex flex-wrap gap-3 mb-6">
                   <Button onClick={watchNow} className="bg-hype-purple hover:bg-hype-purple/90">
                     <Play className="mr-2 h-4 w-4" /> Watch Now
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      if (!movie || !movie.id) return;
+                      
+                      // 确定媒体类型：优先使用 media_type，如果没有则根据 name/title 属性判断
+                      const isTV = movie.media_type === 'tv' || 
+                                  (!movie.media_type && movie.name && !movie.title);
+                      
+                      const baseUrl = isTV
+                        ? `https://dl.vidsrc.vip/tv/${movie.id}/1/1` 
+                        : `https://dl.vidsrc.vip/movie/${movie.id}`;
+                      
+                      console.log(`Opening download link: ${baseUrl} for ${isTV ? 'TV Show' : 'Movie'}`);
+                      window.open(baseUrl, '_blank');
+                    }} 
+                    className="bg-hype-purple hover:bg-hype-purple/90"
+                  >
+                    <Download className="mr-2 h-4 w-4" /> Download
                   </Button>
                   <Button onClick={watchNowAlt} className="bg-hype-orange hover:bg-hype-orange/90">
                     <Monitor className="mr-2 h-4 w-4" /> Watch (Alt Source)

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.12 (cd3cf9e)"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -21,7 +21,6 @@ export type Database = {
           is_tv_show: boolean | null
           movie_id: string
           poster_path: string | null
-          profile_id: string | null
           release_date: string | null
           title: string
           user_id: string
@@ -33,7 +32,6 @@ export type Database = {
           is_tv_show?: boolean | null
           movie_id: string
           poster_path?: string | null
-          profile_id?: string | null
           release_date?: string | null
           title: string
           user_id: string
@@ -45,21 +43,12 @@ export type Database = {
           is_tv_show?: boolean | null
           movie_id?: string
           poster_path?: string | null
-          profile_id?: string | null
           release_date?: string | null
           title?: string
           user_id?: string
           vote_average?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "favorites_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       newsletter_subscribers: {
         Row: {
@@ -97,20 +86,16 @@ export type Database = {
           pin_enabled: boolean | null
           pin_hash: string | null
           selected_theme: string | null
-          updated_at: string
-          user_id: string
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
-          id?: string
+          id: string
           language?: string | null
           pin_enabled?: boolean | null
           pin_hash?: string | null
           selected_theme?: string | null
-          updated_at?: string
-          user_id: string
           username?: string | null
         }
         Update: {
@@ -121,8 +106,6 @@ export type Database = {
           pin_enabled?: boolean | null
           pin_hash?: string | null
           selected_theme?: string | null
-          updated_at?: string
-          user_id?: string
           username?: string | null
         }
         Relationships: []
@@ -132,10 +115,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_default_profile_id: {
-        Args: { user_uuid: string }
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

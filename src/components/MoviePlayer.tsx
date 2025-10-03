@@ -348,6 +348,16 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
                     <Play className="mr-2 h-4 w-4" /> Watch Now
                   </Button>
                   <Button onClick={() => {
+                // Check if user is signed in
+                if (!session) {
+                  toast({
+                    title: "Authentication required",
+                    description: "Please login to download content",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+
                 if (!movie || !movie.id) return;
 
                 // 确定媒体类型：优先使用 media_type，如果没有则根据 name/title 属性判断

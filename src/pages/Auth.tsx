@@ -35,10 +35,8 @@ const Auth = () => {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [showNewPasswordForm, setShowNewPasswordForm] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
@@ -184,14 +182,14 @@ const Auth = () => {
         setShowNewPasswordForm(true);
         toast({
           title: "Account found",
-          description: "Please enter your current password and new password",
+          description: "Please enter your new password",
         });
       } else if (error && (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed'))) {
         // User exists but email not confirmed
         setShowNewPasswordForm(true);
         toast({
           title: "Account found",
-          description: "Please enter your current password and new password",
+          description: "Please enter your new password",
         });
       } else {
         // User doesn't exist or other error
@@ -237,46 +235,33 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // First verify current password by trying to sign in
-      const { error: verifyError } = await supabase.auth.signInWithPassword({
-        email: resetEmail,
-        password: currentPassword,
-      });
-
-      if (verifyError) {
-        toast({
-          title: "Current password incorrect",
-          description: "Please enter your current password correctly",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Update password
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
+      // Update password via secure Edge Function using service role
+      const { data, error } = await supabase.functions.invoke('reset-user-password', {
+        body: { email: resetEmail, newPassword },
       });
 
       if (error) {
         throw error;
       }
+      if (!data?.success) {
+        throw new Error(data?.error || "Failed to update password");
+      }
 
       toast({
-        title: "Password changed successfully",
-        description: "Your password has been updated. You can now sign in with your new password",
+        title: "Password updated successfully",
+        description: "You can now sign in with your new password",
       });
 
       setShowForgotPassword(false);
       setShowNewPasswordForm(false);
       setResetEmail('');
-      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (error: any) {
       console.error('Password update error:', error);
       toast({
-        title: "Password change failed",
-        description: error.message || "An error occurred while changing your password",
+        title: "Password update failed",
+        description: error.message || "An error occurred while updating your password",
         variant: "destructive",
       });
     } finally {
@@ -292,7 +277,6 @@ const Auth = () => {
     setShowForgotPassword(false);
     setShowNewPasswordForm(false);
     setResetEmail('');
-    setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
   };
@@ -360,36 +344,8 @@ const Auth = () => {
                   </>
                 ) : (
                   <>
-                    <h1 className="text-2xl font-bold mb-6 text-center">Change Password</h1>
+                    <h1 className="text-2xl font-bold mb-6 text-center">Set New Password</h1>
                     <form onSubmit={handleNewPassword} className="space-y-6">
-                      <div>
-                        <label htmlFor="currentPassword" className="block text-sm font-medium mb-2">
-                          Current Password
-                        </label>
-                        <div className="relative">
-                          <Input
-                            type={showCurrentPassword ? "text" : "password"}
-                            id="currentPassword"
-                            value={currentPassword}
-                            onChange={(e) => setCurrentPassword(e.target.value)}
-                            required
-                            className="w-full pr-10"
-                            placeholder="Enter current password"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                          >
-                            {showCurrentPassword ? (
-                              <EyeOff className="h-4 w-4 text-muted-foreground" />
-                            ) : (
-                              <Eye className="h-4 w-4 text-muted-foreground" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-
                       <div>
                         <label htmlFor="newPassword" className="block text-sm font-medium mb-2">
                           New Password
@@ -453,7 +409,7 @@ const Auth = () => {
                         className="w-full bg-hype-purple hover:bg-hype-purple/90"
                         disabled={loading}
                       >
-                        {loading ? 'Changing Password...' : 'Change Password'}
+                        {loading ? 'Updating Password...' : 'Update Password'}
                       </Button>
                     </form>
 
@@ -461,7 +417,6 @@ const Auth = () => {
                       <button
                         onClick={() => {
                           setShowNewPasswordForm(false);
-                          setCurrentPassword('');
                           setNewPassword('');
                           setConfirmPassword('');
                         }}

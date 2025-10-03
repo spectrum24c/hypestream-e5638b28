@@ -17,7 +17,6 @@ interface Profile {
   username: string | null;
   created_at: string;
   avatar_url: string | null;
-  user_id: string;
 }
 
 const ProfileManagement = () => {
@@ -84,7 +83,7 @@ const ProfileManagement = () => {
         .from('profiles')
         .insert([
           {
-            user_id: user.id,
+            id: user.id,
             username: newUsername.trim()
           }
         ])
@@ -135,7 +134,7 @@ const ProfileManagement = () => {
       const { error: favoritesError } = await supabase
         .from('favorites')
         .delete()
-        .eq('profile_id', profileId);
+        .eq('user_id', profileId);
 
       if (favoritesError) {
         console.error('Error deleting profile favorites:', favoritesError);

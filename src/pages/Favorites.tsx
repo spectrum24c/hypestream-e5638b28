@@ -78,7 +78,7 @@ const Favorites = () => {
       const { data, error } = await supabase
         .from('favorites')
         .select('*')
-        .eq('profile_id', currentProfile.id)
+        .eq('user_id', currentProfile.id)
         .order('created_at', { ascending: false });
       
       if (error) throw error;

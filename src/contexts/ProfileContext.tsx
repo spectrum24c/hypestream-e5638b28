@@ -6,7 +6,6 @@ interface Profile {
   username: string | null;
   created_at: string;
   avatar_url: string | null;
-  user_id: string;
 }
 
 interface ProfileContextType {
@@ -65,7 +64,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', userId)
+        .eq('id', userId)
         .order('created_at', { ascending: true });
 
       if (error) {

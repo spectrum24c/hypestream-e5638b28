@@ -409,7 +409,7 @@ const Auth = () => {
                         className="w-full bg-hype-purple hover:bg-hype-purple/90"
                         disabled={loading}
                       >
-                        {loading ? 'Updating Password...' : 'Update Password'}
+                        {loading ? 'Changing Password...' : 'Change Password'}
                       </Button>
                     </form>
 

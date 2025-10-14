@@ -1,1 +1,10 @@
 project_id = "csbytipwverpjxojulla"
+
+[functions.send-newsletter-notification]
+verify_jwt = false
+
+[functions.newsletter-confirm]
+verify_jwt = false
+
+[functions.save-newsletter-subscriber]
+verify_jwt = false

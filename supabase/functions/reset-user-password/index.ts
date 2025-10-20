@@ -1,8 +1,9 @@
 // Supabase Edge Function: reset-user-password
-// Updates a user's password using the service role after verifying the email exists
-// Caution: Requires SUPABASE_SERVICE_ROLE_KEY to be configured in project settings
+// Updates a user's password using the Admin API (service role)
+// Requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY secrets
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders: HeadersInit = {
   "Access-Control-Allow-Origin": "*",
@@ -11,8 +12,9 @@ const corsHeaders: HeadersInit = {
 };
 
 serve(async (req: Request) => {
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   if (req.method !== "POST") {
@@ -26,6 +28,7 @@ serve(async (req: Request) => {
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
   if (!supabaseUrl || !serviceRoleKey) {
+    console.error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
     return new Response(JSON.stringify({ error: "Missing server configuration" }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -42,55 +45,40 @@ serve(async (req: Request) => {
       });
     }
 
-    // 1) Find user by email using GoTrue Admin API
-    const findRes = await fetch(
-      `${supabaseUrl}/auth/v1/admin/users?email=${encodeURIComponent(email)}`,
-      {
-        method: "GET",
-        headers: {
-          apikey: serviceRoleKey,
-          Authorization: `Bearer ${serviceRoleKey}`,
-          "Content-Type": "application/json",
-        },
-      }
+    const normalizedEmail = String(email).trim().toLowerCase();
+
+    const admin = createClient(supabaseUrl, serviceRoleKey);
+
+    // Find user by email via Admin API
+    const { data: userData, error: getUserError } = await admin.auth.admin.getUserByEmail(
+      normalizedEmail,
     );
 
-    if (!findRes.ok) {
-      const msg = await findRes.text();
-      return new Response(JSON.stringify({ error: `Failed to find user: ${msg}` }), {
-        status: findRes.status,
+    if (getUserError) {
+      console.error("getUserByEmail error:", getUserError);
+      return new Response(JSON.stringify({ error: getUserError.message }), {
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    const users = await findRes.json();
-    if (!Array.isArray(users) || users.length === 0) {
+    const user = userData?.user;
+    if (!user) {
       return new Response(JSON.stringify({ error: "Account not found" }), {
         status: 404,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    const user = users[0];
+    // Update password
+    const { error: updateError } = await admin.auth.admin.updateUserById(user.id, {
+      password: newPassword,
+    });
 
-    // 2) Update password
-    const updateRes = await fetch(
-      `${supabaseUrl}/auth/v1/admin/users/${user.id}`,
-      {
-        method: "PATCH",
-        headers: {
-          apikey: serviceRoleKey,
-          Authorization: `Bearer ${serviceRoleKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ password: newPassword }),
-      }
-    );
-
-    if (!updateRes.ok) {
-      const msg = await updateRes.text();
-      return new Response(JSON.stringify({ error: `Failed to update password: ${msg}` }), {
-        status: updateRes.status,
+    if (updateError) {
+      console.error("updateUserById error:", updateError);
+      return new Response(JSON.stringify({ error: updateError.message }), {
+        status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
@@ -99,10 +87,11 @@ serve(async (req: Request) => {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
-  } catch (e) {
+  } catch (e: any) {
+    console.error("Unexpected error in reset-user-password:", e);
     return new Response(
       JSON.stringify({ error: e?.message || "Unexpected error" }),
-      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } },
     );
   }
 });

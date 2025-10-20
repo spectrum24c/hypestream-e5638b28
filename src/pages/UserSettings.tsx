@@ -4,11 +4,12 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import UserPreferences from '@/components/UserPreferences';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { UserPreference } from '@/types/movie';
-import { Home } from 'lucide-react';
+import { Home, Eye, EyeOff } from 'lucide-react';
 
 // Mock data - in a real app, this would come from an API
 const mockGenres = [
@@ -59,6 +60,9 @@ const UserSettingsPage: React.FC = () => {
     preferredLanguages: ['en'],
     enableNotifications: true // Default to true
   });
+  const [checkPassword, setCheckPassword] = useState('');
+  const [showCheckPassword, setShowCheckPassword] = useState(false);
+  const [checkingPassword, setCheckingPassword] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -100,6 +104,51 @@ const UserSettingsPage: React.FC = () => {
     console.log('Preferences saved:', preferences);
   };
 
+  const handleCheckPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!session?.user?.email) {
+      toast({
+        title: "Error",
+        description: "No email found for your account",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setCheckingPassword(true);
+
+    try {
+      // Attempt to sign in with the provided password to verify it
+      const { error } = await supabase.auth.signInWithPassword({
+        email: session.user.email,
+        password: checkPassword,
+      });
+
+      if (error) {
+        toast({
+          title: "Incorrect password",
+          description: "The password you entered is incorrect",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Password verified",
+          description: "Your password is correct",
+        });
+        setCheckPassword('');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "An error occurred while checking your password",
+        variant: "destructive",
+      });
+    } finally {
+      setCheckingPassword(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-hype-dark text-foreground">
       <Navbar />
@@ -139,16 +188,60 @@ const UserSettingsPage: React.FC = () => {
                 <h2 className="text-2xl font-bold mb-6">Account Settings</h2>
                 <div className="space-y-6">
                   <div className="bg-card border border-border rounded-lg p-6">
-                    <h3 className="text-lg font-semibold mb-2">Security</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Manage your password and security settings.
-                    </p>
-                    <Button
-                      onClick={() => navigate('/change-password')}
-                      className="bg-hype-purple hover:bg-hype-purple/90"
-                    >
-                      Change Password
-                    </Button>
+                    <h3 className="text-lg font-semibold mb-4">Security</h3>
+                    
+                    {/* Check Password Section */}
+                    <div className="mb-6 pb-6 border-b border-border">
+                      <h4 className="text-md font-medium mb-2">Verify Your Password</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Check if your password is correct
+                      </p>
+                      <form onSubmit={handleCheckPassword} className="space-y-4">
+                        <div className="relative">
+                          <Input
+                            type={showCheckPassword ? "text" : "password"}
+                            value={checkPassword}
+                            onChange={(e) => setCheckPassword(e.target.value)}
+                            placeholder="Enter your password"
+                            className="pr-10"
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowCheckPassword(!showCheckPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          >
+                            {showCheckPassword ? (
+                              <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </button>
+                        </div>
+                        <Button
+                          type="submit"
+                          variant="outline"
+                          className="border-hype-purple text-hype-purple hover:bg-hype-purple/10"
+                          disabled={checkingPassword}
+                        >
+                          {checkingPassword ? 'Checking...' : 'Check Password'}
+                        </Button>
+                      </form>
+                    </div>
+
+                    {/* Change Password Section */}
+                    <div>
+                      <h4 className="text-md font-medium mb-2">Change Password</h4>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Update your account password
+                      </p>
+                      <Button
+                        onClick={() => navigate('/change-password')}
+                        className="bg-hype-purple hover:bg-hype-purple/90"
+                      >
+                        Change Password
+                      </Button>
+                    </div>
                   </div>
                   
                   <div className="bg-card border border-border rounded-lg p-6">

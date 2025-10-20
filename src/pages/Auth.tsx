@@ -43,34 +43,21 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth listener first to catch PASSWORD_RECOVERY event
-    const url = new URL(window.location.href);
-    const isRecovery = url.searchParams.get('reset_password') === '1';
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        navigate('/');
+      }
+    });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event, session) => {
         setSession(session);
-        if (event === 'PASSWORD_RECOVERY' || isRecovery) {
-          setShowForgotPassword(true);
-          setShowNewPasswordForm(true);
-          return;
-        }
         if (session) {
           navigate('/');
         }
       }
     );
-
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (isRecovery) {
-        setShowForgotPassword(true);
-        setShowNewPasswordForm(true);
-      } else if (session) {
-        navigate('/');
-      }
-    });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -184,20 +171,39 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth?reset_password=1`,
+      // Try to sign in with a dummy password to check if user exists
+      const { error } = await supabase.auth.signInWithPassword({
+        email: resetEmail,
+        password: 'dummy_password_to_check_user_exists',
       });
-      if (error) throw error;
 
-      toast({
-        title: "Check your email",
-        description: "We sent a password reset link to your inbox.",
-      });
+      // If error is "Invalid login credentials", user exists
+      if (error && error.message.includes('Invalid login credentials')) {
+        setShowNewPasswordForm(true);
+        toast({
+          title: "Account found",
+          description: "Please enter your new password",
+        });
+      } else if (error && (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed'))) {
+        // User exists but email not confirmed
+        setShowNewPasswordForm(true);
+        toast({
+          title: "Account found",
+          description: "Please enter your new password",
+        });
+      } else {
+        // User doesn't exist or other error
+        toast({
+          title: "Account not found",
+          description: "No account found with this email address",
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
-      console.error('Reset password error:', error);
+      console.error('Account check error:', error);
       toast({
         title: "Error",
-        description: error.message || "Unable to send password reset email",
+        description: "An error occurred while checking your account",
         variant: "destructive",
       });
     } finally {
@@ -229,8 +235,17 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.updateUser({ password: newPassword });
-      if (error) throw error;
+      // Update password via secure Edge Function using service role
+      const { data, error } = await supabase.functions.invoke('reset-user-password', {
+        body: { email: resetEmail, newPassword },
+      });
+
+      if (error) {
+        throw error;
+      }
+      if (!data?.success) {
+        throw new Error(data?.error || "Failed to update password");
+      }
 
       toast({
         title: "Password updated successfully",
@@ -242,7 +257,6 @@ const Auth = () => {
       setResetEmail('');
       setNewPassword('');
       setConfirmPassword('');
-      navigate('/');
     } catch (error: any) {
       console.error('Password update error:', error);
       toast({
@@ -315,7 +329,7 @@ const Auth = () => {
                         className="w-full bg-hype-purple hover:bg-hype-purple/90"
                         disabled={loading}
                       >
-                        {loading ? 'Sending...' : 'Send Reset Link'}
+                        {loading ? 'Checking...' : 'Check Account'}
                       </Button>
                     </form>
 

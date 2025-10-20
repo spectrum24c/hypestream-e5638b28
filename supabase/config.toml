@@ -1,5 +1,8 @@
 project_id = "csbytipwverpjxojulla"
 
+[functions.reset-user-password]
+verify_jwt = false
+
 [functions.send-newsletter-notification]
 verify_jwt = false
 

@@ -56,12 +56,10 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
 
     // Check if movie is in favorites
     const checkFavorite = async () => {
-      if (!movie) return;
-      const session = await supabase.auth.getSession();
-      if (!session.data.session) return;
+      if (!movie || !currentProfile?.id) return;
       const {
         data
-      } = await supabase.from('favorites').select('*').eq('user_id', session.data.session.user.id).eq('movie_id', movie.id).single();
+      } = await supabase.from('favorites').select('*').eq('user_id', currentProfile.id).eq('movie_id', movie.id).maybeSingle();
       setIsFavorite(!!data);
     };
 
@@ -193,8 +191,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
       const {
         error
       } = await supabase.from('favorites').insert({
-        user_id: session.data.session.user.id,
-        profile_id: currentProfile.id,
+        user_id: currentProfile.id,
         movie_id: movie.id,
         title: title,
         poster_path: movie.poster_path,

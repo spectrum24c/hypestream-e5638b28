@@ -26,7 +26,6 @@ import { useToast } from "@/hooks/use-toast";
 
 function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const { toast } = useToast();
   
   // Use mobile-specific hooks with error handling
   try {
@@ -35,6 +34,8 @@ function App() {
   } catch (error) {
     console.warn('Mobile utils failed:', error);
   }
+  
+  const { toast } = useToast();
 
   // Handle online/offline status
   useEffect(() => {

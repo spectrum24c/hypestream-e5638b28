@@ -12,15 +12,8 @@ import { useProfile } from '@/contexts/ProfileContext';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@/contexts/ThemeContext';
 
-interface Profile {
-  id: string;
-  username: string | null;
-  created_at: string;
-  avatar_url: string | null;
-}
-
 const ProfileManagement = () => {
-  const { currentProfile, profiles, switchProfile, refreshProfiles, loading: profileLoading } = useProfile();
+  const { currentProfile, profiles, switchProfile, refreshProfiles, createProfile, deleteProfile: contextDeleteProfile, loading: profileLoading } = useProfile();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [newUsername, setNewUsername] = useState('');
@@ -41,6 +34,7 @@ const ProfileManagement = () => {
 
     getUser();
   }, []);
+
 
 
   const addProfile = async () => {
@@ -79,46 +73,26 @@ const ProfileManagement = () => {
 
     setIsAddingProfile(true);
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .insert([
-          {
-            id: user.id,
-            username: newUsername.trim()
-          }
-        ])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error adding profile:', error);
-        let errorMessage = "Failed to add profile";
-        
-        if (error.message?.includes('Maximum of 6 profiles')) {
-          errorMessage = "You can only have up to 6 profiles";
-        } else if (error.code === '23505') {
-          errorMessage = "A profile with this name already exists";
-        }
-        
-        toast({
-          title: "Error",
-          description: errorMessage,
-          variant: "destructive"
-        });
-      } else {
-        await refreshProfiles();
-        setNewUsername('');
-        setDialogOpen(false);
-        toast({
-          title: "Success",
-          description: "Profile added successfully",
-        });
+      await createProfile(newUsername.trim());
+      setNewUsername('');
+      setDialogOpen(false);
+      toast({
+        title: "Success",
+        description: "Profile added successfully",
+      });
+    } catch (error: any) {
+      console.error('Error adding profile:', error);
+      let errorMessage = "Failed to add profile";
+      
+      if (error.message?.includes('Maximum of 6 profiles')) {
+        errorMessage = "You can only have up to 6 profiles";
+      } else if (error.code === '23505') {
+        errorMessage = "A profile with this name already exists";
       }
-    } catch (error) {
-      console.error('Error:', error);
+      
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -126,52 +100,15 @@ const ProfileManagement = () => {
     }
   };
 
-  const deleteProfile = async (profileId: string, profileName: string) => {
+  const handleDeleteProfile = async (profileId: string, profileName: string) => {
     if (!user) return;
 
     try {
-      // First delete all favorites associated with this profile
-      const { error: favoritesError } = await supabase
-        .from('favorites')
-        .delete()
-        .eq('user_id', profileId);
-
-      if (favoritesError) {
-        console.error('Error deleting profile favorites:', favoritesError);
-      }
-
-      // Then delete the profile itself
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', profileId);
-
-      if (profileError) {
-        console.error('Error deleting profile:', profileError);
-        toast({
-          title: "Error",
-          description: "Failed to delete profile",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Update local state by refreshing profiles
-      await refreshProfiles();
-      
-      // If the deleted profile was the current one, switch to the first remaining profile
-      if (currentProfile?.id === profileId) {
-        const remainingProfiles = profiles.filter(p => p.id !== profileId);
-        if (remainingProfiles.length > 0) {
-          switchProfile(remainingProfiles[0]);
-        }
-      }
-
+      await contextDeleteProfile(profileId);
       toast({
         title: "Success",
         description: `Profile "${profileName}" deleted successfully`,
       });
-
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -389,11 +326,11 @@ const ProfileManagement = () => {
                              'Switch To'
                            )}
                          </Button>
-                         {index > 0 && (
+                         {profiles.length > 1 && (
                            <Button 
                              variant="outline" 
                              size="sm"
-                             onClick={() => deleteProfile(profile.id, profile.username || `Profile ${index + 1}`)}
+                             onClick={() => handleDeleteProfile(profile.id, profile.username || `Profile ${index + 1}`)}
                              className="text-destructive hover:text-destructive"
                            >
                              <Trash2 className="h-3 w-3" />

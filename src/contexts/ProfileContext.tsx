@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface Profile {
   id: string;
+  user_id: string;
   username: string | null;
   created_at: string;
   avatar_url: string | null;
@@ -13,6 +14,8 @@ interface ProfileContextType {
   profiles: Profile[];
   switchProfile: (profile: Profile) => void;
   refreshProfiles: () => Promise<void>;
+  createProfile: (username: string) => Promise<void>;
+  deleteProfile: (profileId: string) => Promise<void>;
   loading: boolean;
 }
 
@@ -64,7 +67,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', userId)
+        .eq('user_id', userId)
         .order('created_at', { ascending: true });
 
       if (error) {
@@ -104,12 +107,50 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const createProfile = async (username: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const { error } = await supabase
+      .from('profiles')
+      .insert({ user_id: user.id, username })
+      .select()
+      .single();
+
+    if (error) throw error;
+    
+    await refreshProfiles();
+  };
+
+  const deleteProfile = async (profileId: string) => {
+    const { error } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', profileId);
+
+    if (error) throw error;
+    
+    // If deleted profile was current, switch to first available
+    if (currentProfile?.id === profileId) {
+      const remaining = profiles.filter(p => p.id !== profileId);
+      if (remaining.length > 0) {
+        switchProfile(remaining[0]);
+      } else {
+        setCurrentProfile(null);
+      }
+    }
+    
+    await refreshProfiles();
+  };
+
   return (
     <ProfileContext.Provider value={{
       currentProfile,
       profiles,
       switchProfile,
       refreshProfiles,
+      createProfile,
+      deleteProfile,
       loading
     }}>
       {children}

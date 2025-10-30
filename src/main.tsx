@@ -7,6 +7,7 @@ import { ProfileProvider } from '@/contexts/ProfileContext';
 import App from "./App";
 import "./index.css";
 import "./utils/movie-buttons-responsive.css";
+import "./utils/bottom-nav.css";
 import SplashScreen from "./components/SplashScreen";
 
 // Simple performance initialization without DOM manipulation

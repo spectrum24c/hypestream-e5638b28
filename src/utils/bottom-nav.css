@@ -11,6 +11,7 @@
   justify-content: center;
   align-items: center;
   padding: 0 1rem;
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .bottom-navigation ul {
@@ -18,13 +19,15 @@
   max-width: 400px;
   height: 70px;
   background: hsl(var(--card));
-  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
   display: flex;
   position: relative;
   justify-content: center;
   align-items: center;
   margin-bottom: 1rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5),
+              0 0 0 1px hsl(var(--border) / 0.5);
 }
 
 .bottom-navigation ul li {
@@ -32,7 +35,7 @@
   list-style: none;
   width: 90px;
   height: 70px;
-  z-index: 1;
+  z-index: 2;
 }
 
 .bottom-navigation ul li a,
@@ -49,6 +52,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .bottom-navigation ul li a .icon,
@@ -60,44 +64,57 @@
   line-height: 75px;
   font-size: 1.5em;
   text-align: center;
-  transition: 0.5s;
-  color: hsl(var(--foreground));
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  color: hsl(var(--muted-foreground));
 }
 
 .bottom-navigation ul li.active a .icon,
 .bottom-navigation ul li.active button .icon {
-  transform: translateY(-32px);
+  transform: translateY(-35px);
+  color: hsl(var(--primary-foreground));
+  filter: drop-shadow(0 0 2px hsl(var(--primary)));
+}
+
+.bottom-navigation ul li:not(.active) a:hover .icon,
+.bottom-navigation ul li:not(.active) button:hover .icon {
+  color: hsl(var(--foreground));
+  transform: translateY(-2px);
 }
 
 .bottom-navigation ul li a .text,
 .bottom-navigation ul li button .text {
   position: absolute;
-  color: hsl(var(--foreground));
-  font-weight: 400;
-  font-size: 0.75em;
-  letter-spacing: 0.05em;
-  transition: 0.5s;
+  color: hsl(var(--primary-foreground));
+  font-weight: 500;
+  font-size: 0.7em;
+  letter-spacing: 0.08em;
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(25px);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .bottom-navigation ul li.active a .text,
 .bottom-navigation ul li.active button .text {
   opacity: 1;
-  transform: translateY(10px);
+  transform: translateY(12px);
 }
 
 .indicator {
   position: absolute;
-  top: -35px;
+  top: -38px;
   left: 35px;
   width: 70px;
   height: 70px;
-  background: hsl(var(--primary));
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary)) 70%, hsl(var(--primary) / 0.8));
   border-radius: 50%;
-  border: 6px solid hsl(var(--background));
-  transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  border: 6px solid hsl(var(--card));
+  transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   pointer-events: none;
+  z-index: 1;
+  box-shadow: 0 5px 20px hsl(var(--primary) / 0.5),
+              0 0 0 2px hsl(var(--primary) / 0.1),
+              inset 0 -2px 10px rgba(0, 0, 0, 0.2);
 }
 
 .indicator::before {
@@ -108,8 +125,9 @@
   width: 40px;
   height: 20px;
   background: transparent;
-  border-top-right-radius: 20px;
-  box-shadow: 0px -10px 0 0 hsl(var(--background));
+  border-top-right-radius: 25px;
+  box-shadow: 0px -10px 0 0 hsl(var(--card));
+  pointer-events: none;
 }
 
 .indicator::after {
@@ -120,17 +138,38 @@
   width: 40px;
   height: 20px;
   background: transparent;
-  border-top-left-radius: 20px;
-  box-shadow: 0px -10px 0 0 hsl(var(--background));
+  border-top-left-radius: 25px;
+  box-shadow: 0px -10px 0 0 hsl(var(--card));
+  pointer-events: none;
 }
 
 /* Responsive adjustments */
 @media (max-width: 400px) {
   .bottom-navigation ul {
     max-width: 95%;
+    height: 65px;
   }
   
   .bottom-navigation ul li {
     width: 80px;
+    height: 65px;
+  }
+  
+  .indicator {
+    width: 65px;
+    height: 65px;
+    top: -36px;
+  }
+  
+  .bottom-navigation ul li a .icon,
+  .bottom-navigation ul li button .icon {
+    font-size: 1.3em;
+  }
+}
+
+/* Safe area for iOS devices */
+@supports (padding: max(0px)) {
+  .bottom-navigation {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
 }

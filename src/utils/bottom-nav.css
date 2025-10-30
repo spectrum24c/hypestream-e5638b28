@@ -11,6 +11,11 @@
   justify-content: center;
   align-items: center;
   padding: 0 1rem;
+  pointer-events: none;
+}
+
+.bottom-navigation > * {
+  pointer-events: auto;
 }
 
 .bottom-navigation ul {
@@ -32,7 +37,7 @@
   list-style: none;
   width: 90px;
   height: 70px;
-  z-index: 1;
+  z-index: 10;
 }
 
 .bottom-navigation ul li a,
@@ -62,11 +67,13 @@
   text-align: center;
   transition: 0.5s;
   color: hsl(var(--foreground));
+  z-index: 10;
 }
 
 .bottom-navigation ul li.active a .icon,
 .bottom-navigation ul li.active button .icon {
-  transform: translateY(-32px);
+  transform: translateY(-35px);
+  color: hsl(var(--primary-foreground));
 }
 
 .bottom-navigation ul li a .text,
@@ -79,12 +86,14 @@
   transition: 0.5s;
   opacity: 0;
   transform: translateY(20px);
+  z-index: 10;
 }
 
 .bottom-navigation ul li.active a .text,
 .bottom-navigation ul li.active button .text {
   opacity: 1;
   transform: translateY(10px);
+  color: hsl(var(--primary-foreground));
 }
 
 .indicator {
@@ -96,8 +105,9 @@
   background: hsl(var(--primary));
   border-radius: 50%;
   border: 6px solid hsl(var(--background));
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   pointer-events: none;
+  z-index: 1;
 }
 
 .indicator::before {
@@ -132,5 +142,9 @@
   
   .bottom-navigation ul li {
     width: 80px;
+  }
+  
+  .indicator {
+    left: 15px;
   }
 }

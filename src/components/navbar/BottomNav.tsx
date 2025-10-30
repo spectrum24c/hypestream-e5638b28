@@ -8,6 +8,18 @@ const BottomNav: React.FC = () => {
   const pathname = location.pathname;
   const search = location.search;
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const [itemWidth, setItemWidth] = useState(90);
+  
+  // Update item width based on screen size
+  useEffect(() => {
+    const updateWidth = () => {
+      setItemWidth(window.innerWidth <= 400 ? 80 : 90);
+    };
+    
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
   
   // Determine active index based on route
   const getActiveIndex = () => {
@@ -103,7 +115,7 @@ const BottomNav: React.FC = () => {
         <div 
           className="indicator" 
           style={{
-            transform: `translateX(calc(${activeIndex * 90}px))`
+            transform: `translateX(${activeIndex * itemWidth}px)`
           }}
         />
       </ul>

@@ -113,7 +113,7 @@
 .indicator::before {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 80%;
   left: -40px;
   width: 40px;
   height: 20px;
@@ -125,7 +125,7 @@
 .indicator::after {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 80%;
   right: -40px;
   width: 40px;
   height: 20px;

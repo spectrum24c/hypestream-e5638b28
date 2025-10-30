@@ -90,13 +90,13 @@
 .indicator {
   position: absolute;
   top: -35px;
-  left: 35px;
+  left: 10px;
   width: 70px;
   height: 70px;
   background: hsl(var(--primary));
   border-radius: 50%;
   border: 6px solid hsl(var(--background));
-  transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   pointer-events: none;
 }
 

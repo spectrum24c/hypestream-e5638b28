@@ -103,7 +103,7 @@ const BottomNav: React.FC = () => {
         <div 
           className="indicator" 
           style={{
-            transform: `translateX(calc(${activeIndex * 87}px + ${activeIndex === 0 ? '0px' : activeIndex === 1 ? '5px' : activeIndex === 2 ? '7px' : '7px'}))`
+            transform: `translateX(calc(${activeIndex * 90}px))`
           }}
         />
       </ul>

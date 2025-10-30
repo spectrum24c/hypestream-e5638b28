@@ -69,7 +69,7 @@ const BottomNav: React.FC = () => {
             <span className="icon">
               <Home className="h-6 w-6" />
             </span>
-            <span className="text text-[#000a00]/0">Home</span>
+            <span className="text">Home</span>
           </Link>
         </li>
 

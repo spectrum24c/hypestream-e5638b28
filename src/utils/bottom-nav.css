@@ -79,7 +79,7 @@
 .bottom-navigation ul li a .text,
 .bottom-navigation ul li button .text {
   position: absolute;
-  color: hsl(var(--foreground));
+  color: white;
   font-weight: 400;
   font-size: 0.75em;
   letter-spacing: 0.05em;
@@ -93,7 +93,7 @@
 .bottom-navigation ul li.active button .text {
   opacity: 1;
   transform: translateY(10px);
-  color: hsl(var(--primary-foreground));
+  color: white;
 }
 
 .indicator {

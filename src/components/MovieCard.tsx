@@ -14,6 +14,8 @@ interface MovieCardProps {
   genreIds?: number[];
   overview?: string | null;
   onClick: () => void;
+  isNewSeason?: boolean;
+  latestSeasonYear?: string;
 }
 
 const MovieCard: React.FC<MovieCardProps> = ({
@@ -27,7 +29,9 @@ const MovieCard: React.FC<MovieCardProps> = ({
   numberOfSeasons,
   genreIds = [],
   overview,
-  onClick
+  onClick,
+  isNewSeason = false,
+  latestSeasonYear
 }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -37,8 +41,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
     ? getOptimizedImagePath(posterPath, 'medium') 
     : 'https://via.placeholder.com/300x450?text=No+Poster';
   
-  // Format release date to just show year
-  const year = releaseDate?.split('-')[0] || 'N/A';
+  // Format release date to just show year (use latest season year for TV shows with new seasons)
+  const year = (isTVShow && latestSeasonYear) ? latestSeasonYear : (releaseDate?.split('-')[0] || 'N/A');
   
   // Format vote average to one decimal place
   const rating = voteAverage !== undefined ? voteAverage.toFixed(1) : 'N/A';
@@ -80,6 +84,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
           onError={handleImageError}
           decoding="async"
         />
+        
+        {isNewSeason && (
+          <div className="absolute top-2 left-2 bg-primary px-2 py-1 rounded text-xs font-bold text-primary-foreground shadow-lg z-10">
+            NEW SEASON
+          </div>
+        )}
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
       </div>

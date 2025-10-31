@@ -50,6 +50,29 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
   const handleMovieClick = (movie: Movie) => {
     setSelectedMovie(movie);
   };
+  
+  const checkIfNewSeason = (movie: Movie): boolean => {
+    if (movie.media_type !== 'tv' && !movie.first_air_date) return false;
+    
+    const releaseDate = movie.first_air_date || movie.release_date;
+    if (!releaseDate) return false;
+    
+    const releaseYear = new Date(releaseDate).getFullYear();
+    const currentYear = new Date().getFullYear();
+    
+    // Consider it a new season if released in current year or last year
+    return currentYear - releaseYear <= 1;
+  };
+  
+  const getLatestSeasonYear = (movie: Movie): string | undefined => {
+    if (movie.media_type !== 'tv' && !movie.first_air_date) return undefined;
+    
+    const releaseDate = movie.first_air_date || movie.release_date;
+    if (!releaseDate) return undefined;
+    
+    return new Date(releaseDate).getFullYear().toString();
+  };
+  
   const closeMoviePlayer = () => {
     setSelectedMovie(null);
   };
@@ -86,7 +109,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
         }
       }}>
           {items.map(item => <div key={item.id} className="md:snap-start shrink-0 basis-[calc(50%-0.25rem)] sm:basis-auto">
-              <MovieCard id={item.id} title={item.title || item.name || 'Unknown Title'} posterPath={item.poster_path} releaseDate={item.release_date || item.first_air_date} voteAverage={item.vote_average} isTVShow={item.media_type === 'tv' || !!item.first_air_date} runtime={item.runtime} numberOfSeasons={item.number_of_seasons} genreIds={item.genre_ids} onClick={() => handleMovieClick(item)} overview={item.overview} />
+              <MovieCard id={item.id} title={item.title || item.name || 'Unknown Title'} posterPath={item.poster_path} releaseDate={item.release_date || item.first_air_date} voteAverage={item.vote_average} isTVShow={item.media_type === 'tv' || !!item.first_air_date} runtime={item.runtime} numberOfSeasons={item.number_of_seasons} genreIds={item.genre_ids} onClick={() => handleMovieClick(item)} overview={item.overview} isNewSeason={checkIfNewSeason(item)} latestSeasonYear={getLatestSeasonYear(item)} />
             </div>)}
         </div>
 

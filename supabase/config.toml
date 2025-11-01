@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.save-newsletter-subscriber]
 verify_jwt = false
+
+[functions.hype-chat]
+verify_jwt = false

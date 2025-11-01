@@ -16,6 +16,7 @@ import ContinueWatching from '@/components/ContinueWatching';
 import AdvancedFilters from '@/components/AdvancedFilters';
 import CategorySection from '@/components/CategorySection';
 import { initPerformanceOptimizations, fetchWithCache } from '@/utils/performanceOptimizer';
+import HypeChatbot from '@/components/chatbot/HypeChatbot';
 
 // Sample genres for filtering
 const genres = [
@@ -508,6 +509,8 @@ const Index = () => {
           autoPlayTrailer={shouldPlayMovie}
         />
       )}
+
+      <HypeChatbot onMovieClick={handleMovieClick} />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Sparkles } from 'lucide-react';
 import { Movie } from '@/types/movie';
 import MovieSuggestionCard from './MovieSuggestionCard';
 
@@ -47,19 +48,19 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onMovieClick }) => {
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[80%] ${isUser ? 'order-2' : 'order-1'}`}>
         {!isUser && (
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[hsl(var(--hype-purple))] to-[hsl(var(--hype-orange))] flex items-center justify-center text-white text-xs font-bold">
-              H
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 flex items-center justify-center shadow-md">
+              <Sparkles className="h-4 w-4 text-white" />
             </div>
-            <span className="text-xs text-muted-foreground">HYPE</span>
+            <span className="text-sm font-medium text-muted-foreground">HYPE</span>
           </div>
         )}
         
         <div
-          className={`rounded-lg px-4 py-2 ${
+          className={`rounded-2xl px-5 py-3 ${
             isUser
-              ? 'bg-gradient-to-r from-[hsl(var(--hype-purple))] to-[hsl(var(--hype-orange))] text-white'
-              : 'bg-secondary text-secondary-foreground'
+              ? 'bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 text-white shadow-lg'
+              : 'bg-secondary/80 text-secondary-foreground border border-border/50'
           }`}
         >
           <p className="text-sm whitespace-pre-wrap break-words">{displayContent}</p>

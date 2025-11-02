@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
+import { Sparkles, X, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ChatMessage from './ChatMessage';
@@ -218,40 +218,42 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
   return (
     <>
       {/* Floating Button */}
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 rounded-full w-14 h-14 shadow-lg hover:scale-110 transition-transform bg-gradient-to-r from-[hsl(var(--hype-purple))] to-[hsl(var(--hype-orange))] hover:from-[hsl(var(--hype-purple))]/90 hover:to-[hsl(var(--hype-orange))]/90"
-        aria-label="Open HYPE chat"
-      >
-        {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
-      </Button>
+      {!isOpen && (
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 rounded-full w-16 h-16 shadow-2xl hover:scale-110 transition-all duration-300 bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 hover:from-purple-500 hover:via-purple-400 hover:to-pink-400 animate-pulse"
+          aria-label="Open HYPE chat"
+        >
+          <Sparkles className="h-7 w-7 text-white" />
+        </Button>
+      )}
 
-      {/* Chat Panel */}
+      {/* Chat Panel - Fullscreen */}
       {isOpen && (
-        <div className="fixed bottom-44 right-6 md:bottom-24 md:right-8 w-[calc(100vw-3rem)] md:w-96 h-[calc(100vh-12rem)] md:h-[600px] bg-card border border-border rounded-lg shadow-2xl z-50 flex flex-col animate-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed inset-0 bg-background z-50 flex flex-col animate-in fade-in duration-300">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-border bg-gradient-to-r from-[hsl(var(--hype-purple))]/10 to-[hsl(var(--hype-orange))]/10">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[hsl(var(--hype-purple))] to-[hsl(var(--hype-orange))] flex items-center justify-center text-white font-bold">
-                H
+          <div className="flex items-center justify-between p-6 border-b border-border bg-gradient-to-r from-purple-600/10 via-purple-500/10 to-pink-500/10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+                <Sparkles className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-foreground">HYPE</h3>
-                <p className="text-xs text-muted-foreground">Your Movie Guru</p>
+                <h3 className="font-bold text-foreground text-lg">HYPE</h3>
+                <p className="text-sm text-muted-foreground">Your AI Movie Guru</p>
               </div>
             </div>
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => setIsOpen(false)}
-              className="hover:bg-secondary"
+              className="hover:bg-secondary h-10 w-10"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </Button>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6 max-w-4xl mx-auto w-full">
             {messages.map((msg) => (
               <ChatMessage 
                 key={msg.id} 
@@ -270,7 +272,7 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
 
           {/* Quick Prompts */}
           {messages.length <= 2 && !isLoading && (
-            <div className="px-4 pb-2 flex flex-wrap gap-2">
+            <div className="px-6 pb-4 flex flex-wrap gap-2 max-w-4xl mx-auto w-full">
               {quickPrompts.map((prompt, idx) => (
                 <Button
                   key={idx}
@@ -289,8 +291,8 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
           )}
 
           {/* Input */}
-          <div className="p-4 border-t border-border">
-            <div className="flex gap-2">
+          <div className="p-6 border-t border-border">
+            <div className="flex gap-3 max-w-4xl mx-auto w-full">
               <textarea
                 ref={inputRef}
                 value={input}
@@ -305,9 +307,9 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
                 size="icon"
-                className="bg-gradient-to-r from-[hsl(var(--hype-purple))] to-[hsl(var(--hype-orange))] hover:from-[hsl(var(--hype-purple))]/90 hover:to-[hsl(var(--hype-orange))]/90"
+                className="bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 hover:from-purple-500 hover:via-purple-400 hover:to-pink-400 h-12 w-12"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-5 w-5 text-white" />
               </Button>
             </div>
           </div>

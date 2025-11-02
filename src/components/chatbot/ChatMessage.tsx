@@ -13,10 +13,22 @@ interface Message {
 interface ChatMessageProps {
   message: Message;
   onMovieClick?: (movie: Movie) => void;
+  chatTheme?: string;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, onMovieClick }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, onMovieClick, chatTheme = 'default' }) => {
   const isUser = message.role === 'user';
+
+  const getThemeColors = () => {
+    const themes = {
+      default: 'bg-primary text-primary-foreground',
+      purple: 'bg-gradient-to-br from-purple-600 to-pink-500 text-white',
+      ocean: 'bg-gradient-to-br from-blue-600 to-cyan-500 text-white',
+      sunset: 'bg-gradient-to-br from-orange-600 to-red-500 text-white',
+      forest: 'bg-gradient-to-br from-green-600 to-emerald-500 text-white',
+    };
+    return themes[chatTheme as keyof typeof themes] || themes.default;
+  };
 
   // Extract movie data from content if present
   const parseMovieSuggestions = (content: string) => {
@@ -49,17 +61,17 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onMovieClick }) => {
       <div className={`max-w-[80%] ${isUser ? 'order-2' : 'order-1'}`}>
         {!isUser && (
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow-md">
+            <div className={`w-7 h-7 rounded-full ${getThemeColors()} flex items-center justify-center shadow-md`}>
               <img src={robotIcon} alt="HYPE" className="h-4 w-4" />
             </div>
             <span className="text-sm font-medium text-muted-foreground">HYPE</span>
           </div>
         )}
-        
+
         <div
           className={`rounded-2xl px-5 py-3 ${
             isUser
-              ? 'bg-primary text-primary-foreground shadow-lg'
+              ? `${getThemeColors()} shadow-lg`
               : 'bg-secondary/80 text-secondary-foreground border border-border/50'
           }`}
         >

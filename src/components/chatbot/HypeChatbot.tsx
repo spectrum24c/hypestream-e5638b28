@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Loader2 } from 'lucide-react';
+import { X, Send, Loader2, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ChatMessage from './ChatMessage';
+import ChatbotSettings from './ChatbotSettings';
 import { Movie } from '@/types/movie';
 import robotIcon from '@/assets/robot.png';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   id: string;
@@ -19,6 +21,9 @@ interface HypeChatbotProps {
 
 const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [personalityLevel, setPersonalityLevel] = useState(3);
+  const [chatTheme, setChatTheme] = useState('default');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -48,6 +53,32 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('chatbot_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+
+      if (data) {
+        setPersonalityLevel(data.personality_level);
+        setChatTheme(data.theme);
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
+  };
+
   const streamChat = async (userMessage: string) => {
     try {
       const conversationHistory = messages.map(msg => ({
@@ -63,7 +94,8 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
         },
         body: JSON.stringify({
           message: userMessage,
-          conversationHistory
+          conversationHistory,
+          personalityLevel
         }),
       });
 
@@ -216,13 +248,36 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
     "Feel-good comedies"
   ];
 
+  const getThemeColors = () => {
+    const themes = {
+      default: 'bg-primary text-primary-foreground',
+      purple: 'bg-gradient-to-br from-purple-600 to-pink-500 text-white',
+      ocean: 'bg-gradient-to-br from-blue-600 to-cyan-500 text-white',
+      sunset: 'bg-gradient-to-br from-orange-600 to-red-500 text-white',
+      forest: 'bg-gradient-to-br from-green-600 to-emerald-500 text-white',
+    };
+    return themes[chatTheme as keyof typeof themes] || themes.default;
+  };
+
+  if (showSettings) {
+    return (
+      <ChatbotSettings
+        onClose={() => setShowSettings(false)}
+        onSettingsChange={(level, theme) => {
+          setPersonalityLevel(level);
+          setChatTheme(theme);
+        }}
+      />
+    );
+  }
+
   return (
     <>
       {/* Floating Button */}
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 rounded-full w-16 h-16 shadow-2xl hover:scale-110 transition-all duration-300 bg-primary hover:bg-primary/90"
+          className={`fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 rounded-full w-16 h-16 shadow-2xl hover:scale-110 transition-all duration-300 ${getThemeColors()}`}
           aria-label="Open HYPE chat"
         >
           <img src={robotIcon} alt="HYPE" className="h-8 w-8" />
@@ -235,7 +290,7 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-border bg-secondary/50">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg">
+              <div className={`w-10 h-10 rounded-full ${getThemeColors()} flex items-center justify-center shadow-lg`}>
                 <img src={robotIcon} alt="HYPE" className="h-6 w-6" />
               </div>
               <div>
@@ -243,14 +298,24 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
                 <p className="text-sm text-muted-foreground">Your AI Movie Guru</p>
               </div>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setIsOpen(false)}
-              className="hover:bg-secondary h-10 w-10"
-            >
-              <X className="h-5 w-5" />
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setShowSettings(true)}
+                className="hover:bg-secondary h-10 w-10"
+              >
+                <Settings className="h-5 w-5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setIsOpen(false)}
+                className="hover:bg-secondary h-10 w-10"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
 
           {/* Messages */}
@@ -260,6 +325,7 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
                 key={msg.id} 
                 message={msg} 
                 onMovieClick={onMovieClick}
+                chatTheme={chatTheme}
               />
             ))}
             {isLoading && (
@@ -308,9 +374,9 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
                 size="icon"
-                className="bg-primary hover:bg-primary/90 h-12 w-12"
+                className={`h-12 w-12 ${getThemeColors()}`}
               >
-                <Send className="h-5 w-5 text-primary-foreground" />
+                <Send className="h-5 w-5" />
               </Button>
             </div>
           </div>

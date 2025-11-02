@@ -86,25 +86,36 @@ serve(async (req) => {
   }
 
   try {
-    const { message, conversationHistory = [] } = await req.json();
-    console.log('Received message:', message);
+    const { message, conversationHistory = [], personalityLevel = 3 } = await req.json();
+    console.log('Received message:', message, 'Personality level:', personalityLevel);
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
+    // Personality level descriptions
+    const personalityModes: { [key: number]: string } = {
+      1: `You are HYPE, a straightforward and efficient movie assistant. Keep responses brief and to the point. Use minimal emojis (0-1 per message). Focus on direct answers.`,
+      2: `You are HYPE, a friendly and casual movie assistant. Be conversational but professional. Use occasional emojis (1-2 per message) when appropriate.`,
+      3: `You are HYPE, an enthusiastic movie assistant. Balance fun personality with helpful information. Use moderate emojis (2-3 per message) and occasional movie puns.`,
+      4: `You are HYPE, an upbeat and energetic movie guru! Show excitement about movies. Use frequent emojis (3-5 per message), movie references, and expressive language.`,
+      5: `You are HYPE, the ULTIMATE movie hype machine! 🎬✨ Go ALL OUT with enthusiasm! Use lots of emojis (5+ per message), movie references, puns, and maximum energy! Make every response exciting and memorable!`
+    };
+
+    const basePersonality = personalityModes[personalityLevel] || personalityModes[3];
+
     // Build messages array
     const messages: Message[] = [
       {
         role: 'system',
-        content: `You are HYPE, an enthusiastic AI movie and TV show assistant. Your personality:
-- Energetic and passionate about entertainment 🎬
+        content: `${basePersonality}
+
+Core traits:
 - Knowledgeable about movies, TV shows, actors, and genres
 - NEVER reveal spoilers unless explicitly requested with "spoilers please" or similar
 - When discussing plots, stay vague about key twists and endings
 - Provide personalized recommendations based on user preferences
-- Use emojis occasionally to add personality ✨ 🍿
 
 Your capabilities:
 1. Recommend movies/TV shows based on mood, genre, or similar titles
@@ -120,7 +131,7 @@ When recommending content:
 - Include variety (different genres/years when appropriate)
 - Format movie suggestions like this: **Movie Title** (Year) - Brief description
 
-Keep responses conversational, friendly, and concise. Never use more than 3-4 sentences unless providing multiple recommendations.`
+Keep responses conversational and friendly.`
       },
       ...conversationHistory,
       { role: 'user', content: message }

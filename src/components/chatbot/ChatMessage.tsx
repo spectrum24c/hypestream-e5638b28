@@ -1,7 +1,7 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
 import { Movie } from '@/types/movie';
 import MovieSuggestionCard from './MovieSuggestionCard';
+import robotIcon from '@/assets/robot.png';
 
 interface Message {
   id: string;
@@ -49,8 +49,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onMovieClick }) => {
       <div className={`max-w-[80%] ${isUser ? 'order-2' : 'order-1'}`}>
         {!isUser && (
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 flex items-center justify-center shadow-md">
-              <Sparkles className="h-4 w-4 text-white" />
+            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow-md">
+              <img src={robotIcon} alt="HYPE" className="h-4 w-4" />
             </div>
             <span className="text-sm font-medium text-muted-foreground">HYPE</span>
           </div>
@@ -59,7 +59,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onMovieClick }) => {
         <div
           className={`rounded-2xl px-5 py-3 ${
             isUser
-              ? 'bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 text-white shadow-lg'
+              ? 'bg-primary text-primary-foreground shadow-lg'
               : 'bg-secondary/80 text-secondary-foreground border border-border/50'
           }`}
         >

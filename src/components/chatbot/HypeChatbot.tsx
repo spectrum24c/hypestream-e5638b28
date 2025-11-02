@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Sparkles, X, Send, Loader2 } from 'lucide-react';
+import { X, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ChatMessage from './ChatMessage';
 import { Movie } from '@/types/movie';
+import robotIcon from '@/assets/robot.png';
 
 interface Message {
   id: string;
@@ -221,10 +222,10 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 rounded-full w-16 h-16 shadow-2xl hover:scale-110 transition-all duration-300 bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 hover:from-purple-500 hover:via-purple-400 hover:to-pink-400 animate-pulse"
+          className="fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 rounded-full w-16 h-16 shadow-2xl hover:scale-110 transition-all duration-300 bg-primary hover:bg-primary/90"
           aria-label="Open HYPE chat"
         >
-          <Sparkles className="h-7 w-7 text-white" />
+          <img src={robotIcon} alt="HYPE" className="h-8 w-8" />
         </Button>
       )}
 
@@ -232,10 +233,10 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
       {isOpen && (
         <div className="fixed inset-0 bg-background z-50 flex flex-col animate-in fade-in duration-300">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-border bg-gradient-to-r from-purple-600/10 via-purple-500/10 to-pink-500/10">
+          <div className="flex items-center justify-between p-6 border-b border-border bg-secondary/50">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-                <Sparkles className="h-5 w-5 text-white" />
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                <img src={robotIcon} alt="HYPE" className="h-6 w-6" />
               </div>
               <div>
                 <h3 className="font-bold text-foreground text-lg">HYPE</h3>
@@ -307,9 +308,9 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
                 size="icon"
-                className="bg-gradient-to-br from-purple-600 via-purple-500 to-pink-500 hover:from-purple-500 hover:via-purple-400 hover:to-pink-400 h-12 w-12"
+                className="bg-primary hover:bg-primary/90 h-12 w-12"
               >
-                <Send className="h-5 w-5 text-white" />
+                <Send className="h-5 w-5 text-primary-foreground" />
               </Button>
             </div>
           </div>

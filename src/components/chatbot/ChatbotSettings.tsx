@@ -79,6 +79,8 @@ const ChatbotSettings: React.FC<ChatbotSettingsProps> = ({ onClose, onSettingsCh
           user_id: user.id,
           personality_level: personalityLevel,
           theme: selectedTheme,
+        }, {
+          onConflict: 'user_id'
         });
 
       if (error) throw error;

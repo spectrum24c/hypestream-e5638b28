@@ -277,10 +277,11 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className={`fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 rounded-full w-16 h-16 shadow-2xl hover:scale-110 transition-all duration-300 ${getThemeColors()}`}
+          className={`fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 w-12 h-12 shadow-2xl hover:scale-110 transition-all duration-300 ${getThemeColors()}`}
+          style={{ borderRadius: '15px' }}
           aria-label="Open HYPE chat"
         >
-          <img src={robotIcon} alt="HYPE" className="h-8 w-8" />
+          <img src={robotIcon} alt="HYPE" className="h-6 w-6" />
         </Button>
       )}
 
@@ -290,8 +291,8 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-border bg-secondary/50">
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full ${getThemeColors()} flex items-center justify-center shadow-lg`}>
-                <img src={robotIcon} alt="HYPE" className="h-6 w-6" />
+              <div className={`w-7 h-7 ${getThemeColors()} flex items-center justify-center shadow-lg`} style={{ borderRadius: '15px' }}>
+                <img src={robotIcon} alt="HYPE" className="h-4 w-4" />
               </div>
               <div>
                 <h3 className="font-bold text-foreground text-lg">HYPE</h3>

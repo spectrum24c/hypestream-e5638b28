@@ -61,8 +61,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onMovieClick, chatTh
       <div className={`max-w-[80%] ${isUser ? 'order-2' : 'order-1'}`}>
         {!isUser && (
           <div className="flex items-center gap-2 mb-2">
-            <div className={`w-7 h-7 rounded-full ${getThemeColors()} flex items-center justify-center shadow-md`}>
-              <img src={robotIcon} alt="HYPE" className="h-4 w-4" />
+            <div className={`w-5 h-5 ${getThemeColors()} flex items-center justify-center shadow-md`} style={{ borderRadius: '15px' }}>
+              <img src={robotIcon} alt="HYPE" className="h-3 w-3" />
             </div>
             <span className="text-sm font-medium text-muted-foreground">HYPE</span>
           </div>

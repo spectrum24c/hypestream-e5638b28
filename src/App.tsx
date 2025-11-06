@@ -17,6 +17,7 @@ import Themes from '@/pages/Themes';
 import ProfileManagement from '@/pages/ProfileManagement';
 import CastCrew from '@/pages/CastCrew';
 import PersonDetails from '@/pages/PersonDetails';
+import AdminSettings from '@/pages/AdminSettings';
 import ErrorBoundary from '@/components/ErrorBoundary';
 
 import './App.css';
@@ -82,6 +83,7 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/support" element={<Support />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
           
           <Route path="/cast-crew/:id" element={<CastCrew />} />
           <Route path="/person/:id" element={<PersonDetails />} />

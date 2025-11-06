@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          zapier_webhook_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          zapier_webhook_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          zapier_webhook_url?: string | null
+        }
+        Relationships: []
+      }
       chatbot_settings: {
         Row: {
           created_at: string

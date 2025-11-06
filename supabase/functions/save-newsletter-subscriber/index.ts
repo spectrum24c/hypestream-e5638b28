@@ -74,6 +74,40 @@ serve(async (req) => {
       throw insertError;
     }
 
+    // Trigger Zapier webhook if configured
+    try {
+      const { data: adminSettings } = await supabaseClient
+        .from("admin_settings")
+        .select("zapier_webhook_url")
+        .limit(1)
+        .maybeSingle();
+
+      if (adminSettings?.zapier_webhook_url) {
+        console.log("Triggering Zapier webhook for:", email);
+        
+        // Trigger webhook in background (don't wait for response)
+        fetch(adminSettings.zapier_webhook_url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            admin_email: adminEmail,
+            user_id: userId,
+            subscribed_at: new Date().toISOString(),
+            event: "newsletter_subscription",
+          }),
+        }).catch((error) => {
+          console.error("Error triggering Zapier webhook:", error);
+          // Don't fail the subscription if webhook fails
+        });
+      }
+    } catch (webhookError) {
+      console.error("Error fetching webhook settings:", webhookError);
+      // Don't fail the subscription if webhook lookup fails
+    }
+
     return new Response(
       JSON.stringify({ success: true, message: "Subscription successful" }),
       {

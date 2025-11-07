@@ -35,18 +35,13 @@ const AdminSettings = () => {
         return;
       }
 
-      // Check if user has admin role
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .single();
-
-      if (!roles) {
+      // Check if user's email matches the admin email
+      const ADMIN_EMAIL = "awokojorichmond@gmail.com";
+      
+      if (user.email !== ADMIN_EMAIL) {
         toast({
           title: "Access Denied",
-          description: "You must be an admin to access this page",
+          description: `Only ${ADMIN_EMAIL} can access admin settings`,
           variant: "destructive",
         });
         navigate("/");

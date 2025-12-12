@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Layers, List, User } from 'lucide-react';
+import { Home, Layers, List, User, Bot } from 'lucide-react';
 const BottomNav: React.FC = () => {
   const location = useLocation();
   const pathname = location.pathname;
@@ -59,7 +59,7 @@ const BottomNav: React.FC = () => {
       WebkitTransform: 'translateZ(0)', // iOS Safari support
     }}
   >
-      <ul className="grid grid-cols-4 h-12">
+      <ul className="grid grid-cols-5 h-12">
         <li className="flex items-center justify-center">
           <Link to="/" className={itemCls(isActive(p => p === '/'))} aria-current={pathname === '/' ? 'page' : undefined}>
             <Home className="h-5 w-5" />
@@ -70,6 +70,16 @@ const BottomNav: React.FC = () => {
           <button onClick={openMobileMenu} className={itemCls(search.includes('category='))} aria-label="Categories">
             <Layers className="h-5 w-5" />
             <span>Categories</span>
+          </button>
+        </li>
+        <li className="flex items-center justify-center">
+          <button 
+            onClick={() => window.dispatchEvent(new Event('open-hype-chat'))} 
+            className={itemCls(false)} 
+            aria-label="AI Chat"
+          >
+            <Bot className="h-5 w-5" />
+            <span>AI</span>
           </button>
         </li>
         <li className="flex items-center justify-center">

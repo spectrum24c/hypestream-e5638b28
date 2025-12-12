@@ -21,6 +21,13 @@ interface HypeChatbotProps {
 
 const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Listen for open event from BottomNav
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-hype-chat', handleOpen);
+    return () => window.removeEventListener('open-hype-chat', handleOpen);
+  }, []);
   const [showSettings, setShowSettings] = useState(false);
   const [personalityLevel, setPersonalityLevel] = useState(3);
   const [chatTheme, setChatTheme] = useState('default');
@@ -273,11 +280,11 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - Hidden on mobile, shown on desktop */}
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className={`fixed bottom-24 right-6 md:bottom-8 md:right-8 z-50 w-14 h-14 shadow-2xl hover:scale-110 transition-all duration-300 ${getThemeColors()}`}
+          className={`fixed bottom-8 right-8 z-50 w-14 h-14 shadow-2xl hover:scale-110 transition-all duration-300 hidden md:flex ${getThemeColors()}`}
           style={{ borderRadius: '15px' }}
           aria-label="Open HYPE chat"
         >

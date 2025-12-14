@@ -17,9 +17,9 @@ export const getAlternativeStreamUrl = (movie: { id: string, imdb_id?: string, m
   
   if (media_type === 'tv') {
     if (imdb_id) {
-      return `https://vidsrc.vip/embed/tv/${imdb_id}/${season}/${episode}`;
+      return `https://vidsrc.vip/embed/tv/${imdb_id}/${season}/${episode}?autonext=1`;
     }
-    return `https://vidsrc.vip/embed/tv/${id}/${season}/${episode}`;
+    return `https://vidsrc.vip/embed/tv/${id}/${season}/${episode}?autonext=1`;
   }
   
   // It's a movie

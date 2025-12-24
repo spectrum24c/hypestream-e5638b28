@@ -28,7 +28,12 @@ export const getAlternativeStreamUrl = (movie: { id: string, imdb_id?: string, m
   return `https://vidsrc.vip/embed/movie/${id}`;
 };
 
-export const trackWatchProgress = async (movie: Partial<Movie> & { id: string }, progress: number, mediaType?: string) => {
+export const trackWatchProgress = async (
+  movie: Partial<Movie> & { id: string },
+  progress: number,
+  mediaType?: string,
+  episodeInfo?: { season: number; episode: number }
+) => {
   try {
     const {
       data: { user }
@@ -40,17 +45,20 @@ export const trackWatchProgress = async (movie: Partial<Movie> & { id: string },
 
     const now = Date.now();
     const resolvedMediaType = mediaType || movie.media_type || 'movie';
-    const title = movie.title || movie.name || 'Untitled';
+    let title = movie.title || movie.name || 'Untitled';
+    if (resolvedMediaType === 'tv' && episodeInfo) {
+      title = `${title} • S${episodeInfo.season}E${episodeInfo.episode}`;
+    }
 
     const {
-      data: existing,
+      data: rows,
       error: selectError
     } = await supabase
       .from('watch_history' as any)
       .select('id')
       .eq('user_id', user.id)
       .eq('movie_id', movie.id)
-      .maybeSingle();
+      .limit(1);
 
     if (selectError && selectError.code !== 'PGRST116') {
       console.error('Error checking existing watch history:', selectError);
@@ -70,7 +78,8 @@ export const trackWatchProgress = async (movie: Partial<Movie> & { id: string },
       last_watched: now.toString()
     };
 
-    if (existing && existing.id) {
+    const existingId = Array.isArray(rows) && rows.length > 0 ? (rows as any)[0]?.id : undefined;
+    if (existingId) {
       const { error: updateError } = await supabase
         .from('watch_history' as any)
         .update({
@@ -81,7 +90,7 @@ export const trackWatchProgress = async (movie: Partial<Movie> & { id: string },
           media_type: payload.media_type,
           last_watched: payload.last_watched
         })
-        .eq('id', existing.id)
+        .eq('id', existingId)
         .eq('user_id', user.id);
 
       if (updateError) {
@@ -107,6 +116,37 @@ export const trackWatchProgress = async (movie: Partial<Movie> & { id: string },
     }
   } catch (error) {
     console.error('Error tracking watch progress:', error);
+  }
+
+  // Local storage fallback (non-auth and resiliency)
+  try {
+    const localKey = 'KENNY123.,';
+    const list: any[] = JSON.parse(localStorage.getItem(localKey) || '[]');
+    const idx = list.findIndex((i) => i.movieId === movie.id);
+    const nowLocal = Date.now();
+    const mediaTypeLocal = mediaType || movie.media_type || 'movie';
+    let titleLocal = movie.title || movie.name || 'Untitled';
+    if (mediaTypeLocal === 'tv' && episodeInfo) {
+      titleLocal = `${titleLocal} • S${episodeInfo.season}E${episodeInfo.episode}`;
+    }
+    const entry = {
+      id: movie.id,
+      movieId: movie.id,
+      title: titleLocal,
+      poster_path: movie.poster_path || null,
+      overview: movie.overview || '',
+      progress,
+      timestamp: nowLocal,
+      media_type: mediaTypeLocal,
+      last_watched: nowLocal.toString(),
+    };
+    if (idx >= 0) {
+      list[idx] = entry;
+    } else {
+      list.unshift(entry);
+    }
+    localStorage.setItem(localKey, JSON.stringify(list));
+  } catch (e) {
   }
 };
 

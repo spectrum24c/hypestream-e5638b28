@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { imgPath, apiPaths, fetchFromTMDB, fetchGenres } from '@/services/tmdbApi';
 import { Heart, Play, Film, X, ArrowLeft, Monitor, Download } from 'lucide-react';
 import { Button } from './ui/button';
@@ -43,6 +43,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
   const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(false);
   const [genres, setGenres] = useState<string[]>([]);
   const [activeEpisode, setActiveEpisode] = useState<{ season: number; episode: number } | null>(null);
+  const watchStartRef = useRef<number | null>(null);
+  const progressTimerRef = useRef<number | null>(null);
   const {
     toast
   } = useToast();
@@ -273,7 +275,9 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
     setShowStream(true);
     setShowTrailer(false);
     setShowAltStream(false);
-    trackWatchProgress({ ...movie, media_type: isTVShow ? 'tv' : 'movie' }, 50);
+    watchStartRef.current = Date.now();
+    startProgressTracking();
+    trackWatchProgress({ ...movie, media_type: isTVShow ? 'tv' : 'movie' }, 0, isTVShow ? 'tv' : 'movie');
   };
   const watchNowAlt = () => {
     if (!session) {
@@ -287,7 +291,11 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
     setShowAltStream(true);
     setShowTrailer(false);
     setShowStream(false);
-    trackWatchProgress({ ...movie, media_type: isTVShow ? 'tv' : 'movie' }, 50);
+    watchStartRef.current = Date.now();
+    const episodeInfo = activeEpisode || { season: 1, episode: 1 };
+    setActiveEpisode(episodeInfo);
+    startProgressTracking();
+    trackWatchProgress({ ...movie, media_type: isTVShow ? 'tv' : 'movie' }, 0, isTVShow ? 'tv' : 'movie', episodeInfo);
   };
   const handleSimilarContentClick = (similarMovie: any) => {
     trackWatchProgress({ ...movie, media_type: isTVShow ? 'tv' : 'movie' }, 100);
@@ -305,8 +313,47 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
     }, 100);
   };
   const handleClose = () => {
-    trackWatchProgress({ ...movie, media_type: isTVShow ? 'tv' : 'movie' }, 100);
+    const finalProgress = computeProgressPercent();
+    const episodeInfo = isTVShow ? (activeEpisode || { season: 1, episode: 1 }) : undefined;
+    trackWatchProgress({ ...movie, media_type: isTVShow ? 'tv' : 'movie' }, finalProgress, isTVShow ? 'tv' : 'movie', episodeInfo);
+    stopProgressTracking();
     onClose();
+  };
+
+  const getDurationMinutes = () => {
+    if (isTVShow) {
+      const epRun = movieDetails?.episode_run_time && Array.isArray(movieDetails.episode_run_time) ? movieDetails.episode_run_time[0] : null;
+      return epRun && epRun > 0 ? epRun : 45;
+    }
+    const rt = movieDetails?.runtime || movie.runtime;
+    return rt && rt > 0 ? rt : 120;
+  };
+
+  const computeProgressPercent = () => {
+    const start = watchStartRef.current;
+    if (!start) return 0;
+    const elapsedMs = Date.now() - start;
+    const elapsedMin = elapsedMs / 60000;
+    const durationMin = getDurationMinutes();
+    const pct = Math.min(100, Math.max(0, (elapsedMin / durationMin) * 100));
+    return Math.round(pct);
+  };
+
+  const startProgressTracking = () => {
+    stopProgressTracking();
+    // Update progress every 30 seconds
+    progressTimerRef.current = window.setInterval(() => {
+      const pct = computeProgressPercent();
+      const episodeInfo = isTVShow ? (activeEpisode || { season: 1, episode: 1 }) : undefined;
+      trackWatchProgress({ ...movie, media_type: isTVShow ? 'tv' : 'movie' }, pct, isTVShow ? 'tv' : 'movie', episodeInfo);
+    }, 30000);
+  };
+
+  const stopProgressTracking = () => {
+    if (progressTimerRef.current) {
+      clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
   };
   return <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-0 player-cont">
       <div className={`relative ${!showStream && !showTrailer && !showAltStream ? 'bg-card w-full max-w-4xl rounded-xl overflow-hidden max-h-[95vh] md:max-h-[90vh]' : 'w-full h-full'} flex flex-col`}>

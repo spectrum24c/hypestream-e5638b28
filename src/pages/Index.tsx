@@ -95,6 +95,55 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
+    const loadContinueWatching = async () => {
+      if (!session || !session.user) {
+        setContinueWatchingItems([]);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('watch_history' as any)
+          .select('*')
+          .eq('user_id', session.user.id)
+          .gt('progress', 0)
+          .lt('progress', 100)
+          .order('last_watched', { ascending: false })
+          .limit(20);
+
+        if (error) {
+          console.error('Error loading continue watching items:', error);
+          setContinueWatchingItems([]);
+          return;
+        }
+
+        if (!data) {
+          setContinueWatchingItems([]);
+          return;
+        }
+
+        const mapped: WatchHistory[] = data.map((item: any) => ({
+          id: item.id,
+          movieId: item.movie_id,
+          title: item.title,
+          poster_path: item.poster_path,
+          progress: item.progress,
+          timestamp: item.timestamp,
+          media_type: item.media_type,
+          last_watched: item.last_watched
+        }));
+
+        setContinueWatchingItems(mapped);
+      } catch (error) {
+        console.error('Error loading continue watching items:', error);
+        setContinueWatchingItems([]);
+      }
+    };
+
+    loadContinueWatching();
+  }, [session]);
+
+  useEffect(() => {
     if (selectedMovieIdFromState) {
       const fetchMovieDetails = async () => {
         try {

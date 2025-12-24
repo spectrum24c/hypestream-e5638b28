@@ -221,7 +221,7 @@ const UserSettingsPage: React.FC = () => {
                         <Button
                           type="submit"
                           variant="outline"
-                          className="border-hype-purple text-hype-purple hover:bg-hype-purple/10"
+                          className="border-primary text-primary hover:bg-primary/10"
                           disabled={checkingPassword}
                         >
                           {checkingPassword ? 'Checking...' : 'Check Password'}
@@ -237,7 +237,7 @@ const UserSettingsPage: React.FC = () => {
                       </p>
                       <Button
                         onClick={() => navigate('/change-password')}
-                        className="bg-hype-purple hover:bg-hype-purple/90"
+                        className=""
                       >
                         Change Password
                       </Button>
@@ -252,7 +252,7 @@ const UserSettingsPage: React.FC = () => {
                     <Button
                       variant="outline"
                       onClick={() => navigate('/profile')}
-                      className="border-hype-purple text-hype-purple hover:bg-hype-purple/10"
+                      className="border-primary text-primary hover:bg-primary/10"
                     >
                       Go to Profile
                     </Button>

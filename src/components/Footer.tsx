@@ -29,12 +29,15 @@ const Footer = () => {
     try {
       console.log('Starting newsletter subscription process for:', email);
       
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData?.user?.id ?? null;
+      
       // Save subscriber to database
       const { data: functionData, error: saveError } = await supabase.functions.invoke('save-newsletter-subscriber', {
         body: {
           email: email,
           adminEmail: 'awokojorichmond@gmail.com',
-          userId: null
+          userId
         }
       });
 
@@ -59,7 +62,8 @@ const Footer = () => {
       const { error: emailError } = await supabase.functions.invoke('send-newsletter-notification', {
         body: {
           subscriberEmail: email,
-          adminEmail: 'awokojorichmond@gmail.com'
+          adminEmail: 'awokojorichmond@gmail.com',
+          userId
         }
       });
 

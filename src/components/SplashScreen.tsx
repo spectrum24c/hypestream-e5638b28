@@ -52,8 +52,8 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         className="flex flex-col items-center space-y-6 w-full max-w-sm"
       >
         <div className="relative flex items-center justify-center">
-          <Film size={48} className="text-hype-purple sm:w-14 sm:h-14" />
-          <div className="absolute -inset-2 rounded-full bg-hype-purple/20 animate-pulse-slow"></div>
+          <Film size={48} className="text-primary sm:w-14 sm:h-14" />
+          <div className="absolute -inset-2 rounded-full bg-primary/20 animate-pulse-slow"></div>
         </div>
 
         <motion.h1 
@@ -74,7 +74,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            className="h-full bg-gradient-to-r from-hype-purple to-hype-teal rounded-full"
+            className="h-full bg-primary rounded-full"
             transition={{ ease: "linear" }}
           ></motion.div>
         </motion.div>

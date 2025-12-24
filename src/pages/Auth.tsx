@@ -289,7 +289,7 @@ const Auth = () => {
           <div className="bg-card border border-border rounded-xl p-8">
             {successMessage ? (
               <div className="text-center space-y-4">
-                <h1 className="text-2xl font-bold mb-2 text-hype-purple">Registration Successful!</h1>
+                <h1 className="text-2xl font-bold mb-2 text-primary">Registration Successful!</h1>
                 <p className="text-muted-foreground">{successMessage}</p>
                 <Button 
                   onClick={() => {
@@ -298,7 +298,7 @@ const Auth = () => {
                     setEmail('');
                     setPassword('');
                   }}
-                  className="mt-4 bg-hype-purple hover:bg-hype-purple/90 w-full"
+                  className="mt-4 w-full"
                 >
                   Back to Sign In
                 </Button>
@@ -326,7 +326,7 @@ const Auth = () => {
 
                       <Button
                         type="submit"
-                        className="w-full bg-hype-purple hover:bg-hype-purple/90"
+                        className="w-full"
                         disabled={loading}
                       >
                         {loading ? 'Checking...' : 'Check Account'}
@@ -336,7 +336,7 @@ const Auth = () => {
                     <div className="mt-6 text-center">
                       <button
                         onClick={() => setShowForgotPassword(false)}
-                        className="text-sm text-hype-purple hover:underline"
+                        className="text-sm text-primary hover:underline"
                       >
                         Back to Sign In
                       </button>
@@ -406,7 +406,7 @@ const Auth = () => {
 
                       <Button
                         type="submit"
-                        className="w-full bg-hype-purple hover:bg-hype-purple/90"
+                        className="w-full"
                         disabled={loading}
                       >
                         {loading ? 'Changing Password...' : 'Change Password'}
@@ -420,7 +420,7 @@ const Auth = () => {
                           setNewPassword('');
                           setConfirmPassword('');
                         }}
-                        className="text-sm text-hype-purple hover:underline"
+                        className="text-sm text-primary hover:underline"
                       >
                         Back to Email Check
                       </button>
@@ -491,7 +491,7 @@ const Auth = () => {
 
                   <Button
                     type="submit"
-                    className="w-full bg-hype-purple hover:bg-hype-purple/90"
+                    className="w-full"
                     disabled={loading}
                   >
                     {loading
@@ -505,7 +505,7 @@ const Auth = () => {
                 <div className="mt-6 text-center space-y-2">
                   <button
                     onClick={switchMode}
-                    className="text-sm text-hype-purple hover:underline block w-full"
+                    className="text-sm text-primary hover:underline block w-full"
                   >
                     {isSignUp
                       ? 'Already have an account? Sign In'
@@ -515,7 +515,7 @@ const Auth = () => {
                   {!isSignUp && (
                     <button
                       onClick={() => setShowForgotPassword(true)}
-                      className="text-sm text-muted-foreground hover:text-hype-purple hover:underline block w-full"
+                      className="text-sm text-muted-foreground hover:text-primary hover:underline block w-full"
                     >
                       Forgot your password?
                     </button>

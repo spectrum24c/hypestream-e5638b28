@@ -235,7 +235,7 @@ const Profile = () => {
             <Button 
               onClick={() => navigate('/')} 
               variant="ghost" 
-              className="flex items-center gap-1 text-hype-purple mr-2"
+              className="flex items-center gap-1 text-primary mr-2"
             >
               <ArrowLeft size={16} />
               <span>Back to Home</span>
@@ -245,7 +245,7 @@ const Profile = () => {
           
           {loading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hype-purple"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>
           ) : (
             <div className="bg-card border border-border rounded-xl p-6">
@@ -260,7 +260,7 @@ const Profile = () => {
                           className="object-cover" 
                         />
                       ) : (
-                        <AvatarFallback className="text-4xl bg-hype-purple text-white">
+                        <AvatarFallback className="text-4xl bg-primary text-primary-foreground">
                           {username.charAt(0) || (session?.user?.email?.charAt(0).toUpperCase() || '?')}
                         </AvatarFallback>
                       )}
@@ -268,12 +268,12 @@ const Profile = () => {
                     <div className="absolute bottom-0 right-0 flex">
                       <button
                         onClick={() => setIsAvatarDialogOpen(true)}
-                        className="bg-hype-purple text-white rounded-full p-2 cursor-pointer mr-1"
+                        className="bg-primary text-primary-foreground rounded-full p-2 cursor-pointer mr-1"
                         title="Choose from gallery"
                       >
                         <Image className="h-4 w-4" />
                       </button>
-                      <label htmlFor="avatar-upload" className="bg-hype-purple text-white rounded-full p-2 cursor-pointer">
+                      <label htmlFor="avatar-upload" className="bg-primary text-primary-foreground rounded-full p-2 cursor-pointer">
                         <FileEdit className="h-4 w-4" />
                         <input 
                           id="avatar-upload" 
@@ -312,7 +312,7 @@ const Profile = () => {
                         id="username"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        className="w-full px-3 py-2 bg-muted border border-border rounded-md focus:outline-none focus:ring-hype-purple focus:border-hype-purple"
+                        className="w-full px-3 py-2 bg-muted border border-border rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                         placeholder="Choose a username"
                       />
                     </div>
@@ -320,7 +320,7 @@ const Profile = () => {
                     <div className="pt-4">
                       <Button
                         type="submit"
-                        className="w-full md:w-auto bg-hype-purple hover:bg-hype-purple/90"
+                        className="w-full md:w-auto"
                         disabled={updating}
                       >
                         {updating ? 'Updating...' : 'Update Profile'}
@@ -350,8 +350,8 @@ const Profile = () => {
                 key={index}
                 onClick={() => selectPredefinedAvatar(avatar)}
                 className={`cursor-pointer rounded-full overflow-hidden border-2 ${
-                  avatarUrl === avatar ? 'border-hype-purple' : 'border-transparent'
-                } hover:border-hype-purple transition-all`}
+                  avatarUrl === avatar ? 'border-primary' : 'border-transparent'
+                } hover:border-primary transition-all`}
               >
                 <img 
                   src={avatar} 
@@ -365,7 +365,7 @@ const Profile = () => {
             <Button variant="outline" onClick={() => setIsAvatarDialogOpen(false)}>
               Cancel
             </Button>
-            <label htmlFor="avatar-dialog-upload" className="bg-hype-purple text-white px-4 py-2 rounded-md cursor-pointer flex items-center gap-2">
+            <label htmlFor="avatar-dialog-upload" className="bg-primary text-primary-foreground px-4 py-2 rounded-md cursor-pointer flex items-center gap-2">
               <FileEdit className="h-4 w-4" />
               <span>Upload Custom</span>
               <input 

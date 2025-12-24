@@ -221,7 +221,7 @@ const ChangePassword = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-hype-purple hover:bg-hype-purple/90"
+                className="w-full"
                 disabled={loading}
               >
                 {loading ? 'Changing Password...' : 'Change Password'}

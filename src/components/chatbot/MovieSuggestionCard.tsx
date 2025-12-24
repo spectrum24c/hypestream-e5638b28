@@ -3,6 +3,8 @@ import { Play, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Movie } from '@/types/movie';
 import { fetchFromTMDB, apiPaths, imgPath } from '@/services/tmdbApi';
+import { useToast } from '@/hooks/use-toast';
+import { addToWatchlist } from '@/utils/movieDownloader';
 
 interface MovieSuggestionCardProps {
   title: string;
@@ -10,34 +12,57 @@ interface MovieSuggestionCardProps {
   onMovieClick?: (movie: Movie) => void;
 }
 
-const MovieSuggestionCard: React.FC<MovieSuggestionCardProps> = ({ 
-  title, 
+const MovieSuggestionCard: React.FC<MovieSuggestionCardProps> = ({
+  title,
   year,
-  onMovieClick 
+  onMovieClick
 }) => {
   const [movieData, setMovieData] = useState<Movie | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const searchMovie = async () => {
       try {
-        const searchUrl = `https://api.themoviedb.org/3/search/multi?api_key=62c59007d93c96aa3cca9f3422d51af5&query=${encodeURIComponent(title)}&year=${year}`;
-        const data = await fetchFromTMDB(searchUrl);
-        
-        if (data.results && data.results.length > 0) {
-          const result = data.results[0];
-          setMovieData({
-            id: result.id.toString(),
-            title: result.title || result.name,
-            poster_path: result.poster_path,
-            backdrop_path: result.backdrop_path,
-            release_date: result.release_date || result.first_air_date,
-            vote_average: result.vote_average,
-            media_type: result.media_type,
-            overview: result.overview,
-            genre_ids: result.genre_ids
-          });
+        const data = await fetchFromTMDB(apiPaths.searchMulti(title));
+        type SearchResult = {
+          id: number;
+          title?: string;
+          name?: string;
+          poster_path: string | null;
+          backdrop_path?: string | null;
+          release_date?: string;
+          first_air_date?: string;
+          vote_average?: number;
+          media_type?: string;
+          overview?: string;
+          genre_ids?: number[];
+        };
+        const results = (data.results || []) as SearchResult[];
+        if (results.length === 0) {
+          return;
         }
+        let result = results[0];
+        if (year) {
+          const matched = results.find(item => {
+            const releaseDate = item.release_date || item.first_air_date;
+            return releaseDate && releaseDate.startsWith(year);
+          });
+          if (matched) {
+            result = matched;
+          }
+        }
+        setMovieData({
+          id: result.id.toString(),
+          title: result.title || result.name,
+          poster_path: result.poster_path,
+          backdrop_path: result.backdrop_path,
+          release_date: result.release_date || result.first_air_date,
+          vote_average: result.vote_average,
+          media_type: result.media_type,
+          overview: result.overview,
+          genre_ids: result.genre_ids
+        });
       } catch (error) {
         console.error('Error fetching movie data:', error);
       } finally {
@@ -98,9 +123,36 @@ const MovieSuggestionCard: React.FC<MovieSuggestionCardProps> = ({
               size="sm"
               variant="outline"
               className="h-7 px-2"
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                // TODO: Add to watchlist
+                if (!movieData) return;
+                try {
+                  const result = await addToWatchlist(movieData);
+                  if (result === 'exists') {
+                    toast({
+                      title: "Already in watchlist",
+                      description: "This title is already in your watchlist."
+                    });
+                  } else if (result === 'added') {
+                    toast({
+                      title: "Added to watchlist",
+                      description: "You can find it on your watchlist page."
+                    });
+                  } else {
+                    toast({
+                      title: "Error",
+                      description: "Could not add to watchlist. Please try again.",
+                      variant: "destructive"
+                    });
+                  }
+                } catch (error) {
+                  console.error('Error adding to watchlist:', error);
+                  toast({
+                    title: "Error",
+                    description: "Could not add to watchlist. Please try again.",
+                    variant: "destructive"
+                  });
+                }
               }}
             >
               <Plus className="h-3 w-3" />

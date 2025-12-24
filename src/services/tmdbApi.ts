@@ -85,6 +85,8 @@ export const apiPaths = {
   fetchTVTrailer: (tvId: string) => `${tmdbApiEndpoint}/tv/${tvId}/videos?api_key=${apiKeys.tmdb}&language=en-US`,
   fetchMovieGenres: `${tmdbApiEndpoint}/genre/movie/list?api_key=${apiKeys.tmdb}&language=en-US`,
   fetchTVGenres: `${tmdbApiEndpoint}/genre/tv/list?api_key=${apiKeys.tmdb}&language=en-US`,
+  fetchTVSeason: (seriesId: string, seasonNumber: number) =>
+    `${tmdbApiEndpoint}/tv/${seriesId}/season/${seasonNumber}?api_key=${apiKeys.tmdb}&language=en-US`,
   fetchAnime: `${tmdbApiEndpoint}/discover/tv?api_key=${apiKeys.tmdb}&language=en-US&with_keywords=210024`,
   fetchAnimeByGenre: (genreId: number) => `${tmdbApiEndpoint}/discover/tv?api_key=${apiKeys.tmdb}&language=en-US&with_keywords=210024&with_genres=${genreId}`,
   

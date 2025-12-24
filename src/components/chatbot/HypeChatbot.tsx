@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Loader2, Settings } from 'lucide-react';
+import { X, Send, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ChatMessage from './ChatMessage';
-import ChatbotSettings from './ChatbotSettings';
 import { Movie } from '@/types/movie';
 import robotIcon from '@/assets/robot.png';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,9 +27,7 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
     window.addEventListener('open-hype-chat', handleOpen);
     return () => window.removeEventListener('open-hype-chat', handleOpen);
   }, []);
-  const [showSettings, setShowSettings] = useState(false);
   const [personalityLevel, setPersonalityLevel] = useState(3);
-  const [chatTheme, setChatTheme] = useState('default');
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -61,30 +58,29 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
   }, [isOpen]);
 
   useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data, error } = await supabase
+          .from('chatbot_settings')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error && error.code !== 'PGRST116') throw error;
+
+        if (data && typeof data.personality_level === 'number') {
+          setPersonalityLevel(data.personality_level);
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      }
+    };
+
     loadSettings();
   }, []);
-
-  const loadSettings = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('chatbot_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') throw error;
-
-      if (data) {
-        setPersonalityLevel(data.personality_level);
-        setChatTheme(data.theme);
-      }
-    } catch (error) {
-      console.error('Error loading settings:', error);
-    }
-  };
 
   const streamChat = async (userMessage: string) => {
     try {
@@ -255,85 +251,58 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
     "Feel-good comedies"
   ];
 
-  const getThemeColors = () => {
-    const themes = {
-      default: 'bg-primary text-primary-foreground',
-      purple: 'bg-gradient-to-br from-purple-600 to-pink-500 text-white',
-      ocean: 'bg-gradient-to-br from-blue-600 to-cyan-500 text-white',
-      sunset: 'bg-gradient-to-br from-orange-600 to-red-500 text-white',
-      forest: 'bg-gradient-to-br from-green-600 to-emerald-500 text-white',
-    };
-    return themes[chatTheme as keyof typeof themes] || themes.default;
-  };
-
-  if (showSettings) {
-    return (
-      <ChatbotSettings
-        onClose={() => setShowSettings(false)}
-        onSettingsChange={(level, theme) => {
-          setPersonalityLevel(level);
-          setChatTheme(theme);
-        }}
-      />
-    );
-  }
-
   return (
     <>
-      {/* Floating Button - Hidden on mobile, shown on desktop */}
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className={`fixed bottom-8 right-8 z-50 w-14 h-14 shadow-2xl hover:scale-110 transition-all duration-300 hidden md:flex ${getThemeColors()}`}
-          style={{ borderRadius: '15px' }}
+          className="fixed bottom-8 right-8 z-50 w-16 h-16 shadow-[0_20px_60px_rgba(0,0,0,0.7)] hover:scale-110 transition-all duration-300 hidden md:flex bg-gradient-to-br from-hype-purple via-primary to-hype-purple/80 text-primary-foreground border border-primary/50 rounded-2xl"
           aria-label="Open HYPE chat"
         >
-          <img src={robotIcon} alt="HYPE" className="h-7 w-7" />
+          <div className="relative flex items-center justify-center">
+            <div className="absolute inset-0 bg-white/10 rounded-2xl blur-md" />
+            <img src={robotIcon} alt="HYPE" className="h-7 w-7 relative" />
+          </div>
         </Button>
       )}
 
-      {/* Chat Panel - Fullscreen */}
       {isOpen && (
-        <div className="fixed inset-0 bg-background z-50 flex flex-col animate-in fade-in duration-300">
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-border bg-secondary/50">
+        <div className="fixed inset-0 z-50 flex flex-col bg-gradient-to-br from-background via-background to-hype-dark/95">
+          <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-border/70 bg-background/80 backdrop-blur">
             <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 ${getThemeColors()} flex items-center justify-center shadow-lg`} style={{ borderRadius: '15px' }}>
-                <img src={robotIcon} alt="HYPE" className="h-5 w-5" />
+              <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-br from-hype-purple via-primary to-hype-purple/80 flex items-center justify-center shadow-lg">
+                <div className="absolute inset-0 bg-white/10 rounded-2xl blur-sm" />
+                <img src={robotIcon} alt="HYPE" className="h-5 w-5 relative" />
               </div>
               <div>
-                <h3 className="font-bold text-foreground text-lg">HYPE</h3>
-                <p className="text-sm text-muted-foreground">Your AI Movie Guru</p>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-foreground text-lg tracking-tight">HYPE</h3>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400 border border-emerald-500/30">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Online
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Smarter picks, faster nights in.
+                </p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setShowSettings(true)}
-                className="hover:bg-secondary h-10 w-10"
-              >
-                <Settings className="h-5 w-5" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setIsOpen(false)}
-                className="hover:bg-secondary h-10 w-10"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setIsOpen(false)}
+              className="hover:bg-secondary h-9 w-9 rounded-full"
+            >
+              <X className="h-5 w-5" />
+            </Button>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 max-w-4xl mx-auto w-full">
+          <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6 space-y-5 md:space-y-6 max-w-4xl mx-auto w-full">
             {messages.map((msg) => (
               <ChatMessage 
                 key={msg.id} 
                 message={msg} 
                 onMovieClick={onMovieClick}
-                chatTheme={chatTheme}
               />
             ))}
             {isLoading && (
@@ -345,9 +314,8 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Prompts */}
           {messages.length <= 2 && !isLoading && (
-            <div className="px-6 pb-4 flex flex-wrap gap-2 max-w-4xl mx-auto w-full">
+            <div className="px-4 md:px-6 pb-3 flex flex-wrap gap-2 max-w-4xl mx-auto w-full">
               {quickPrompts.map((prompt, idx) => (
                 <Button
                   key={idx}
@@ -365,16 +333,15 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
             </div>
           )}
 
-          {/* Input */}
-          <div className="p-6 border-t border-border">
-            <div className="flex gap-3 max-w-4xl mx-auto w-full">
+          <div className="px-4 md:px-6 pb-5 pt-3 border-t border-border/70 bg-background/80 backdrop-blur">
+            <div className="flex items-end gap-3 max-w-4xl mx-auto w-full">
               <textarea
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask HYPE anything..."
-                className="flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[40px] max-h-[120px]"
+                placeholder="Ask HYPE for something to watch tonight..."
+                className="flex-1 resize-none rounded-2xl border border-border bg-background/80 px-3.5 py-2.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hype-purple focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[40px] max-h-[120px] shadow-sm"
                 rows={1}
                 disabled={isLoading}
               />
@@ -382,9 +349,9 @@ const HypeChatbot: React.FC<HypeChatbotProps> = ({ onMovieClick }) => {
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
                 size="icon"
-                className={`h-12 w-12 ${getThemeColors()}`}
+                className="h-11 w-11 rounded-2xl bg-gradient-to-br from-hype-purple via-primary to-hype-purple/80 text-primary-foreground shadow-[0_10px_30px_rgba(0,0,0,0.6)] disabled:opacity-60 disabled:shadow-none"
               >
-                <Send className="h-5 w-5" />
+                <Send className="h-4 w-4" />
               </Button>
             </div>
           </div>

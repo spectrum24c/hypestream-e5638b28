@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, LogOut, Trash2, Bookmark, Settings, Palette, UserPlus } from 'lucide-react';
+import { User, LogOut, Trash2, Bookmark, Settings, History, UserPlus } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -122,9 +122,9 @@ const UserMenu: React.FC<UserMenuProps> = ({
               <Settings className="mr-2 h-4 w-4" />
               Settings
             </Link>
-            <Link to="/themes" className="text-sm hover:underline flex items-center">
-              <Palette className="mr-2 h-4 w-4" />
-              Themes
+            <Link to="/watch-history" className="text-sm hover:underline flex items-center">
+              <History className="mr-2 h-4 w-4" />
+              Watch History
             </Link>
             <hr className="border-border" />
             <Button variant="outline" size="sm" onClick={handleSignOut} className="flex items-center text-center">
@@ -137,7 +137,7 @@ const UserMenu: React.FC<UserMenuProps> = ({
             </Button>
           </div> : <div className="grid gap-4">
             <Link to="/auth">
-              <Button className="w-full bg-hype-purple hover:bg-hype-purple/90">
+              <Button className="w-full">
                 Sign In
               </Button>
             </Link>

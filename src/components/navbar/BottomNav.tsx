@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Layers, List, User, Bot } from 'lucide-react';
+
 const BottomNav: React.FC = () => {
   const location = useLocation();
   const pathname = location.pathname;
@@ -8,26 +9,18 @@ const BottomNav: React.FC = () => {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const isActive = (matcher: (path: string, search: string) => boolean) => matcher(pathname, search);
 
-  // Hide bottom nav on auth page
   const shouldHide = pathname === '/auth' || isSearchActive;
 
-  // Listen for search overlay state changes
   useEffect(() => {
     const handleSearchOpen = () => setIsSearchActive(true);
     const handleSearchClose = () => setIsSearchActive(false);
-    
-    // Listen for mobile search overlay events
     const handleMobileSearchOpen = () => setIsSearchActive(true);
-    
-    // Listen for navigation events that should close search
-    const handleNavigation = () => setIsSearchActive(false);
     
     window.addEventListener('open-mobile-search', handleMobileSearchOpen);
     window.addEventListener('close-mobile-search', handleSearchClose);
     window.addEventListener('search-overlay-open', handleSearchOpen);
     window.addEventListener('search-overlay-close', handleSearchClose);
     
-    // Listen for location changes to close search overlay
     setIsSearchActive(false);
     
     return () => {
@@ -41,35 +34,55 @@ const BottomNav: React.FC = () => {
   if (shouldHide) {
     return null;
   }
+
   const openMobileMenu = () => {
-    // Notify Navbar to open MobileNavigation (categories, etc.)
     window.dispatchEvent(new Event('open-mobile-menu'));
   };
-  const itemCls = (active: boolean) => `flex flex-col items-center justify-center gap-1 text-xs ${active ? 'text-hype-purple' : 'text-muted-foreground'} hover:text-foreground transition-colors`;
-  return <nav 
-    aria-label="Bottom navigation" 
-    className="md:hidden fixed bottom-0 inset-x-0 z-50 backdrop-blur px-0 bg-[#000a0e]/0" 
-    style={{
-      position: 'fixed',
-      bottom: '0',
-      left: '0',
-      right: '0',
-      zIndex: 50,
-      transform: 'translateZ(0)', // Forces hardware acceleration
-      WebkitTransform: 'translateZ(0)', // iOS Safari support
-    }}
-  >
-      <ul className="grid grid-cols-5 h-12">
+
+  const itemCls = (active: boolean) => 
+    `flex flex-col items-center justify-center gap-1 text-xs font-medium transition-all duration-200 ${
+      active 
+        ? 'text-primary scale-105' 
+        : 'text-muted-foreground hover:text-foreground'
+    }`;
+
+  return (
+    <nav 
+      aria-label="Bottom navigation" 
+      className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-lg border-t border-border/50" 
+      style={{
+        position: 'fixed',
+        bottom: '0',
+        left: '0',
+        right: '0',
+        zIndex: 50,
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
+      }}
+    >
+      <ul className="grid grid-cols-5 h-16 max-w-md mx-auto">
         <li className="flex items-center justify-center">
-          <Link to="/" className={itemCls(isActive(p => p === '/'))} aria-current={pathname === '/' ? 'page' : undefined}>
-            <Home className="h-5 w-5" />
+          <Link 
+            to="/" 
+            className={itemCls(isActive(p => p === '/'))} 
+            aria-current={pathname === '/' ? 'page' : undefined}
+          >
+            <div className={`p-2 rounded-xl transition-colors ${isActive(p => p === '/') ? 'bg-primary/20' : ''}`}>
+              <Home className="h-5 w-5" />
+            </div>
             <span>Home</span>
           </Link>
         </li>
         <li className="flex items-center justify-center">
-          <button onClick={openMobileMenu} className={itemCls(search.includes('category='))} aria-label="Categories">
-            <Layers className="h-5 w-5" />
-            <span>Categories</span>
+          <button 
+            onClick={openMobileMenu} 
+            className={itemCls(search.includes('category='))} 
+            aria-label="Categories"
+          >
+            <div className={`p-2 rounded-xl transition-colors ${search.includes('category=') ? 'bg-primary/20' : ''}`}>
+              <Layers className="h-5 w-5" />
+            </div>
+            <span>Browse</span>
           </button>
         </li>
         <li className="flex items-center justify-center">
@@ -78,23 +91,39 @@ const BottomNav: React.FC = () => {
             className={itemCls(false)} 
             aria-label="AI Chat"
           >
-            <Bot className="h-5 w-5" />
-            <span>AI</span>
+            <div className="p-2 rounded-xl bg-primary/10 border border-primary/30">
+              <Bot className="h-5 w-5 text-primary" />
+            </div>
+            <span className="text-primary">AI</span>
           </button>
         </li>
         <li className="flex items-center justify-center">
-          <Link to="/favorites" className={itemCls(isActive(p => p === '/favorites'))} aria-current={pathname === '/favorites' ? 'page' : undefined}>
-            <List className="h-5 w-5" />
+          <Link 
+            to="/favorites" 
+            className={itemCls(isActive(p => p === '/favorites'))} 
+            aria-current={pathname === '/favorites' ? 'page' : undefined}
+          >
+            <div className={`p-2 rounded-xl transition-colors ${isActive(p => p === '/favorites') ? 'bg-primary/20' : ''}`}>
+              <List className="h-5 w-5" />
+            </div>
             <span>My List</span>
           </Link>
         </li>
         <li className="flex items-center justify-center">
-          <Link to="/profile" className={itemCls(isActive(p => p === '/profile'))} aria-current={pathname === '/profile' ? 'page' : undefined}>
-            <User className="h-5 w-5" />
+          <Link 
+            to="/profile" 
+            className={itemCls(isActive(p => p === '/profile'))} 
+            aria-current={pathname === '/profile' ? 'page' : undefined}
+          >
+            <div className={`p-2 rounded-xl transition-colors ${isActive(p => p === '/profile') ? 'bg-primary/20' : ''}`}>
+              <User className="h-5 w-5" />
+            </div>
             <span>Profile</span>
           </Link>
         </li>
       </ul>
-    </nav>;
+    </nav>
+  );
 };
+
 export default BottomNav;

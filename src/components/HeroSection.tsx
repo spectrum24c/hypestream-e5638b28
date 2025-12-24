@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, memo, useCallback } from 'react';
-import { Play, Info } from 'lucide-react';
+import { Play, Info, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { apiPaths, fetchFromTMDB, imgPath } from '@/services/tmdbApi';
 import { useToast } from '@/hooks/use-toast';
@@ -25,7 +25,6 @@ interface HeroSectionProps {
   useFixedImage?: boolean;
 }
 
-// Use memo to prevent unnecessary re-renders
 const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, useFixedImage = false }) => {
   const [featuredContent, setFeaturedContent] = useState<FeaturedMovie[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -36,7 +35,6 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
   const { toast } = useToast();
   
   useEffect(() => {
-    // Get auth session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
     });
@@ -46,10 +44,9 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
         const data = await fetchFromTMDB(apiPaths.fetchTrending);
         
         if (data.results && data.results.length > 0) {
-          // Find trending items with backdrop images
           const featuredItems = data.results
             .filter((item: any) => item.backdrop_path && item.overview)
-            .slice(0, 5); // Limit to 5 items for the slider
+            .slice(0, 5);
           
           setFeaturedContent(featuredItems);
         }
@@ -72,14 +69,12 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
         prevIndex === featuredContent.length - 1 ? 0 : prevIndex + 1
       );
       
-      // Reset transition state after a short delay to ensure smooth animation
       setTimeout(() => {
         setIsTransitioning(false);
       }, 300);
     }, 300);
   }, [featuredContent.length, isTransitioning]);
   
-  // Auto-rotate slides every 10 seconds (increased from 6)
   useEffect(() => {
     if (featuredContent.length <= 1) return;
     
@@ -90,7 +85,6 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
   const handlePlayTrailer = () => {
     if (!featuredContent[currentIndex]) return;
     
-    // Check if user is signed in
     if (!session) {
       toast({
         title: "Authentication required",
@@ -115,8 +109,8 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
 
   if (loading || featuredContent.length === 0) {
     return (
-      <div className="h-[50vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-hype-purple"></div>
+      <div className="h-[80vh] flex items-center justify-center bg-background">
+        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -127,57 +121,46 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
   const rating = currentMovie.vote_average.toFixed(1);
   const category = currentMovie.media_type === 'tv' ? 'TV Show' : 'Movie';
   
-  // Use the backdrop image for consistent experience across all device sizes
   const backdropUrl = currentMovie.backdrop_path 
     ? `${imgPath}${currentMovie.backdrop_path}`
     : 'https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop';
 
   return (
-    <div className="relative h-[70vh] min-h-[500px] w-full overflow-hidden mt-0 -mb-7">
+    <div className="relative h-[85vh] min-h-[600px] w-full overflow-hidden">
       {/* Background Image with fade transition */}
-      <div className={`absolute inset-0 transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-        <div className="absolute inset-0 bg-black/40 z-10"></div>
+      <div className={`absolute inset-0 transition-opacity duration-700 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
         <img
           src={backdropUrl}
           alt={title}
           className="h-full w-full object-cover object-center"
-          loading="lazy"
+          loading="eager"
         />
       </div>
 
-      {/* Gradient Overlay */}
-      <div className="banner-overlay z-20"></div>
+      {/* Gradient Overlays - Netflix style */}
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+      
+      {/* Vignette effect */}
+      <div className="absolute inset-0 bg-gradient-radial from-transparent to-background/50" />
 
-      {/* Dots Indicator */}
-      <div className="absolute z-30 bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-        {featuredContent.map((_, i) => (
-          <button
-            key={i}
-            className={`h-2 w-2 rounded-full transition-all ${
-              i === currentIndex ? 'bg-white w-4' : 'bg-white/50'
-            }`}
-            onClick={() => setCurrentIndex(i)}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
-      </div>
-
-      {/* Content with fade transition */}
-      <div className="container mx-auto px-4 relative h-full flex items-end pb-16 z-20">
-        <div className={`max-w-2xl transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'animate-fade-in'}`}>
-          <div className="flex items-center space-x-3 mb-3">
-            <span className="bg-hype-orange px-2 py-1 text-xs font-medium text-white rounded">
-              FEATURED
+      {/* Content */}
+      <div className="container mx-auto px-4 md:px-8 relative h-full flex items-center z-20">
+        <div className={`max-w-2xl transition-all duration-700 ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+          {/* Category & Rating */}
+          <div className="flex items-center gap-4 mb-4">
+            <span className="inline-flex items-center px-3 py-1 bg-primary text-primary-foreground text-xs font-semibold tracking-wider rounded">
+              {category.toUpperCase()}
             </span>
-            <div className="flex items-center text-hype-teal">
-              <span className="text-sm font-medium mr-2">{rating}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-primary font-semibold">{rating}</span>
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <svg 
                     key={star} 
-                    className={`h-4 w-4 ${star <= Math.floor(parseFloat(rating)) / 2 
-                      ? 'text-hype-teal' 
-                      : 'text-gray-500'}`}
+                    className={`h-4 w-4 ${star <= Math.floor(parseFloat(rating) / 2) 
+                      ? 'text-primary' 
+                      : 'text-muted-foreground/30'}`}
                     fill="currentColor" 
                     viewBox="0 0 20 20"
                   >
@@ -186,41 +169,54 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
                 ))}
               </div>
             </div>
+            <span className="text-muted-foreground">{year}</span>
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+          {/* Title */}
+          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl tracking-wide text-foreground mb-6 leading-none">
             {title}
           </h1>
 
-          <div className="flex items-center space-x-4 mb-5 text-sm text-muted-foreground">
-            <span>{year}</span>
-            <span className="h-1 w-1 rounded-full bg-muted-foreground"></span>
-            <span>{category}</span>
-          </div>
-
-          <p className="text-base md:text-lg text-gray-300 mb-4 md:mb-8 max-w-xl hero-desc">
+          {/* Description */}
+          <p className="text-base md:text-lg text-muted-foreground mb-8 max-w-xl line-clamp-3 leading-relaxed">
             {currentMovie.overview || 'No description available.'}
           </p>
 
-
-          <div className="flex items-center space-x-4">
+          {/* Buttons */}
+          <div className="flex items-center gap-4">
             <Button 
-              className="bg-hype-orange hover:bg-hype-orange/90 text-white px-8 py-6" 
-              size="lg"
               onClick={handlePlayTrailer}
+              className="bg-foreground hover:bg-foreground/90 text-background px-8 py-6 text-lg font-semibold rounded-md transition-all duration-200 hover:scale-105"
+              size="lg"
             >
-              <Play className="mr-2 h-5 w-5" /> Play Trailer
+              <Play className="mr-2 h-6 w-6 fill-current" /> Play
             </Button>
             <Button 
-              variant="outline" 
+              variant="secondary"
               size="lg" 
-              className="border-white/20 text-white hover:bg-white/10"
+              className="bg-secondary/80 hover:bg-secondary text-foreground px-8 py-6 text-lg font-semibold rounded-md transition-all duration-200"
               onClick={handleMoreInfo}
             >
-              <Info className="mr-2 h-5 w-5" /> More Info
+              <Info className="mr-2 h-6 w-6" /> More Info
             </Button>
           </div>
         </div>
+      </div>
+
+      {/* Slide Indicators */}
+      <div className="absolute bottom-8 right-8 z-30 flex items-center gap-3">
+        {featuredContent.map((_, i) => (
+          <button
+            key={i}
+            className={`h-1 transition-all duration-300 rounded-full ${
+              i === currentIndex 
+                ? 'bg-primary w-8' 
+                : 'bg-foreground/30 w-4 hover:bg-foreground/50'
+            }`}
+            onClick={() => !isTransitioning && setCurrentIndex(i)}
+            aria-label={`Go to slide ${i + 1}`}
+          />
+        ))}
       </div>
     </div>
   );

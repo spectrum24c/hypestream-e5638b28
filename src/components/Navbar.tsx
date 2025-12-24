@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import DesktopNavigation from './navbar/DesktopNavigation';
@@ -43,7 +43,6 @@ const Navbar = () => {
       }
     );
 
-    // Check notification settings from user preferences
     const storedPreferences = localStorage.getItem('userPreferences');
     if (storedPreferences) {
       try {
@@ -54,28 +53,22 @@ const Navbar = () => {
       }
     }
 
-    // Get notifications from localStorage if available
     const storedNotifications = localStorage.getItem('notifications');
     if (storedNotifications) {
       try {
         const parsedNotifications = JSON.parse(storedNotifications);
         if (Array.isArray(parsedNotifications) && parsedNotifications.length > 0) {
-          // Filter notifications based on user preferences if available
           if (storedPreferences) {
             const preferences = JSON.parse(storedPreferences);
             const preferredGenres = preferences.preferredGenres || [];
             const preferredLanguages = preferences.preferredLanguages || [];
             
-            // Only keep notifications that match user preferences
             const filteredNotifications = parsedNotifications.filter((notification: Notification) => {
-              // If it's a movie notification, check if it matches user preferences
               if (notification.movie && notification.movie.id) {
-                // Get movie details from localStorage if available (simplified approach)
                 const movieCache = localStorage.getItem(`movie_${notification.movie.id}`);
                 if (movieCache) {
                   try {
                     const movieData = JSON.parse(movieCache);
-                    // Check if movie genre matches preferred genres
                     if (movieData.genre_ids && preferredGenres.length > 0) {
                       const hasMatchingGenre = movieData.genre_ids.some((genreId: number) => 
                         preferredGenres.includes(genreId)
@@ -83,7 +76,6 @@ const Navbar = () => {
                       if (!hasMatchingGenre) return false;
                     }
                     
-                    // Check if movie language matches preferred languages
                     if (movieData.original_language && preferredLanguages.length > 0) {
                       if (!preferredLanguages.includes(movieData.original_language)) {
                         return false;
@@ -103,7 +95,6 @@ const Navbar = () => {
             setUnreadCount(unreadCount);
             return;
           } else {
-            // No preferences, show all notifications
             setNotifications(parsedNotifications);
             const unreadCount = parsedNotifications.filter(n => !n.read).length;
             setUnreadCount(unreadCount);
@@ -115,7 +106,6 @@ const Navbar = () => {
       }
     }
 
-    // Generate initial notifications only if we don't have stored ones
     if (notificationsEnabled) {
       const initialNotifications: Notification[] = [
         {
@@ -123,9 +113,7 @@ const Navbar = () => {
           title: 'New on HypeStream',
           message: `"The Dark Knight" is now available to watch!`,
           poster_path: '/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
-          movie: {
-            id: '155'
-          },
+          movie: { id: '155' },
           read: false,
           createdAt: new Date(Date.now() - 86400000).toISOString(),
           timestamp: Date.now() - 86400000,
@@ -138,9 +126,7 @@ const Navbar = () => {
           title: 'Recommended for You',
           message: 'Based on your interests, you might enjoy "Inception"!',
           poster_path: '/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg',
-          movie: {
-            id: '27205'
-          },
+          movie: { id: '27205' },
           read: false,
           createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
           timestamp: Date.now() - 2 * 86400000,
@@ -158,7 +144,6 @@ const Navbar = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Listen for changes to user preferences
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'userPreferences' || e.key === 'notificationsEnabled') {
@@ -178,15 +163,14 @@ const Navbar = () => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Allow opening the mobile menu from other components (e.g., BottomNav)
   useEffect(() => {
     const handler = () => setIsMenuOpen(true);
     window.addEventListener('open-mobile-menu', handler as unknown as EventListener);
     return () => window.removeEventListener('open-mobile-menu', handler as unknown as EventListener);
   }, []);
+
   const toggleSearch = () => {
     if (isMobile) {
-      // For mobile, dispatch the event to open mobile search overlay
       window.dispatchEvent(new Event('open-mobile-search'));
     } else {
       setIsSearchOpen(!isSearchOpen);
@@ -202,12 +186,10 @@ const Navbar = () => {
   };
 
   const handleSignOut = async () => {
-    // This function is no longer needed as UserMenu handles it directly
     console.log('Sign out handled by UserMenu');
   };
 
   const handleDeleteAccount = async () => {
-    // This function is no longer needed as UserMenu handles it directly
     console.log('Delete account handled by UserMenu');
   };
 
@@ -215,8 +197,6 @@ const Navbar = () => {
     const updatedNotifications = notifications.map(n => ({ ...n, read: true }));
     setNotifications(updatedNotifications);
     setUnreadCount(0);
-    
-    // Save read status to localStorage
     localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
   };
 
@@ -224,21 +204,24 @@ const Navbar = () => {
     <>
       <header 
         className={cn(
-          "fixed top-0 left-0 w-full z-40 transition-all duration-300",
-          isScrolled ? "bg-hype-dark/90 shadow-lg py-2" : "bg-gradient-to-b from-hype-dark/90 to-transparent py-3"
+          "fixed top-0 left-0 w-full z-40 transition-all duration-500",
+          isScrolled 
+            ? "bg-background/95 backdrop-blur-lg shadow-lg border-b border-border/50 py-2" 
+            : "bg-gradient-to-b from-background/80 via-background/40 to-transparent py-4"
         )}
       >
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 md:px-8">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex-shrink-0">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-hype-orange to-hype-purple bg-clip-text text-transparent">
-                HypeStream
+            {/* Logo */}
+            <Link to="/" className="flex-shrink-0 group">
+              <h1 className="font-display text-3xl md:text-4xl tracking-wider text-foreground transition-colors">
+                HYPE<span className="text-primary group-hover:text-primary/80 transition-colors">STREAM</span>
               </h1>
             </Link>
 
             <DesktopNavigation />
 
-            <div className="flex items-center space-x-2 md:space-x-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <SearchBar 
                 isOpen={isMobile ? isSearchOpen : true}
                 onToggle={toggleSearch}
@@ -264,7 +247,7 @@ const Navbar = () => {
                   variant="ghost"
                   size="icon"
                   onClick={toggleMenu}
-                  className="ml-1 text-foreground"
+                  className="ml-1 text-foreground hover:bg-secondary"
                   aria-label={isMenuOpen ? "Close menu" : "Open menu"}
                 >
                   {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -284,7 +267,6 @@ const Navbar = () => {
         )}
       </header>
 
-      {/* Mobile bottom navigation */}
       <BottomNav />
     </>
   );

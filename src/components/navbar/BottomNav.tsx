@@ -49,12 +49,12 @@ const BottomNav: React.FC = () => {
   return (
     <nav 
       aria-label="Bottom navigation" 
-      className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-lg border-t border-border/50" 
+      className="md:hidden fixed bottom-5 left-5 right-5 z-50 rounded-[20px] bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-lg border-t border-border/50" 
       style={{
         position: 'fixed',
-        bottom: '0',
-        left: '0',
-        right: '0',
+        bottom: 20,
+        left: 20,
+        right: 20,
         zIndex: 50,
         transform: 'translateZ(0)',
         WebkitTransform: 'translateZ(0)',

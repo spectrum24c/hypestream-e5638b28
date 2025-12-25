@@ -49,20 +49,21 @@ serve(async (req: Request) => {
 
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
-    // Find user by email via Admin API
-    const { data: userData, error: getUserError } = await admin.auth.admin.getUserByEmail(
-      normalizedEmail,
-    );
+    // Find user by email via Admin API - list all users and find by email
+    const { data: usersData, error: listError } = await admin.auth.admin.listUsers();
 
-    if (getUserError) {
-      console.error("getUserByEmail error:", getUserError);
-      return new Response(JSON.stringify({ error: getUserError.message }), {
+    if (listError) {
+      console.error("listUsers error:", listError);
+      return new Response(JSON.stringify({ error: listError.message }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    const user = userData?.user;
+    const user = usersData?.users?.find(
+      (u) => u.email?.toLowerCase() === normalizedEmail
+    );
+    
     if (!user) {
       return new Response(JSON.stringify({ error: "Account not found" }), {
         status: 404,

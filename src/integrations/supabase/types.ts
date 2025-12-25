@@ -185,6 +185,60 @@ export type Database = {
         }
         Relationships: []
       }
+      watch_history: {
+        Row: {
+          created_at: string
+          episode_number: number | null
+          episode_title: string | null
+          id: string
+          last_watched_at: string
+          media_type: string
+          movie_id: string
+          overview: string | null
+          poster_path: string | null
+          progress: number | null
+          season_number: number | null
+          title: string
+          total_duration: number | null
+          user_id: string
+          watch_duration: number | null
+        }
+        Insert: {
+          created_at?: string
+          episode_number?: number | null
+          episode_title?: string | null
+          id?: string
+          last_watched_at?: string
+          media_type?: string
+          movie_id: string
+          overview?: string | null
+          poster_path?: string | null
+          progress?: number | null
+          season_number?: number | null
+          title: string
+          total_duration?: number | null
+          user_id: string
+          watch_duration?: number | null
+        }
+        Update: {
+          created_at?: string
+          episode_number?: number | null
+          episode_title?: string | null
+          id?: string
+          last_watched_at?: string
+          media_type?: string
+          movie_id?: string
+          overview?: string | null
+          poster_path?: string | null
+          progress?: number | null
+          season_number?: number | null
+          title?: string
+          total_duration?: number | null
+          user_id?: string
+          watch_duration?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

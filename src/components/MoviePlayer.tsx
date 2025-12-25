@@ -381,7 +381,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
-            <iframe className="w-full h-full" src={isTVShow ? `https://vidsrc.vip/embed/tv/${movie.id}/${activeEpisode ? activeEpisode.season : 1}/${activeEpisode ? activeEpisode.episode : 1}` : `https://vidsrc.vip/embed/movie/${movie.id}`} title={`${title} Stream (Alternate)`} frameBorder="0" referrerPolicy="origin" allowFullScreen style={{
+            <iframe className="w-full h-full" src={isTVShow ? `https://vidsrc.vip/embed/tv/${movie.id}/${activeEpisode ? activeEpisode.season : 1}/${activeEpisode ? activeEpisode.episode : 1}?autonext=1` : `https://vidsrc.vip/embed/movie/${movie.id}`} title={`${title} Stream (Alternate)`} frameBorder="0" referrerPolicy="origin" allowFullScreen style={{
           height: '70vh',
           width: '40%'
         }} loading="lazy"></iframe>
@@ -526,11 +526,26 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
                           <Button
                             size="sm"
                             onClick={() => {
-                              setActiveEpisode({
+                              const episodeInfo = {
                                 season: selectedSeason,
                                 episode: episode.episode_number
-                              });
-                              watchNowAlt();
+                              };
+                              setActiveEpisode(episodeInfo);
+                              // Play specific episode directly
+                              if (!session) {
+                                toast({
+                                  title: "Authentication required",
+                                  description: "Please login to watch content",
+                                  variant: "destructive"
+                                });
+                                return;
+                              }
+                              setShowAltStream(true);
+                              setShowTrailer(false);
+                              setShowStream(false);
+                              watchStartRef.current = Date.now();
+                              startProgressTracking();
+                              trackWatchProgress({ ...movie, media_type: 'tv' }, 0, 'tv', episodeInfo);
                             }}
                           >
                             <Play className="h-3 w-3 mr-1" /> Play

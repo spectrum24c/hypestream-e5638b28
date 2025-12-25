@@ -162,12 +162,7 @@ const WatchHistoryPage: React.FC = () => {
     <div className="min-h-screen bg-hype-dark text-foreground">
       <Navbar />
       <main className="pt-24 pb-16 mx-auto container px-4">
-        <WatchHistoryList 
-          items={watchHistory}
-          onItemClick={handleItemClick}
-          onRemoveItem={handleRemoveItem}
-          onClearHistory={handleClearHistory}
-        />
+        <WatchHistoryList />
       </main>
       <Footer />
       

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { imgPath, apiPaths, fetchFromTMDB, fetchGenres } from '@/services/tmdbApi';
-import { Heart, Play, Film, X, ArrowLeft, Monitor, Download } from 'lucide-react';
+import { Heart, Play, X, ArrowLeft, Monitor, Download } from 'lucide-react';
 import { Button } from './ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -34,7 +34,6 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
   const [isFavorite, setIsFavorite] = useState(false);
   const [showStream, setShowStream] = useState(false);
   const [showAltStream, setShowAltStream] = useState(false);
-  const [showTrailer, setShowTrailer] = useState(false);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [session, setSession] = useState(null);
   const [movieDetails, setMovieDetails] = useState<any>(null);
@@ -51,6 +50,23 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
   const {
     currentProfile
   } = useProfile();
+
+  const loadEpisodesForSeason = async (seasonNumber: number) => {
+    if (!movie) return;
+    setIsLoadingEpisodes(true);
+    try {
+      const data = await fetchFromTMDB(
+        apiPaths.fetchTVSeason(movie.id, seasonNumber)
+      );
+      const episodes = Array.isArray(data.episodes) ? data.episodes : [];
+      setSeasonEpisodes(episodes);
+    } catch (error) {
+      console.error('Error loading episodes:', error);
+      setSeasonEpisodes([]);
+    } finally {
+      setIsLoadingEpisodes(false);
+    }
+  };
   useEffect(() => {
     // Get auth session
     supabase.auth.getSession().then(({
@@ -78,15 +94,9 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
         const trailerEndpoint = isTVShow ? apiPaths.fetchTVTrailer(movie.id) : apiPaths.fetchMovieTrailer(movie.id);
         const data = await fetchFromTMDB(trailerEndpoint);
         if (data.results && data.results.length > 0) {
-          // Find official trailer or use first video
           const officialTrailer = data.results.find((video: any) => video.type === 'Trailer' && video.official) || data.results[0];
           if (officialTrailer) {
             setTrailerKey(officialTrailer.key);
-
-            // Auto-play trailer if requested
-            if (autoPlayTrailer) {
-              setShowTrailer(true);
-            }
           }
         }
       } catch (error) {
@@ -111,8 +121,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
     const fetchDetails = async () => {
       if (!movie) return;
       try {
-        const isTVShow = movie.media_type === 'tv' || !!movie.first_air_date;
-        const detailsEndpoint = isTVShow ? apiPaths.fetchTVDetails(movie.id) : apiPaths.fetchMovieDetails(movie.id);
+        const isTVShowDetails = movie.media_type === 'tv' || !!movie.first_air_date;
+        const detailsEndpoint = isTVShowDetails ? apiPaths.fetchTVDetails(movie.id) : apiPaths.fetchMovieDetails(movie.id);
         const details = await fetchFromTMDB(detailsEndpoint);
         setMovieDetails(details);
 
@@ -129,14 +139,17 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
           localStorage.setItem('watchedMovies', JSON.stringify(watchedMovies));
         }
 
-        // If we have genres in the details, use those instead of loading separately
         if (details.genres && details.genres.length > 0) {
           setGenres(details.genres.map((g: {
             name: string;
           }) => g.name));
         } else {
-          // Otherwise load genres from IDs if available
           loadGenres();
+        }
+
+        if (isTVShowDetails) {
+          setSelectedSeason(1);
+          loadEpisodesForSeason(1);
         }
       } catch (error) {
         console.error('Error fetching details:', error);
@@ -148,8 +161,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
   }, [movie, autoPlayTrailer]);
   if (!movie) return null;
   const title = movie.title || movie.name || 'Unknown Title';
-  const posterPath = movie.poster_path ? `${imgPath}${movie.poster_path}` : 'https://via.placeholder.com/300x450?text=No+Poster';
-  const backdropPath = movie.backdrop_path ? `${imgPath}${movie.backdrop_path}` : null;
+  const posterPath = movie.poster_path ? `${imgPath}${movie.poster_path}` : null;
   const releaseDate = movie.release_date || movie.first_air_date;
   const year = releaseDate?.split('-')[0] || 'N/A';
   const rating = movie.vote_average?.toFixed(1) || 'N/A';
@@ -176,6 +188,24 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
 
   // Format genres for display
   const genresText = genres.length > 0 ? genres.join(' • ') : '';
+
+  const resolveEpisodeInfo = (override?: { season: number; episode: number }) => {
+    if (!isTVShow) return undefined;
+    if (override) return override;
+    if (activeEpisode) return activeEpisode;
+    return { season: 1, episode: 1 };
+  };
+
+  const getAltStreamSrc = (override?: { season: number; episode: number }) => {
+    if (!movie) return '';
+    if (!isTVShow) {
+      return `https://vidsrc.vip/embed/movie/${movie.id}`;
+    }
+    const episodeInfo = resolveEpisodeInfo(override);
+    const season = episodeInfo?.season ?? 1;
+    const episode = episodeInfo?.episode ?? 1;
+    return `https://vidsrc.vip/embed/tv/${movie.id}/${season}/${episode}`;
+  };
   const handleDownload = (seasonNumber?: number, episodeNumber?: number) => {
     if (!session) {
       toast({
@@ -250,19 +280,6 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
       setIsLoading(false);
     }
   };
-  const playTrailer = () => {
-    if (trailerKey) {
-      setShowTrailer(true);
-      setShowStream(false);
-      setShowAltStream(false);
-    } else {
-      toast({
-        title: "Trailer not available",
-        description: `No trailer found for "${title}"`,
-        variant: "destructive"
-      });
-    }
-  };
   const watchNow = () => {
     if (!session) {
       toast({
@@ -273,13 +290,12 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
       return;
     }
     setShowStream(true);
-    setShowTrailer(false);
     setShowAltStream(false);
     watchStartRef.current = Date.now();
     startProgressTracking();
     trackWatchProgress({ ...movie, media_type: isTVShow ? 'tv' : 'movie' }, 0, isTVShow ? 'tv' : 'movie');
   };
-  const watchNowAlt = () => {
+  const watchNowAlt = (episodeOverride?: { season: number; episode: number }) => {
     if (!session) {
       toast({
         title: "Authentication required",
@@ -289,11 +305,12 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
       return;
     }
     setShowAltStream(true);
-    setShowTrailer(false);
     setShowStream(false);
     watchStartRef.current = Date.now();
-    const episodeInfo = activeEpisode || { season: 1, episode: 1 };
-    setActiveEpisode(episodeInfo);
+    const episodeInfo = resolveEpisodeInfo(episodeOverride);
+    if (episodeInfo) {
+      setActiveEpisode(episodeInfo);
+    }
     startProgressTracking();
     trackWatchProgress({ ...movie, media_type: isTVShow ? 'tv' : 'movie' }, 0, isTVShow ? 'tv' : 'movie', episodeInfo);
   };
@@ -355,8 +372,16 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
       progressTimerRef.current = null;
     }
   };
-  return <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-0 player-cont">
-      <div className={`relative ${!showStream && !showTrailer && !showAltStream ? 'bg-card w-full max-w-4xl rounded-xl overflow-hidden max-h-[95vh] md:max-h-[90vh]' : 'w-full h-full'} flex flex-col`}>
+
+  const backgroundStyle = posterPath ? {
+    backgroundImage: `url(${posterPath})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  } : undefined;
+
+  return <div className="fixed inset-0 z-50 player-cont overflow-y-auto" style={backgroundStyle}>
+      <div className="relative w-full min-h-screen flex flex-col bg-black/80">
         <button onClick={handleClose} className="absolute top-4 right-4 z-10 bg-black/50 rounded-full p-2 text-white hover:bg-black/70 transition" aria-label="Close">
           <X className="h-5 w-5" />
         </button>
@@ -381,65 +406,48 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
-            <iframe className="w-full h-full" src={isTVShow ? `https://vidsrc.vip/embed/tv/${movie.id}/${activeEpisode ? activeEpisode.season : 1}/${activeEpisode ? activeEpisode.episode : 1}` : `https://vidsrc.vip/embed/movie/${movie.id}`} title={`${title} Stream (Alternate)`} frameBorder="0" referrerPolicy="origin" allowFullScreen style={{
+            <iframe className="w-full h-full" src={getAltStreamSrc()} title={`${title} Stream (Alternate)`} frameBorder="0" referrerPolicy="origin" allowFullScreen style={{
           height: '70vh',
           width: '40%'
         }} loading="lazy"></iframe>
           </div>}
         
-        {showTrailer && trailerKey && <div className="trailer-cont w-full h-screen bg-black flex-1 fixed inset-0 z-60 flex items-center justify-center">
-            <Button
-              onClick={() => setShowTrailer(false)}
-              className="absolute top-4 right-14 z-50 font-bold"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
-            </Button>
-            <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&hd=1`} title={`${title} Trailer`} frameBorder="0" referrerPolicy="origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowFullScreen style={{
-          height: '100vh',
-          width: '100%'
-        }} loading="lazy"></iframe>
-          </div>}
-        
-        {!showStream && !showTrailer && !showAltStream && <div className="relative flex-1 overflow-y-auto bg-black">
-            {backdropPath && (
-              <div className="absolute inset-0">
-                <img
-                  src={backdropPath}
-                  alt={title}
-                  className="w-full h-full object-cover opacity-40"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
-              </div>
-            )}
-            <div className="relative p-6">
-              <div className="flex flex-col md:flex-row gap-6">
-                <img src={posterPath} alt={title} className="w-full md:w-1/3 rounded-lg object-cover h-auto md:h-[350px] shadow-2xl" loading="lazy" />
-                <div className="flex-1">
-                <h2 className="text-2xl font-bold mb-2">{title}</h2>
-                <div className="flex gap-4 mb-4 text-gray-300 flex-wrap">
-                  <span>{year}</span>
-                  <span>★ {rating}</span>
+        {!showStream && !showAltStream && <div className="relative flex-1 overflow-y-auto bg-black">
+            {trailerKey && <div className="pt-2.5 px-2.5">
+                <div className="w-full aspect-video">
+                  <iframe
+                    className="w-full h-full"
+                    src={`https://www.youtube.com/embed/${trailerKey}?autoplay=${autoPlayTrailer ? 1 : 0}&hd=1&vq=hd1080`}
+                    title={`${title} Trailer`}
+                    frameBorder="0"
+                    referrerPolicy="origin"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                    allowFullScreen
+                    loading="lazy"
+                  ></iframe>
+                </div>
+              </div>}
+            <div className="relative px-4 py-8 md:py-10 max-w-6xl mx-auto">
+              <div className="text-left mb-6">
+                <h2 className="text-3xl md:text-4xl font-extrabold mb-3">{title}</h2>
+                <div className="flex flex-wrap items-center gap-4 mb-3 text-gray-300 text-sm md:text-base">
+                  <span className="font-semibold">{year}</span>
+                  <span className="px-1.5 py-0.5 rounded bg-white/20 text-xs md:text-sm">★ {rating}</span>
                   {durationInfo && <span>{durationInfo}</span>}
                 </div>
-                {genresText && <div className="bg-gray-800/60 px-3 py-1.5 rounded-md mb-4 inline-block">
+                {genresText && <div className="px-3 py-1.5 rounded-md mb-4 inline-block bg-black/40">
                     <span className="text-gray-300 text-sm">{genresText}</span>
                   </div>}
-                <p className="text-gray-300 mb-6 text-sm md:text-base">{movie.overview || 'No description available'}</p>
-                <div className="flex flex-wrap gap-3 mb-6">
-                  <Button onClick={watchNow}>
-                    <Play className="mr-2 h-4 w-4" /> Watch Now
+                <p className="text-gray-200 mb-6 text-sm md:text-base max-w-2xl">{movie.overview || 'No description available'}</p>
+                <div className="flex flex-wrap gap-3 mb-2">
+                  <Button onClick={watchNow} className="font-semibold">
+                    <Play className="mr-2 h-4 w-4" /> Play
                   </Button>
-                  <Button
-                    onClick={() => handleDownload()}
-                  >
+                  <Button onClick={() => handleDownload()}>
                     <Download className="mr-2 h-4 w-4" /> Download
                   </Button>
-                  <Button onClick={watchNowAlt}>
-                    <Monitor className="mr-2 h-4 w-4" /> Watch (Alt Source)
-                  </Button>
-                  <Button onClick={playTrailer} variant="secondary">
-                    <Film className="mr-2 h-4 w-4" /> Watch Trailer
+                  <Button onClick={() => watchNowAlt()} variant="outline">
+                    <Monitor className="mr-2 h-4 w-4" /> Watch (Alt)
                   </Button>
                   {!isFavorite ? <Button onClick={handleAddToFavorites} variant="outline" disabled={isLoading}>
                       <Heart className="mr-2 h-4 w-4" /> {isLoading ? 'Adding...' : 'Add to Favorites'}
@@ -448,104 +456,90 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
                     </Button>}
                 </div>
               </div>
-            </div>
             {isTVShow && movieDetails?.seasons && movieDetails.seasons.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold mb-3">Episodes</h3>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {movieDetails.seasons
-                    .filter((s: any) => s.season_number > 0)
-                    .map((season: any) => (
-                      <Button
-                        key={season.id}
-                        size="sm"
-                        variant={selectedSeason === season.season_number ? 'default' : 'outline'}
-                        onClick={async () => {
-                          if (selectedSeason === season.season_number && seasonEpisodes.length > 0) return;
-                          setSelectedSeason(season.season_number);
-                          setIsLoadingEpisodes(true);
-                          try {
-                            const data = await fetchFromTMDB(
-                              apiPaths.fetchTVSeason(movie.id, season.season_number)
-                            );
-                            const episodes = Array.isArray(data.episodes) ? data.episodes : [];
-                            setSeasonEpisodes(episodes);
-                          } catch (error) {
-                            console.error('Error loading episodes:', error);
-                            setSeasonEpisodes([]);
-                          } finally {
-                            setIsLoadingEpisodes(false);
-                          }
-                        }}
-                      >
-                        Season {season.season_number}
-                      </Button>
-                    ))}
+              <div className="mt-10">
+                <div className="flex items-center justify-between mb-4 gap-4">
+                  <h3 className="text-lg md:text-xl font-semibold">Episodes</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {movieDetails.seasons
+                      .filter((s: any) => s.season_number > 0)
+                      .map((season: any) => (
+                        <Button
+                          key={season.id}
+                          size="sm"
+                          variant={selectedSeason === season.season_number ? 'default' : 'outline'}
+                          onClick={() => {
+                            if (selectedSeason === season.season_number) return;
+                            setSelectedSeason(season.season_number);
+                            loadEpisodesForSeason(season.season_number);
+                          }}
+                        >
+                          Season {season.season_number}
+                        </Button>
+                      ))}
+                  </div>
                 </div>
-                <div className="border border-border rounded-lg bg-background/80 max-h-64 overflow-y-auto backdrop-blur">
-                  {isLoadingEpisodes && (
-                    <div className="p-4 text-sm text-muted-foreground">
-                      Loading episodes...
-                    </div>
-                  )}
-                  {!isLoadingEpisodes && seasonEpisodes.length === 0 && (
-                    <div className="p-4 text-sm text-muted-foreground">
-                      Select a season to view episodes.
-                    </div>
-                  )}
-                  {!isLoadingEpisodes &&
-                    seasonEpisodes.length > 0 &&
-                    seasonEpisodes.map(episode => (
-                      <div
-                        key={episode.id}
-                        className="flex items-start gap-3 px-4 py-3 border-t border-border/60 first:border-t-0"
-                      >
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">
-                                S{selectedSeason} • E{episode.episode_number}
-                              </span>
-                              <span className="text-sm font-medium">
-                                {episode.name || `Episode ${episode.episode_number}`}
-                              </span>
-                            </div>
-                            {episode.runtime && (
-                              <span className="text-xs text-muted-foreground">
-                                {episode.runtime} min
-                              </span>
-                            )}
+                {isLoadingEpisodes && (
+                  <div className="p-4 text-sm text-muted-foreground">
+                    Loading episodes...
+                  </div>
+                )}
+                {!isLoadingEpisodes && seasonEpisodes.length === 0 && (
+                  <div className="p-4 text-sm text-muted-foreground">
+                    No episodes found for this season.
+                  </div>
+                )}
+                {!isLoadingEpisodes &&
+                  seasonEpisodes.length > 0 &&
+                  seasonEpisodes.map(episode => (
+                    <div
+                      key={episode.id}
+                      className="flex items-center gap-4 py-3 border-t border-white/10 first:border-t-0"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                              S{selectedSeason} • E{episode.episode_number}
+                            </span>
+                            <span className="text-sm font-medium">
+                              {episode.name || `Episode ${episode.episode_number}`}
+                            </span>
                           </div>
-                          {episode.overview && (
-                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                              {episode.overview}
-                            </p>
+                          {episode.runtime && (
+                            <span className="text-xs text-muted-foreground">
+                              {episode.runtime} min
+                            </span>
                           )}
                         </div>
-                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setActiveEpisode({
-                                season: selectedSeason,
-                                episode: episode.episode_number
-                              });
-                              watchNowAlt();
-                            }}
-                          >
-                            <Play className="h-3 w-3 mr-1" /> Play
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDownload(selectedSeason, episode.episode_number)}
-                          >
-                            <Download className="h-3 w-3 mr-1" /> Download
-                          </Button>
-                        </div>
+                        {episode.overview && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {episode.overview}
+                          </p>
+                        )}
                       </div>
-                    ))}
-                </div>
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            watchNowAlt({
+                              season: selectedSeason,
+                              episode: episode.episode_number
+                            });
+                          }}
+                        >
+                          <Play className="h-3 w-3 mr-1" /> Play
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDownload(selectedSeason, episode.episode_number)}
+                        >
+                          <Download className="h-3 w-3 mr-1" /> Download
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
               </div>
             )}
           </div>

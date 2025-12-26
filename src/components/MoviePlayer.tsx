@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { imgPath, apiPaths, fetchFromTMDB, fetchGenres } from '@/services/tmdbApi';
-import { Heart, Play, X, ArrowLeft, Monitor, Download } from 'lucide-react';
+import { Heart, Play, ArrowLeft, Monitor, Download } from 'lucide-react';
 import { Button } from './ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -382,11 +382,16 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
 
   return <div className="fixed inset-0 z-50 player-cont overflow-y-auto" style={backgroundStyle}>
       <div className="relative w-full min-h-screen flex flex-col bg-black/80">
-        <button onClick={handleClose} className="absolute top-4 right-4 z-10 bg-black/50 rounded-full p-2 text-white hover:bg-black/70 transition" aria-label="Close">
-          <X className="h-5 w-5" />
+        <button
+          onClick={handleClose}
+          className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-black/60 rounded-full px-3 py-1.5 text-sm text-white hover:bg-black/80 transition"
+          aria-label="Back"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back</span>
         </button>
         
-        {showStream && <div className="stream w-full h-screen bg-black flex items-center justify-center flex-1 relative">
+        {showStream && <div className="stream w-full h-screen bg-black/80 flex items-center justify-center flex-1 relative">
             <Button
               onClick={() => setShowStream(false)}
               className="absolute top-4 right-14 z-50 font-bold"
@@ -399,7 +404,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
         }} loading="lazy"></iframe>
           </div>}
 
-        {showAltStream && <div className="stream w-full h-screen bg-black flex items-center justify-center flex-1 relative">
+        {showAltStream && <div className="stream w-full h-screen bg-black/80 flex items-center justify-center flex-1 relative">
             <Button
               onClick={() => setShowAltStream(false)}
               className="absolute top-4 right-14 z-50 font-bold"
@@ -412,12 +417,12 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
         }} loading="lazy"></iframe>
           </div>}
         
-        {!showStream && !showAltStream && <div className="relative flex-1 overflow-y-auto bg-black">
+        {!showStream && !showAltStream && <div className="relative flex-1 overflow-y-auto bg-black/70">
             {trailerKey && <div className="pt-2.5 px-2.5">
                 <div className="w-full aspect-video">
                   <iframe
                     className="w-full h-full"
-                    src={`https://www.youtube.com/embed/${trailerKey}?autoplay=${autoPlayTrailer ? 1 : 0}&hd=1&vq=hd1080`}
+                    src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&hd=1&vq=hd1080`}
                     title={`${title} Trailer`}
                     frameBorder="0"
                     referrerPolicy="origin"

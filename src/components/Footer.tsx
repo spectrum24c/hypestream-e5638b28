@@ -101,7 +101,7 @@ const Footer = () => {
     <footer className="bg-hype-dark border-t border-gray-800">
    <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-10">
-          <div className="md:col-span-5">
+          <div className="md:col-span-5 text-center md:text-left">
             <h3 className="text-xl font-bold mb-4 text-white">Subscribe to Our Newsletter</h3>
             <p className="text-gray-400 mb-4">Get updates on the latest movies and shows. No spam, we promise!</p>
             
@@ -116,9 +116,8 @@ const Footer = () => {
               />
               <Button 
                 type="submit" 
-                className="bg-hype-purple hover:bg-hype-purple/90"
+                className="bg-[#B41818] hover:bg-[#B41818]/90 text-white"
                 disabled={isSubmitting}
-                
               >
                 {isSubmitting ? 'Subscribing...' : 'Subscribe'}
               </Button>

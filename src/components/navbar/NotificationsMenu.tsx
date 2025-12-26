@@ -35,6 +35,15 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
       } catch (error) {
         console.error('Error parsing stored preferences:', error);
       }
+    } else {
+      const defaultPreferences = {
+        enableNotifications: true,
+        preferredGenres: [],
+        preferredLanguages: []
+      };
+      setUserPreferences(defaultPreferences);
+      localStorage.setItem('userPreferences', JSON.stringify(defaultPreferences));
+      localStorage.setItem('notificationsEnabled', 'true');
     }
 
     const storedNotifications = localStorage.getItem('notifications');
@@ -66,15 +75,22 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
         return;
       }
 
-      // Get preferred genres
       const preferredGenres = userPreferences.preferredGenres || [];
-      
-      // If user has preferred genres, use one of them to fetch movies
+      const watched = JSON.parse(localStorage.getItem('watchedMovies') || '[]');
+      const recentWatched = Array.isArray(watched)
+        ? watched
+            .filter((m: any) => Array.isArray(m.genre_ids) && m.genre_ids.length > 0)
+            .sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0))
+            .slice(0, 10)
+        : [];
+      const recentGenreIds = recentWatched.flatMap((m: any) => m.genre_ids);
+      const uniqueRecentGenres = Array.from(new Set(recentGenreIds));
+      const genrePool = uniqueRecentGenres.length > 0 ? uniqueRecentGenres : preferredGenres;
+
       let data;
-      if (preferredGenres.length > 0) {
-        // Pick a random genre from user's preferred genres
-        const randomGenreIndex = Math.floor(Math.random() * preferredGenres.length);
-        const genreId = preferredGenres[randomGenreIndex];
+      if (genrePool.length > 0) {
+        const randomGenreIndex = Math.floor(Math.random() * genrePool.length);
+        const genreId = genrePool[randomGenreIndex];
         data = await fetchFromTMDB(apiPaths.fetchMoviesList(genreId));
       } else {
         // Default to latest movies if no genre preferences
@@ -144,14 +160,21 @@ const NotificationsMenu: React.FC<NotificationsMenuProps> = ({
         return;
       }
       
-      // Get preferred genres from user preferences
       const preferredGenres = userPreferences.preferredGenres || [];
+      const watched = JSON.parse(localStorage.getItem('watchedMovies') || '[]');
+      const recentWatched = Array.isArray(watched)
+        ? watched
+            .filter((m: any) => Array.isArray(m.genre_ids) && m.genre_ids.length > 0)
+            .sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0))
+            .slice(0, 10)
+        : [];
+      const recentGenreIds = recentWatched.flatMap((m: any) => m.genre_ids);
+      const uniqueRecentGenres = Array.from(new Set(recentGenreIds));
+      const genrePool = uniqueRecentGenres.length > 0 ? uniqueRecentGenres : preferredGenres;
       
-      // If we have preferred genres, fetch recommendations based on them
-      if (preferredGenres.length > 0) {
-        // Pick a random genre from user's preferred genres
-        const randomGenreIndex = Math.floor(Math.random() * preferredGenres.length);
-        const genreId = preferredGenres[randomGenreIndex];
+      if (genrePool.length > 0) {
+        const randomGenreIndex = Math.floor(Math.random() * genrePool.length);
+        const genreId = genrePool[randomGenreIndex];
         
         const data = await fetchFromTMDB(apiPaths.fetchMoviesList(genreId));
         

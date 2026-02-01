@@ -398,7 +398,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
-            <iframe className="w-full h-full" src={isTVShow ? `https://vidsrc.xyz/embed/tv?tmdb=${movie.id}` : `https://vidsrc.in/embed/${movie.id}`} title={`${title} Stream`} frameBorder="0" referrerPolicy="origin" allowFullScreen style={{
+            <iframe className="w-full h-full" src={isTVShow ? `https://vsrc.su/embed/tv/${movie.id}/1/1?autonext=1` : `https://vsrc.su/embed/movie/${movie.id}`} title={`${title} Stream`} frameBorder="0" referrerPolicy="origin" allowFullScreen style={{
           height: '70vh',
           width: '40%'
         }} loading="lazy"></iframe>

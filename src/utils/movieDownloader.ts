@@ -16,16 +16,16 @@ export const getAlternativeStreamUrl = (movie: { id: string, imdb_id?: string, m
   
   if (media_type === 'tv') {
     if (imdb_id) {
-      return `https://vidsrc.vip/embed/tv/${imdb_id}/${season}/${episode}?autonext=1`;
+      return `https://vsrc.su/embed/tv/${imdb_id}/${season}/${episode}?autonext=1`;
     }
-    return `https://vidsrc.vip/embed/tv/${id}/${season}/${episode}?autonext=1`;
+    return `https://vsrc.su/embed/tv/${id}/${season}/${episode}?autonext=1`;
   }
   
   // It's a movie
   if (imdb_id) {
-    return `https://vidsrc.vip/embed/movie/${imdb_id}`;
+    return `https://vsrc.su/embed/movie/${imdb_id}`;
   }
-  return `https://vidsrc.vip/embed/movie/${id}`;
+  return `https://vsrc.su/embed/movie/${id}`;
 };
 
 export const trackWatchProgress = async (

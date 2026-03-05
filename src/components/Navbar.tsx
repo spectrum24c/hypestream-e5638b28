@@ -206,16 +206,16 @@ const Navbar = () => {
         className={cn(
           "fixed top-0 left-0 w-full z-40 transition-all duration-500",
           isScrolled 
-            ? "bg-background/95 backdrop-blur-lg shadow-lg border-b border-border/50 py-2" 
-            : "bg-gradient-to-b from-background/80 via-background/40 to-transparent py-4"
+            ? "glass-panel shadow-lg py-2" 
+            : "bg-gradient-to-b from-background/90 via-background/40 to-transparent py-4"
         )}
       >
         <div className="container mx-auto px-4 md:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex-shrink-0 group">
-              <h1 className="font-display text-3xl md:text-4xl tracking-wider text-foreground transition-colors">
-                HYPE<span className="text-primary group-hover:text-primary/80 transition-colors">STREAM</span>
+              <h1 className="font-display text-3xl md:text-4xl font-bold tracking-wider text-foreground transition-colors">
+                HYPE<span className="text-primary neon-glow group-hover:brightness-125 transition-all">STREAM</span>
               </h1>
             </Link>
 

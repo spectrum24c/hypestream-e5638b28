@@ -450,7 +450,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-hype-dark text-foreground overflow-x-hidden w-full">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden w-full">
       <Navbar />
       <main className="pb-8 pt-16 w-full">
         {!isSearching && (

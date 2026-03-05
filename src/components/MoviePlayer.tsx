@@ -398,10 +398,16 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
-            <iframe className="w-full h-full" src={isTVShow ? `https://vidnest.fun/tv/${movie.id}/${activeEpisode?.season || 1}/${activeEpisode?.episode || 1}` : `https://vidnest.fun/movie/${movie.id}`} title={`${title} Stream`} frameBorder="0" referrerPolicy="origin" allowFullScreen style={{
-          height: '70vh',
-          width: '40%'
-        }} loading="lazy"></iframe>
+            <iframe
+              className="w-full h-full"
+              src={isTVShow ? `https://vidfast.pro/tv/${movie.id}/${activeEpisode?.season || 1}/${activeEpisode?.episode || 1}` : `https://vidfast.pro/movie/${movie.id}`}
+              title={`${title} Stream`}
+              frameBorder="0"
+              referrerPolicy="origin"
+              allowFullScreen
+              style={{ height: '70vh', width: '40%' }}
+              loading="lazy"
+            ></iframe>
           </div>}
 
         {showAltStream && <div className="stream w-full h-screen bg-black/80 flex items-center justify-center flex-1 relative">

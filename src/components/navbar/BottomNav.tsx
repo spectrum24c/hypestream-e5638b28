@@ -49,7 +49,7 @@ const BottomNav: React.FC = () => {
   return (
     <nav 
       aria-label="Bottom navigation" 
-      className="md:hidden fixed bottom-2.5 left-2.5 right-2.5 z-50 rounded-[10px] bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-lg border-t border-border/50" 
+      className="md:hidden fixed bottom-2.5 left-2.5 right-2.5 z-50 rounded-2xl glass-panel" 
       style={{
         position: 'fixed',
         bottom: 10,
@@ -67,7 +67,7 @@ const BottomNav: React.FC = () => {
             className={itemCls(isActive(p => p === '/'))} 
             aria-current={pathname === '/' ? 'page' : undefined}
           >
-            <div className={`p-2 rounded-xl transition-colors ${isActive(p => p === '/') ? 'bg-primary/20' : ''}`}>
+            <div className={`p-2 rounded-xl transition-colors ${isActive(p => p === '/') ? 'bg-primary/20 shadow-glow' : ''}`}>
               <Home className="h-5 w-5" />
             </div>
             <span>Home</span>
@@ -79,7 +79,7 @@ const BottomNav: React.FC = () => {
             className={itemCls(search.includes('category='))} 
             aria-label="Categories"
           >
-            <div className={`p-2 rounded-xl transition-colors ${search.includes('category=') ? 'bg-primary/20' : ''}`}>
+            <div className={`p-2 rounded-xl transition-colors ${search.includes('category=') ? 'bg-primary/20 shadow-glow' : ''}`}>
               <Layers className="h-5 w-5" />
             </div>
             <span>Browse</span>
@@ -91,7 +91,7 @@ const BottomNav: React.FC = () => {
             className={itemCls(false)} 
             aria-label="AI Chat"
           >
-            <div className="p-2 rounded-xl bg-primary/10 border border-primary/30">
+            <div className="p-2 rounded-xl bg-primary/15 border border-primary/30 shadow-glow">
               <Bot className="h-5 w-5 text-primary" />
             </div>
             <span className="text-primary">AI</span>
@@ -103,7 +103,7 @@ const BottomNav: React.FC = () => {
             className={itemCls(isActive(p => p === '/favorites'))} 
             aria-current={pathname === '/favorites' ? 'page' : undefined}
           >
-            <div className={`p-2 rounded-xl transition-colors ${isActive(p => p === '/favorites') ? 'bg-primary/20' : ''}`}>
+            <div className={`p-2 rounded-xl transition-colors ${isActive(p => p === '/favorites') ? 'bg-primary/20 shadow-glow' : ''}`}>
               <List className="h-5 w-5" />
             </div>
             <span>My List</span>
@@ -115,7 +115,7 @@ const BottomNav: React.FC = () => {
             className={itemCls(isActive(p => p === '/profile'))} 
             aria-current={pathname === '/profile' ? 'page' : undefined}
           >
-            <div className={`p-2 rounded-xl transition-colors ${isActive(p => p === '/profile') ? 'bg-primary/20' : ''}`}>
+            <div className={`p-2 rounded-xl transition-colors ${isActive(p => p === '/profile') ? 'bg-primary/20 shadow-glow' : ''}`}>
               <User className="h-5 w-5" />
             </div>
             <span>Profile</span>

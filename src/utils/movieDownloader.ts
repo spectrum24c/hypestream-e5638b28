@@ -15,11 +15,11 @@ export const getAlternativeStreamUrl = (movie: { id: string, imdb_id?: string, m
   const episode = 1;
   
   if (media_type === 'tv') {
-    return `https://vidnest.fun/tv/${id}/${season}/${episode}`;
+    return `https://vidfast.pro/tv/${id}/${season}/${episode}`;
   }
   
   // It's a movie
-  return `https://vidnest.fun/movie/${id}`;
+  return `https://vidfast.pro/movie/${id}`;
 };
 
 export const trackWatchProgress = async (

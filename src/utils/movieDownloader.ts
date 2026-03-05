@@ -15,17 +15,11 @@ export const getAlternativeStreamUrl = (movie: { id: string, imdb_id?: string, m
   const episode = 1;
   
   if (media_type === 'tv') {
-    if (imdb_id) {
-      return `https://vsrc.su/embed/tv/${imdb_id}/${season}/${episode}?autonext=1`;
-    }
-    return `https://vsrc.su/embed/tv/${id}/${season}/${episode}?autonext=1`;
+    return `https://vidnest.fun/tv/${id}/${season}/${episode}`;
   }
   
   // It's a movie
-  if (imdb_id) {
-    return `https://vsrc.su/embed/movie/${imdb_id}`;
-  }
-  return `https://vsrc.su/embed/movie/${id}`;
+  return `https://vidnest.fun/movie/${id}`;
 };
 
 export const trackWatchProgress = async (

@@ -63,14 +63,22 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				hype: {
-					crimson: 'hsl(var(--hype-crimson))',
-					'crimson-light': 'hsl(var(--hype-crimson-light))',
-					'crimson-dark': 'hsl(var(--hype-crimson-dark))',
-					gold: 'hsl(var(--hype-gold))',
+					purple: 'hsl(var(--neon-purple))',
+					'purple-light': 'hsl(var(--neon-purple-light))',
+					'purple-dark': 'hsl(var(--neon-purple-dark))',
+					cyan: 'hsl(var(--neon-cyan))',
+					'cyan-light': 'hsl(var(--neon-cyan-light))',
+					pink: 'hsl(var(--neon-pink))',
+					blue: 'hsl(var(--neon-blue))',
 					dark: 'hsl(var(--hype-dark))',
 					darker: 'hsl(var(--hype-darker))',
 					gray: 'hsl(var(--hype-gray))',
-					'light-gray': 'hsl(var(--hype-light-gray))'
+					'light-gray': 'hsl(var(--hype-light-gray))',
+					// Keep old names for backward compat
+					crimson: 'hsl(var(--neon-purple))',
+					'crimson-light': 'hsl(var(--neon-purple-light))',
+					'crimson-dark': 'hsl(var(--neon-purple-dark))',
+					gold: 'hsl(var(--neon-cyan))',
 				}
 			},
 			borderRadius: {
@@ -112,8 +120,8 @@ export default {
 					'50%': { opacity: '0.8' }
 				},
 				'glow': {
-					'0%, 100%': { boxShadow: '0 0 20px hsl(var(--hype-crimson) / 0.3)' },
-					'50%': { boxShadow: '0 0 40px hsl(var(--hype-crimson) / 0.5)' }
+					'0%, 100%': { boxShadow: '0 0 20px hsl(var(--neon-purple) / 0.3)' },
+					'50%': { boxShadow: '0 0 40px hsl(var(--neon-purple) / 0.5)' }
 				},
 				'shimmer': {
 					'0%': { backgroundPosition: '-200% 0' },
@@ -133,22 +141,27 @@ export default {
 				'shimmer': 'shimmer 1.5s infinite'
 			},
 			fontFamily: {
-				display: ['Bebas Neue', 'Impact', 'sans-serif'],
-				sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-				body: ['DM Sans', 'ui-sans-serif', 'system-ui', 'sans-serif']
+				display: ['Outfit', 'Space Grotesk', 'sans-serif'],
+				sans: ['Space Grotesk', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+				body: ['Space Grotesk', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+				mono: ['JetBrains Mono', 'monospace']
 			},
 			boxShadow: {
-				'glow': '0 0 30px hsl(var(--hype-crimson) / 0.3)',
-				'glow-lg': '0 0 50px hsl(var(--hype-crimson) / 0.4)',
-				'card': '0 8px 32px hsl(0 0% 0% / 0.4)',
-				'elevated': '0 16px 48px hsl(0 0% 0% / 0.5)',
-				'inner-glow': 'inset 0 0 20px hsl(var(--hype-crimson) / 0.1)'
+				'glow': '0 0 30px hsl(var(--neon-purple) / 0.3)',
+				'glow-lg': '0 0 50px hsl(var(--neon-purple) / 0.4)',
+				'glow-cyan': '0 0 30px hsl(var(--neon-cyan) / 0.3)',
+				'card': '0 8px 32px hsl(230 25% 0% / 0.4)',
+				'elevated': '0 16px 48px hsl(230 25% 0% / 0.5)',
+				'inner-glow': 'inset 0 0 20px hsl(var(--neon-purple) / 0.1)',
+				'neon': '0 0 5px hsl(var(--neon-purple) / 0.5), 0 0 20px hsl(var(--neon-purple) / 0.3), 0 0 40px hsl(var(--neon-purple) / 0.1)',
+				'neon-cyan': '0 0 5px hsl(var(--neon-cyan) / 0.5), 0 0 20px hsl(var(--neon-cyan) / 0.3), 0 0 40px hsl(var(--neon-cyan) / 0.1)',
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
-				'gradient-netflix': 'linear-gradient(to bottom, transparent, hsl(var(--background)))',
-				'gradient-hero': 'linear-gradient(to right, hsl(var(--background)) 0%, transparent 50%)'
+				'gradient-mesh': 'linear-gradient(to bottom, transparent, hsl(var(--background)))',
+				'gradient-hero': 'linear-gradient(to right, hsl(var(--background)) 0%, transparent 50%)',
+				'gradient-neon': 'linear-gradient(135deg, hsl(var(--neon-purple)) 0%, hsl(var(--neon-cyan)) 100%)',
 			}
 		}
 	},

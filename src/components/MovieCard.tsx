@@ -36,18 +36,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   
-  // Use optimized image paths with appropriate size
   const posterUrl = posterPath 
     ? getOptimizedImagePath(posterPath, 'medium') 
     : 'https://via.placeholder.com/300x450?text=No+Poster';
   
-  // Format release date to just show year (use latest season year for TV shows with new seasons)
   const year = (isTVShow && latestSeasonYear) ? latestSeasonYear : (releaseDate?.split('-')[0] || 'N/A');
-  
-  // Format vote average to one decimal place
   const rating = voteAverage !== undefined ? voteAverage.toFixed(1) : 'N/A';
   
-  // Format runtime or seasons display
   let durationInfo = '';
   if (isTVShow) {
     durationInfo = numberOfSeasons ? `${numberOfSeasons} Season${numberOfSeasons !== 1 ? 's' : ''}` : '';
@@ -55,23 +50,15 @@ const MovieCard: React.FC<MovieCardProps> = ({
     durationInfo = runtime ? `${runtime} min` : '';
   }
 
-  const handleImageLoad = () => {
-    setImageLoaded(true);
-  };
-
-  const handleImageError = () => {
-    setImageError(true);
-  };
-
   return (
     <div 
-      className="group flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] bg-card rounded-lg overflow-hidden hover:scale-105 transition duration-200 cursor-pointer shadow-lg border border-border/10 hover:border-hype-purple/30"
+      className="group flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] rounded-xl overflow-hidden transition-all duration-300 cursor-pointer border border-border/20 hover:border-primary/40 hover:scale-105 hover:shadow-neon bg-card/60 backdrop-blur-sm"
       onClick={onClick}
     >
-      <div className="relative aspect-[2/3] w-full bg-gray-800">
+      <div className="relative aspect-[2/3] w-full bg-muted">
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-t-transparent border-hype-purple rounded-full animate-spin"></div>
+            <div className="w-8 h-8 border-2 border-t-transparent border-primary rounded-full animate-spin"></div>
           </div>
         )}
         
@@ -80,26 +67,26 @@ const MovieCard: React.FC<MovieCardProps> = ({
           alt={title}
           className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           loading="lazy"
-          onLoad={handleImageLoad}
-          onError={handleImageError}
+          onLoad={() => setImageLoaded(true)}
+          onError={() => setImageError(true)}
           decoding="async"
         />
         
         {isNewSeason && (
-          <div className="absolute top-2 left-2 bg-primary px-2 py-1 rounded text-xs font-bold text-primary-foreground shadow-lg z-10">
+          <div className="absolute top-2 left-2 bg-accent px-2 py-1 rounded-full text-xs font-bold text-accent-foreground shadow-glow-cyan z-10">
             NEW SEASON
           </div>
         )}
         
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
       <div className="p-2 md:p-3">
-        <h3 className="font-bold text-xs md:text-sm mb-1 truncate">{title}</h3>
-        <div className="flex justify-between text-gray-400 text-xs mb-1">
-          <span>{year}</span>
-          <span>★ {rating}</span>
+        <h3 className="font-semibold text-xs md:text-sm mb-1 truncate text-foreground">{title}</h3>
+        <div className="flex justify-between text-muted-foreground text-xs mb-1">
+          <span className="font-mono">{year}</span>
+          <span className="text-accent font-mono">★ {rating}</span>
         </div>
-        <div className="text-gray-400 text-xs mb-1">
+        <div className="text-muted-foreground text-xs mb-1">
           {durationInfo}
         </div>
       </div>

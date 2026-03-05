@@ -5,11 +5,13 @@ import MoviePlayer from './MoviePlayer';
 import { Button } from './ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Movie } from '@/types/movie';
+
 interface ContentSliderProps {
   title: string;
   items: Movie[];
   onViewAll?: () => void;
 }
+
 const ContentSlider: React.FC<ContentSliderProps> = ({
   title,
   items,
@@ -19,26 +21,17 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const navigate = useNavigate();
+
   const scroll = (direction: 'left' | 'right') => {
     if (!sliderRef.current) return;
-    const {
-      current
-    } = sliderRef;
+    const { current } = sliderRef;
     const isMobile = window.innerWidth < 640;
     const scrollAmount = isMobile ? current.clientWidth : current.clientWidth * 0.75;
     if (direction === 'left') {
-      current.scrollBy({
-        left: -scrollAmount,
-        behavior: 'smooth'
-      });
+      current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
     } else {
-      current.scrollBy({
-        left: scrollAmount,
-        behavior: 'smooth'
-      });
+      current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
-
-    // Check if we need to show the left arrow after scrolling
     setTimeout(() => {
       if (current.scrollLeft > 20) {
         setShowLeftArrow(true);
@@ -47,35 +40,31 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
       }
     }, 400);
   };
+
   const handleMovieClick = (movie: Movie) => {
     setSelectedMovie(movie);
   };
   
   const checkIfNewSeason = (movie: Movie): boolean => {
     if (movie.media_type !== 'tv' && !movie.first_air_date) return false;
-    
     const releaseDate = movie.first_air_date || movie.release_date;
     if (!releaseDate) return false;
-    
     const releaseYear = new Date(releaseDate).getFullYear();
     const currentYear = new Date().getFullYear();
-    
-    // Consider it a new season if released in current year or last year
     return currentYear - releaseYear <= 1;
   };
   
   const getLatestSeasonYear = (movie: Movie): string | undefined => {
     if (movie.media_type !== 'tv' && !movie.first_air_date) return undefined;
-    
     const releaseDate = movie.first_air_date || movie.release_date;
     if (!releaseDate) return undefined;
-    
     return new Date(releaseDate).getFullYear().toString();
   };
   
   const closeMoviePlayer = () => {
     setSelectedMovie(null);
   };
+
   const handleViewAll = () => {
     if (onViewAll) {
       onViewAll();
@@ -84,43 +73,61 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
       navigate(`/?category=${category}`);
     }
   };
-  return <div className="py-3">
+
+  return (
+    <div className="py-3">
       {/* Section Title */}
       <div className="flex items-center justify-between mb-2 px-[9px] mx-0">
-        <h2 className="text-xl md:text-2xl font-bold text-white">{title}</h2>
-        <Button variant="ghost" onClick={handleViewAll} className="text-sm text-hype-purple hover:text-hype-purple/80">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground">{title}</h2>
+        <Button variant="ghost" onClick={handleViewAll} className="text-sm text-primary hover:text-primary/80">
           View All
         </Button>
       </div>
 
       {/* Carousel Container */}
       <div className="relative group">
-        {/* Left Arrow */}
-        {showLeftArrow && <button onClick={() => scroll('left')} className="absolute left-0 top-1/2 z-10 -translate-y-1/2 bg-black/50 p-2 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Scroll left">
-            <ChevronLeft className="h-6 w-6 text-white" />
-          </button>}
+        {showLeftArrow && (
+          <button onClick={() => scroll('left')} className="absolute left-0 top-1/2 z-10 -translate-y-1/2 glass p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:shadow-glow" aria-label="Scroll left">
+            <ChevronLeft className="h-6 w-6 text-foreground" />
+          </button>
+        )}
 
-        {/* Slider */}
         <div ref={sliderRef} className="flex space-x-2 overflow-x-auto pb-4 px-2 hide-scrollbar md:snap-x md:snap-mandatory" onScroll={() => {
-        if (sliderRef.current && sliderRef.current.scrollLeft > 20) {
-          setShowLeftArrow(true);
-        } else {
-          setShowLeftArrow(false);
-        }
-      }}>
-          {items.map(item => <div key={item.id} className="md:snap-start shrink-0 basis-[calc(50%-0.25rem)] sm:basis-auto">
-              <MovieCard id={item.id} title={item.title || item.name || 'Unknown Title'} posterPath={item.poster_path} releaseDate={item.release_date || item.first_air_date} voteAverage={item.vote_average} isTVShow={item.media_type === 'tv' || !!item.first_air_date} runtime={item.runtime} numberOfSeasons={item.number_of_seasons} genreIds={item.genre_ids} onClick={() => handleMovieClick(item)} overview={item.overview} isNewSeason={checkIfNewSeason(item)} latestSeasonYear={getLatestSeasonYear(item)} />
-            </div>)}
+          if (sliderRef.current && sliderRef.current.scrollLeft > 20) {
+            setShowLeftArrow(true);
+          } else {
+            setShowLeftArrow(false);
+          }
+        }}>
+          {items.map(item => (
+            <div key={item.id} className="md:snap-start shrink-0 basis-[calc(50%-0.25rem)] sm:basis-auto">
+              <MovieCard
+                id={item.id}
+                title={item.title || item.name || 'Unknown Title'}
+                posterPath={item.poster_path}
+                releaseDate={item.release_date || item.first_air_date}
+                voteAverage={item.vote_average}
+                isTVShow={item.media_type === 'tv' || !!item.first_air_date}
+                runtime={item.runtime}
+                numberOfSeasons={item.number_of_seasons}
+                genreIds={item.genre_ids}
+                onClick={() => handleMovieClick(item)}
+                overview={item.overview}
+                isNewSeason={checkIfNewSeason(item)}
+                latestSeasonYear={getLatestSeasonYear(item)}
+              />
+            </div>
+          ))}
         </div>
 
-        {/* Right Arrow */}
-        <button onClick={() => scroll('right')} className="absolute right-0 top-1/2 z-10 -translate-y-1/2 bg-black/50 p-2 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Scroll right">
-          <ChevronRight className="h-6 w-6 text-white" />
+        <button onClick={() => scroll('right')} className="absolute right-0 top-1/2 z-10 -translate-y-1/2 glass p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:shadow-glow" aria-label="Scroll right">
+          <ChevronRight className="h-6 w-6 text-foreground" />
         </button>
       </div>
 
-      {/* Movie Player Modal */}
       {selectedMovie && <MoviePlayer movie={selectedMovie} onClose={closeMoviePlayer} />}
-    </div>;
+    </div>
+  );
 };
+
 export default ContentSlider;

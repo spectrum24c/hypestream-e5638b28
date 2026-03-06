@@ -17,7 +17,7 @@ const DesktopNavigation: React.FC = () => {
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
-            <Link to="/" className="text-muted-foreground hover:text-primary transition-colors px-3 py-2">
+            <Link to="/" className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2">
               Home
             </Link>
           </NavigationMenuItem>
@@ -29,13 +29,13 @@ const DesktopNavigation: React.FC = () => {
                   <NavigationMenuTrigger className="bg-transparent hover:bg-secondary text-muted-foreground hover:text-foreground">
                     {category.name}
                   </NavigationMenuTrigger>
-                  <NavigationMenuContent className="glass border border-border/40 rounded-xl p-2 min-w-[200px]">
+                  <NavigationMenuContent className="bg-card border border-border rounded-md p-2 min-w-[200px]">
                     <ul className="grid gap-1 p-2">
                       <li>
                         <NavigationMenuLink asChild>
                           <Link 
                             to={`/?category=${category.id}`}
-                            className="block w-full rounded-lg p-2 hover:bg-primary/10 text-foreground transition-colors"
+                            className="block w-full rounded-md p-2 hover:bg-secondary text-foreground transition-colors"
                           >
                             All {category.name}
                           </Link>
@@ -46,7 +46,7 @@ const DesktopNavigation: React.FC = () => {
                           <NavigationMenuLink asChild>
                             <Link 
                               to={`/?category=${category.id}&genre=${subcategory.id}`}
-                              className="block w-full rounded-lg p-2 hover:bg-primary/10 text-foreground transition-colors"
+                              className="block w-full rounded-md p-2 hover:bg-secondary text-foreground transition-colors"
                             >
                               {subcategory.name}
                             </Link>
@@ -57,7 +57,7 @@ const DesktopNavigation: React.FC = () => {
                   </NavigationMenuContent>
                 </>
               ) : (
-                <Link to={`/?category=${category.id}`} className="text-muted-foreground hover:text-primary transition-colors flex items-center px-3 py-2">
+                <Link to={`/?category=${category.id}`} className="text-muted-foreground hover:text-foreground transition-colors flex items-center px-3 py-2">
                   {category.name}
                 </Link>
               )}
@@ -65,7 +65,7 @@ const DesktopNavigation: React.FC = () => {
           ))}
           
           <NavigationMenuItem>
-            <Link to="/favorites" className="text-muted-foreground hover:text-primary transition-colors px-3 py-2">
+            <Link to="/favorites" className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2">
               My List
             </Link>
           </NavigationMenuItem>

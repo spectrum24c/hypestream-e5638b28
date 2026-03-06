@@ -41,9 +41,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
     }, 400);
   };
 
-  const handleMovieClick = (movie: Movie) => {
-    setSelectedMovie(movie);
-  };
+  const handleMovieClick = (movie: Movie) => setSelectedMovie(movie);
   
   const checkIfNewSeason = (movie: Movie): boolean => {
     if (movie.media_type !== 'tv' && !movie.first_air_date) return false;
@@ -61,9 +59,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
     return new Date(releaseDate).getFullYear().toString();
   };
   
-  const closeMoviePlayer = () => {
-    setSelectedMovie(null);
-  };
+  const closeMoviePlayer = () => setSelectedMovie(null);
 
   const handleViewAll = () => {
     if (onViewAll) {
@@ -76,7 +72,6 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
 
   return (
     <div className="py-3">
-      {/* Section Title */}
       <div className="flex items-center justify-between mb-2 px-[9px] mx-0">
         <h2 className="text-xl md:text-2xl font-bold text-foreground">{title}</h2>
         <Button variant="ghost" onClick={handleViewAll} className="text-sm text-primary hover:text-primary/80">
@@ -84,10 +79,9 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
         </Button>
       </div>
 
-      {/* Carousel Container */}
       <div className="relative group">
         {showLeftArrow && (
-          <button onClick={() => scroll('left')} className="absolute left-0 top-1/2 z-10 -translate-y-1/2 glass p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:shadow-glow" aria-label="Scroll left">
+          <button onClick={() => scroll('left')} className="absolute left-0 top-1/2 z-10 -translate-y-1/2 bg-background/80 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background" aria-label="Scroll left">
             <ChevronLeft className="h-6 w-6 text-foreground" />
           </button>
         )}
@@ -120,7 +114,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
           ))}
         </div>
 
-        <button onClick={() => scroll('right')} className="absolute right-0 top-1/2 z-10 -translate-y-1/2 glass p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:shadow-glow" aria-label="Scroll right">
+        <button onClick={() => scroll('right')} className="absolute right-0 top-1/2 z-10 -translate-y-1/2 bg-background/80 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background" aria-label="Scroll right">
           <ChevronRight className="h-6 w-6 text-foreground" />
         </button>
       </div>

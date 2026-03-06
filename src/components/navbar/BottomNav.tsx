@@ -31,9 +31,7 @@ const BottomNav: React.FC = () => {
     };
   }, [pathname]);
 
-  if (shouldHide) {
-    return null;
-  }
+  if (shouldHide) return null;
 
   const openMobileMenu = () => {
     window.dispatchEvent(new Event('open-mobile-menu'));
@@ -41,20 +39,18 @@ const BottomNav: React.FC = () => {
 
   const itemCls = (active: boolean) => 
     `flex flex-col items-center justify-center gap-1 text-xs font-medium transition-all duration-200 ${
-      active 
-        ? 'text-primary scale-105' 
-        : 'text-muted-foreground hover:text-foreground'
+      active ? 'text-primary scale-105' : 'text-muted-foreground hover:text-foreground'
     }`;
 
   return (
     <nav 
       aria-label="Bottom navigation" 
-      className="md:hidden fixed bottom-2.5 left-2.5 right-2.5 z-50 rounded-2xl glass-panel" 
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border" 
       style={{
         position: 'fixed',
-        bottom: 10,
-        left: 10,
-        right: 10,
+        bottom: 0,
+        left: 0,
+        right: 0,
         zIndex: 50,
         transform: 'translateZ(0)',
         WebkitTransform: 'translateZ(0)',
@@ -62,62 +58,34 @@ const BottomNav: React.FC = () => {
     >
       <ul className="grid grid-cols-5 h-16 max-w-md mx-auto">
         <li className="flex items-center justify-center">
-          <Link 
-            to="/" 
-            className={itemCls(isActive(p => p === '/'))} 
-            aria-current={pathname === '/' ? 'page' : undefined}
-          >
-            <div className={`p-2 rounded-xl transition-colors ${isActive(p => p === '/') ? 'bg-primary/20 shadow-glow' : ''}`}>
-              <Home className="h-5 w-5" />
-            </div>
+          <Link to="/" className={itemCls(isActive(p => p === '/'))} aria-current={pathname === '/' ? 'page' : undefined}>
+            <Home className="h-5 w-5" />
             <span>Home</span>
           </Link>
         </li>
         <li className="flex items-center justify-center">
-          <button 
-            onClick={openMobileMenu} 
-            className={itemCls(search.includes('category='))} 
-            aria-label="Categories"
-          >
-            <div className={`p-2 rounded-xl transition-colors ${search.includes('category=') ? 'bg-primary/20 shadow-glow' : ''}`}>
-              <Layers className="h-5 w-5" />
-            </div>
+          <button onClick={openMobileMenu} className={itemCls(search.includes('category='))} aria-label="Categories">
+            <Layers className="h-5 w-5" />
             <span>Browse</span>
           </button>
         </li>
         <li className="flex items-center justify-center">
-          <button 
-            onClick={() => window.dispatchEvent(new Event('open-hype-chat'))} 
-            className={itemCls(false)} 
-            aria-label="AI Chat"
-          >
-            <div className="p-2 rounded-xl bg-primary/15 border border-primary/30 shadow-glow">
-              <Bot className="h-5 w-5 text-primary" />
+          <button onClick={() => window.dispatchEvent(new Event('open-hype-chat'))} className={itemCls(false)} aria-label="AI Chat">
+            <div className="p-2 rounded-full bg-primary text-primary-foreground">
+              <Bot className="h-5 w-5" />
             </div>
             <span className="text-primary">AI</span>
           </button>
         </li>
         <li className="flex items-center justify-center">
-          <Link 
-            to="/favorites" 
-            className={itemCls(isActive(p => p === '/favorites'))} 
-            aria-current={pathname === '/favorites' ? 'page' : undefined}
-          >
-            <div className={`p-2 rounded-xl transition-colors ${isActive(p => p === '/favorites') ? 'bg-primary/20 shadow-glow' : ''}`}>
-              <List className="h-5 w-5" />
-            </div>
+          <Link to="/favorites" className={itemCls(isActive(p => p === '/favorites'))} aria-current={pathname === '/favorites' ? 'page' : undefined}>
+            <List className="h-5 w-5" />
             <span>My List</span>
           </Link>
         </li>
         <li className="flex items-center justify-center">
-          <Link 
-            to="/profile" 
-            className={itemCls(isActive(p => p === '/profile'))} 
-            aria-current={pathname === '/profile' ? 'page' : undefined}
-          >
-            <div className={`p-2 rounded-xl transition-colors ${isActive(p => p === '/profile') ? 'bg-primary/20 shadow-glow' : ''}`}>
-              <User className="h-5 w-5" />
-            </div>
+          <Link to="/profile" className={itemCls(isActive(p => p === '/profile'))} aria-current={pathname === '/profile' ? 'page' : undefined}>
+            <User className="h-5 w-5" />
             <span>Profile</span>
           </Link>
         </li>

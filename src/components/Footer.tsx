@@ -14,91 +14,46 @@ const Footer = () => {
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!email || !email.includes('@')) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address",
-        variant: "destructive"
-      });
+      toast({ title: "Invalid email", description: "Please enter a valid email address", variant: "destructive" });
       return;
     }
-    
     setIsSubmitting(true);
-    
     try {
       console.log('Starting newsletter subscription process for:', email);
-      
       const { data: authData } = await supabase.auth.getUser();
       const userId = authData?.user?.id ?? null;
-      
       const { data: functionData, error: saveError } = await supabase.functions.invoke('save-newsletter-subscriber', {
-        body: {
-          email: email,
-          adminEmail: 'awokojorichmond@gmail.com',
-          userId
-        }
+        body: { email, adminEmail: 'awokojorichmond@gmail.com', userId }
       });
-
-      if (saveError) {
-        console.error('Error saving subscriber:', saveError);
-        throw saveError;
-      }
-
+      if (saveError) { console.error('Error saving subscriber:', saveError); throw saveError; }
       if (functionData?.error === 'ALREADY_SUBSCRIBED') {
-        toast({
-          title: "Already subscribed",
-          description: "This email has already subscribed to the newsletter",
-          variant: "default"
-        });
+        toast({ title: "Already subscribed", description: "This email has already subscribed to the newsletter", variant: "default" });
         return;
       }
-
       console.log('Subscriber saved successfully, sending confirmation emails...');
-
       const { error: emailError } = await supabase.functions.invoke('send-newsletter-notification', {
-        body: {
-          subscriberEmail: email,
-          adminEmail: 'awokojorichmond@gmail.com',
-          userId
-        }
+        body: { subscriberEmail: email, adminEmail: 'awokojorichmond@gmail.com', userId }
       });
-
-      if (emailError) {
-        console.error('Error sending emails:', emailError);
-        throw emailError;
-      }
-
+      if (emailError) { console.error('Error sending emails:', emailError); throw emailError; }
       console.log('Newsletter subscription completed successfully');
-
       setEmail('');
-      
-      toast({
-        title: "Successfully subscribed!",
-        description: "Thank you for subscribing to our newsletter. Check your email for confirmation.",
-        variant: "default"
-      });
-      
+      toast({ title: "Successfully subscribed!", description: "Thank you for subscribing to our newsletter. Check your email for confirmation.", variant: "default" });
     } catch (error) {
       console.error('Error subscribing to newsletter:', error);
-      toast({
-        title: "Subscription failed",
-        description: "There was a problem with your subscription. Please try again later.",
-        variant: "destructive"
-      });
+      toast({ title: "Subscription failed", description: "There was a problem with your subscription. Please try again later.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <footer className="border-t border-border/30 bg-background/80 backdrop-blur-md">
+    <footer className="border-t border-border bg-card">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-10">
           <div className="md:col-span-5 text-center md:text-left">
             <h3 className="text-xl font-bold mb-4 text-foreground">Subscribe to Our Newsletter</h3>
             <p className="text-muted-foreground mb-4">Get updates on the latest movies and shows. No spam, we promise!</p>
-            
             <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto">
               <Input
                 type="email"
@@ -108,11 +63,7 @@ const Footer = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <Button 
-                type="submit" 
-                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground" disabled={isSubmitting}>
                 {isSubmitting ? 'Subscribing...' : 'Subscribe'}
               </Button>
             </form>
@@ -147,22 +98,22 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="border-t border-border/30 pt-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="border-t border-border pt-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-col items-center gap-4 md:flex-row md:items-center">
             <div className="flex space-x-4">
-              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all hover:shadow-glow">
+              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all">
                 <Facebook size={18} />
               </a>
-              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all hover:shadow-glow">
+              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all">
                 <Twitter size={18} />
               </a>
-              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all hover:shadow-glow">
+              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all">
                 <Instagram size={18} />
               </a>
-              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all hover:shadow-glow">
+              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all">
                 <Youtube size={18} />
               </a>
-              <a href="mailto:hypestream127@gmail.com" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all hover:shadow-glow">
+              <a href="mailto:hypestream127@gmail.com" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all">
                 <Mail size={18} />
               </a>
             </div>
@@ -185,11 +136,7 @@ const Footer = () => {
           
           <div className="text-muted-foreground text-sm text-center md:text-right">
             <p>© {new Date().getFullYear()} HypeStream. All rights reserved.</p>
-            <p className="mt-1">
-              Built with 
-              <span className="mx-1">❤️</span>
-              for movie enthusiasts everywhere
-            </p>
+            <p className="mt-1">Built with <span className="mx-1">❤️</span> for movie enthusiasts everywhere</p>
           </div>
         </div>
       </div>

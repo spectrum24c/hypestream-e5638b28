@@ -24,15 +24,6 @@ const Navbar = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
     });
@@ -75,7 +66,6 @@ const Navbar = () => {
                       );
                       if (!hasMatchingGenre) return false;
                     }
-                    
                     if (movieData.original_language && preferredLanguages.length > 0) {
                       if (!preferredLanguages.includes(movieData.original_language)) {
                         return false;
@@ -86,7 +76,6 @@ const Navbar = () => {
                   }
                 }
               }
-              
               return true;
             });
             
@@ -111,7 +100,7 @@ const Navbar = () => {
         {
           id: `movie-init-1`,
           title: 'New on HypeStream',
-          message: `"The Dark Knight" is now available to watch!`,
+          message: `\"The Dark Knight\" is now available to watch!`,
           poster_path: '/qJ2tW6WMUDux911r6m7haRef0WH.jpg',
           movie: { id: '155' },
           read: false,
@@ -124,7 +113,7 @@ const Navbar = () => {
         {
           id: `suggestion-init-1`,
           title: 'Recommended for You',
-          message: 'Based on your interests, you might enjoy "Inception"!',
+          message: 'Based on your interests, you might enjoy \"Inception\"!',
           poster_path: '/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg',
           movie: { id: '27205' },
           read: false,
@@ -158,7 +147,6 @@ const Navbar = () => {
         }
       }
     };
-
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
@@ -169,6 +157,14 @@ const Navbar = () => {
     return () => window.removeEventListener('open-mobile-menu', handler as unknown as EventListener);
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const toggleSearch = () => {
     if (isMobile) {
       window.dispatchEvent(new Event('open-mobile-search'));
@@ -177,21 +173,10 @@ const Navbar = () => {
     }
   };
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const closeMenu = () => {
-    setIsMenuOpen(false);
-  };
-
-  const handleSignOut = async () => {
-    console.log('Sign out handled by UserMenu');
-  };
-
-  const handleDeleteAccount = async () => {
-    console.log('Delete account handled by UserMenu');
-  };
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const closeMenu = () => setIsMenuOpen(false);
+  const handleSignOut = async () => { console.log('Sign out handled by UserMenu'); };
+  const handleDeleteAccount = async () => { console.log('Delete account handled by UserMenu'); };
 
   const markNotificationsAsRead = async () => {
     const updatedNotifications = notifications.map(n => ({ ...n, read: true }));
@@ -204,18 +189,17 @@ const Navbar = () => {
     <>
       <header 
         className={cn(
-          "fixed top-0 left-0 w-full z-40 transition-all duration-500",
+          "fixed top-0 left-0 w-full z-40 transition-all duration-300",
           isScrolled 
-            ? "glass-panel shadow-lg py-2" 
-            : "bg-gradient-to-b from-background/90 via-background/40 to-transparent py-4"
+            ? "bg-background/95 backdrop-blur-sm shadow-lg py-2" 
+            : "bg-gradient-to-b from-background/80 to-transparent py-4"
         )}
       >
         <div className="container mx-auto px-4 md:px-8">
           <div className="flex items-center justify-between">
-            {/* Logo */}
             <Link to="/" className="flex-shrink-0 group">
-              <h1 className="font-display text-3xl md:text-4xl font-bold tracking-wider text-foreground transition-colors">
-                HYPE<span className="text-primary neon-glow group-hover:brightness-125 transition-all">STREAM</span>
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-wide text-foreground">
+                HYPE<span className="text-primary">STREAM</span>
               </h1>
             </Link>
 
@@ -247,7 +231,7 @@ const Navbar = () => {
                   variant="ghost"
                   size="icon"
                   onClick={toggleMenu}
-                  className="ml-1 text-foreground hover:bg-secondary"
+                  className="ml-1 text-foreground"
                   aria-label={isMenuOpen ? "Close menu" : "Open menu"}
                 >
                   {isMenuOpen ? <X size={24} /> : <Menu size={24} />}

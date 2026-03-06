@@ -42,12 +42,10 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
     const fetchFeaturedContent = async () => {
       try {
         const data = await fetchFromTMDB(apiPaths.fetchTrending);
-        
         if (data.results && data.results.length > 0) {
           const featuredItems = data.results
             .filter((item: any) => item.backdrop_path && item.overview)
             .slice(0, 5);
-          
           setFeaturedContent(featuredItems);
         }
       } catch (error) {
@@ -56,55 +54,38 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
         setLoading(false);
       }
     };
-
     fetchFeaturedContent();
   }, []);
   
   const goToNextSlide = useCallback(() => {
     if (isTransitioning) return;
-    
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentIndex((prevIndex) => 
         prevIndex === featuredContent.length - 1 ? 0 : prevIndex + 1
       );
-      
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 300);
+      setTimeout(() => { setIsTransitioning(false); }, 300);
     }, 300);
   }, [featuredContent.length, isTransitioning]);
   
   useEffect(() => {
     if (featuredContent.length <= 1) return;
-    
     const interval = setInterval(goToNextSlide, 10000);
     return () => clearInterval(interval);
   }, [goToNextSlide, featuredContent.length]);
 
   const handlePlayTrailer = () => {
     if (!featuredContent[currentIndex]) return;
-    
     if (!session) {
-      toast({
-        title: "Authentication required",
-        description: "Please login to watch content",
-        variant: "destructive"
-      });
+      toast({ title: "Authentication required", description: "Please login to watch content", variant: "destructive" });
       return;
     }
-    
-    if (onWatchNow) {
-      onWatchNow(featuredContent[currentIndex]);
-    }
+    if (onWatchNow) onWatchNow(featuredContent[currentIndex]);
   };
 
   const handleMoreInfo = () => {
     if (!featuredContent[currentIndex]) return;
-    
-    if (onMoreInfo) {
-      onMoreInfo(featuredContent[currentIndex]);
-    }
+    if (onMoreInfo) onMoreInfo(featuredContent[currentIndex]);
   };
 
   if (loading || featuredContent.length === 0) {
@@ -127,7 +108,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
 
   return (
     <div className="relative h-[85vh] min-h-[600px] w-full overflow-hidden">
-      {/* Background Image with fade transition */}
+      {/* Background Image */}
       <div className={`absolute inset-0 transition-opacity duration-700 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
         <img
           src={backdropUrl}
@@ -137,33 +118,25 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
         />
       </div>
 
-      {/* Gradient Overlays — deep, atmospheric */}
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/70 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-      
-      {/* Neon ambient glow */}
-      <div className="absolute bottom-0 left-0 w-[600px] h-[400px] rounded-full opacity-20 blur-[120px]"
-        style={{ background: 'hsl(265 90% 60% / 0.4)' }} />
-      <div className="absolute top-1/3 right-0 w-[400px] h-[300px] rounded-full opacity-10 blur-[100px]"
-        style={{ background: 'hsl(175 80% 45% / 0.4)' }} />
+      {/* Gradient Overlays */}
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
 
       {/* Content */}
       <div className="container mx-auto px-4 md:px-8 relative h-full flex items-center z-20">
         <div className={`max-w-2xl transition-all duration-700 ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
           {/* Category & Rating */}
           <div className="flex items-center gap-4 mb-4">
-            <span className="inline-flex items-center px-3 py-1 bg-primary/20 text-primary text-xs font-semibold tracking-wider rounded-full border border-primary/30 backdrop-blur-sm">
+            <span className="inline-flex items-center px-3 py-1 bg-primary/90 text-primary-foreground text-xs font-bold tracking-wider rounded">
               {category.toUpperCase()}
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-accent font-semibold font-mono">{rating}</span>
+              <span className="text-accent font-semibold">{rating}</span>
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <svg 
                     key={star} 
-                    className={`h-4 w-4 ${star <= Math.floor(parseFloat(rating) / 2) 
-                      ? 'text-accent' 
-                      : 'text-muted-foreground/30'}`}
+                    className={`h-4 w-4 ${star <= Math.floor(parseFloat(rating) / 2) ? 'text-accent' : 'text-muted-foreground/30'}`}
                     fill="currentColor" 
                     viewBox="0 0 20 20"
                   >
@@ -172,11 +145,11 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
                 ))}
               </div>
             </div>
-            <span className="text-muted-foreground font-mono text-sm">{year}</span>
+            <span className="text-muted-foreground text-sm">{year}</span>
           </div>
 
           {/* Title */}
-          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-foreground mb-6 leading-none">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-foreground mb-6 leading-none">
             {title}
           </h1>
 
@@ -189,7 +162,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
           <div className="flex items-center gap-4">
             <Button 
               onClick={handlePlayTrailer}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-semibold rounded-xl transition-all duration-200 hover:scale-105 shadow-neon"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-semibold rounded transition-all duration-200 hover:scale-105"
               size="lg"
             >
               <Play className="mr-2 h-6 w-6 fill-current" /> Play
@@ -197,7 +170,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
             <Button 
               variant="secondary"
               size="lg" 
-              className="glass px-8 py-6 text-lg font-semibold rounded-xl text-foreground transition-all duration-200 hover:border-primary/40"
+              className="bg-secondary/80 hover:bg-secondary px-8 py-6 text-lg font-semibold rounded text-foreground"
               onClick={handleMoreInfo}
             >
               <Info className="mr-2 h-6 w-6" /> More Info
@@ -211,9 +184,9 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
         {featuredContent.map((_, i) => (
           <button
             key={i}
-            className={`h-1.5 transition-all duration-300 rounded-full ${
+            className={`h-1 transition-all duration-300 rounded-full ${
               i === currentIndex 
-                ? 'bg-primary w-8 shadow-glow' 
+                ? 'bg-primary w-8' 
                 : 'bg-foreground/20 w-4 hover:bg-foreground/40'
             }`}
             onClick={() => !isTransitioning && setCurrentIndex(i)}

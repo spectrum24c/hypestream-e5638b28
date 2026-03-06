@@ -52,7 +52,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
   return (
     <div 
-      className="group flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] rounded-xl overflow-hidden transition-all duration-300 cursor-pointer border border-border/20 hover:border-primary/40 hover:scale-105 hover:shadow-neon bg-card/60 backdrop-blur-sm"
+      className="group flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] rounded-md overflow-hidden transition-all duration-300 cursor-pointer bg-card hover:scale-105 hover:shadow-elevated hover:z-10"
       onClick={onClick}
     >
       <div className="relative aspect-[2/3] w-full bg-muted">
@@ -73,18 +73,18 @@ const MovieCard: React.FC<MovieCardProps> = ({
         />
         
         {isNewSeason && (
-          <div className="absolute top-2 left-2 bg-accent px-2 py-1 rounded-full text-xs font-bold text-accent-foreground shadow-glow-cyan z-10">
+          <div className="absolute top-2 left-2 bg-primary px-2 py-1 rounded text-xs font-bold text-primary-foreground z-10">
             NEW SEASON
           </div>
         )}
         
-        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
       <div className="p-2 md:p-3">
         <h3 className="font-semibold text-xs md:text-sm mb-1 truncate text-foreground">{title}</h3>
         <div className="flex justify-between text-muted-foreground text-xs mb-1">
-          <span className="font-mono">{year}</span>
-          <span className="text-accent font-mono">★ {rating}</span>
+          <span>{year}</span>
+          <span className="text-accent">★ {rating}</span>
         </div>
         <div className="text-muted-foreground text-xs mb-1">
           {durationInfo}

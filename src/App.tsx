@@ -26,12 +26,16 @@ import WelcomeScreen from '@/components/WelcomeScreen';
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
 import { useHardwareBackButton, useStatusBarCustomization } from '@/utils/mobileUtils';
+import { useUnifiedBackButton } from '@/utils/backButtonHandler';
 import { useToast } from "@/hooks/use-toast";
 
 function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showWelcome, setShowWelcome] = useState(false);
   const [isCheckingWelcome, setIsCheckingWelcome] = useState(true);
+  
+  // Unified back button handler (browser + hybrid/PWA)
+  useUnifiedBackButton();
   
   // Use mobile-specific hooks with error handling
   try {

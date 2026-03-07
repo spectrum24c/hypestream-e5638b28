@@ -26,6 +26,7 @@ import WelcomeScreen from '@/components/WelcomeScreen';
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
 import { useHardwareBackButton, useStatusBarCustomization } from '@/utils/mobileUtils';
+import { useUnifiedBackButton } from '@/utils/backButtonHandler';
 import { useToast } from "@/hooks/use-toast";
 
 function App() {

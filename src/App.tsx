@@ -34,6 +34,9 @@ function App() {
   const [showWelcome, setShowWelcome] = useState(false);
   const [isCheckingWelcome, setIsCheckingWelcome] = useState(true);
   
+  // Unified back button handler (browser + hybrid/PWA)
+  useUnifiedBackButton();
+  
   // Use mobile-specific hooks with error handling
   try {
     useHardwareBackButton();

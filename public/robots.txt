@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://hypestream.lovable.app/sitemap.xml
+Sitemap: https://hype-stream.lovable.app/sitemap.xml

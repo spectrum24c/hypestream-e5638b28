@@ -54,7 +54,13 @@
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "HypeStream",
-      "url": "https://hypestream.lovable.app"
+      "url": "https://hype-stream.lovable.app",
+      "description": "Stream the latest movies and TV shows on HypeStream",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://hype-stream.lovable.app/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
     }
     </script>
 

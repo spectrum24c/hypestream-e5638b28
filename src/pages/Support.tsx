@@ -106,6 +106,7 @@ const Support = () => {
 
   return (
     <div className="min-h-screen bg-hype-dark text-foreground">
+      <PageSEO title="Support" description="Get help with HypeStream. Contact support, report issues, or find troubleshooting guides." path="/support" />
       <Navbar />
       <main className="container mx-auto px-4 pt-20 pb-12 md:px-6">
         <div className="mb-6 md:mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">

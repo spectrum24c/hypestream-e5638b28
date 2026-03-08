@@ -284,6 +284,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-hype-dark text-foreground">
+      <PageSEO title="Sign In" description="Sign in or create an account on HypeStream to access your watchlist, favorites, and personalized recommendations." path="/auth" />
       <Navbar />
       <main className="pb-8 pt-24">
         <div className="container mx-auto px-4 max-w-md">

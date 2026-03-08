@@ -126,6 +126,7 @@ const AdminSettings = () => {
 
   return (
     <div className="min-h-screen bg-background p-6">
+      <PageSEO title="Admin Settings" description="Manage HypeStream admin settings and configurations." path="/admin/settings" />
       <div className="max-w-2xl mx-auto">
         <Button
           variant="ghost"

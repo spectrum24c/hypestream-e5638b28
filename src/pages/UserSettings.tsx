@@ -152,6 +152,7 @@ const UserSettingsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-hype-dark text-foreground">
+      <PageSEO title="Settings" description="Customize your HypeStream experience with account settings, preferences, and notifications." path="/settings" />
       <Navbar />
       <main className="pt-24 pb-16 mx-auto container px-4">
         <div className="max-w-5xl mx-auto">

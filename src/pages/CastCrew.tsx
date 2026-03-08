@@ -74,6 +74,7 @@ const CastCrew: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageSEO title="Cast & Crew" description="Explore the cast and crew of movies and TV shows on HypeStream." path={`/cast-crew/${id}`} />
       <Navbar />
       
       <div className="container mx-auto px-4 pt-20 pb-8">

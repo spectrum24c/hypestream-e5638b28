@@ -105,6 +105,7 @@ const FAQs = () => {
 
   return (
     <div className="min-h-screen bg-hype-dark text-foreground flex flex-col">
+      <PageSEO title="FAQs" description="Find answers to frequently asked questions about HypeStream, streaming, accounts, and more." path="/faqs" />
       <Navbar />
       <main className="flex-grow container mx-auto px-4 pt-20 pb-12">
         <div className="mb-8 flex items-center">

@@ -18,6 +18,7 @@ const Themes = () => {
     border: `1px solid hsl(${colors.border})`
   });
   return <>
+      <PageSEO title="Themes" description="Choose your preferred HypeStream theme to personalize your streaming experience." path="/themes" />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
         <div className="container mx-auto px-4 py-8">

@@ -115,6 +115,7 @@ const PersonDetails: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageSEO title={details.name || "Person Details"} description={`Explore ${details.name}'s filmography, biography, and credits on HypeStream.`} path={`/person/${id}`} />
       <Navbar />
       
       <div className="container mx-auto px-4 pt-20 pb-8">

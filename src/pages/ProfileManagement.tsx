@@ -152,6 +152,7 @@ const ProfileManagement = () => {
 
   return (
     <>
+      <PageSEO title="Profile Management" description="Manage your HypeStream profiles and switch between accounts." path="/profile-management" />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
         <div className="container mx-auto px-4 py-8">

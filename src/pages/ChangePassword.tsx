@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PageSEO from '@/components/PageSEO';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
@@ -116,6 +117,7 @@ const ChangePassword = () => {
 
   return (
     <div className="min-h-screen bg-hype-dark text-foreground">
+      <PageSEO title="Change Password" description="Update your HypeStream account password securely." path="/change-password" />
       <Navbar />
       <main className="pb-8 pt-24">
         <div className="container mx-auto px-4 max-w-md">

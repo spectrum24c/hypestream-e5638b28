@@ -17,6 +17,7 @@ import AdvancedFilters from '@/components/AdvancedFilters';
 import CategorySection from '@/components/CategorySection';
 import { initPerformanceOptimizations, fetchWithCache } from '@/utils/performanceOptimizer';
 import HypeChatbot from '@/components/chatbot/HypeChatbot';
+import PageSEO from '@/components/PageSEO';
 
 // Sample genres for filtering
 const genres = [
@@ -451,6 +452,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden w-full">
+      <PageSEO title="Watch Movies & TV Shows" description="Stream the latest movies, TV shows, and trending content on HypeStream. Discover, watch, and enjoy." path="/" />
       <Navbar />
       <main className="pb-8 pt-16 w-full">
         {!isSearching && (

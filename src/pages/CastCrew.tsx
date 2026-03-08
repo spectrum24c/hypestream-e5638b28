@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PageSEO from '@/components/PageSEO';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { ArrowLeft, User, Star, Calendar, MapPin, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -73,6 +74,7 @@ const CastCrew: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageSEO title="Cast & Crew" description="Explore the cast and crew of movies and TV shows on HypeStream." path={`/cast-crew/${id}`} />
       <Navbar />
       
       <div className="container mx-auto px-4 pt-20 pb-8">

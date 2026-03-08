@@ -1,5 +1,6 @@
 
 import React from 'react';
+import PageSEO from '@/components/PageSEO';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -11,6 +12,7 @@ const CookiePolicy = () => {
 
   return (
     <div className="min-h-screen bg-hype-dark text-foreground">
+      <PageSEO title="Cookie Policy" description="Understand how HypeStream uses cookies and similar technologies." path="/cookie-policy" />
       <Navbar />
       <main className="pb-8 pt-24">
         <div className="container mx-auto px-4 max-w-3xl">

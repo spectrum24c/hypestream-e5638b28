@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PageSEO from '@/components/PageSEO';
 import { User, Plus, Edit, Mail, Calendar, Check, ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -151,6 +152,7 @@ const ProfileManagement = () => {
 
   return (
     <>
+      <PageSEO title="Profile Management" description="Manage your HypeStream profiles and switch between accounts." path="/profile-management" />
       <Navbar />
       <div className="min-h-screen bg-background pt-20">
         <div className="container mx-auto px-4 py-8">

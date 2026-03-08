@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import PageSEO from '@/components/PageSEO';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -228,6 +229,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-hype-dark to-black text-foreground">
+      <PageSEO title="Profile" description="Manage your HypeStream profile, avatar, and account details." path="/profile" />
       <Navbar />
       <main className="pb-12 pt-24 md:pt-28">
         <div className="container mx-auto px-4 max-w-4xl">

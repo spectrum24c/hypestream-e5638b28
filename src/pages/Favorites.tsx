@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import PageSEO from '@/components/PageSEO';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -135,6 +136,7 @@ const Favorites = () => {
 
   return (
     <div className="min-h-screen bg-hype-dark text-foreground">
+      <PageSEO title="Favorites" description="View and manage your favorite movies and TV shows on HypeStream." path="/favorites" />
       <Navbar />
       <main className="pb-8 pt-20">
         <div className="container mx-auto px-4">

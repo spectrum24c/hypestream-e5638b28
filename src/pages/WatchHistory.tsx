@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import PageSEO from '@/components/PageSEO';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -160,6 +161,7 @@ const WatchHistoryPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-hype-dark text-foreground">
+      <PageSEO title="Watch History" description="Review your recently watched movies and TV shows on HypeStream." path="/watch-history" />
       <Navbar />
       <main className="pt-24 pb-16 mx-auto container px-4">
         <WatchHistoryList />

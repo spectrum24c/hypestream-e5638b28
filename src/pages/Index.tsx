@@ -17,6 +17,7 @@ import AdvancedFilters from '@/components/AdvancedFilters';
 import CategorySection from '@/components/CategorySection';
 import { initPerformanceOptimizations, fetchWithCache } from '@/utils/performanceOptimizer';
 import HypeChatbot from '@/components/chatbot/HypeChatbot';
+import PageSEO from '@/components/PageSEO';
 
 // Sample genres for filtering
 const genres = [

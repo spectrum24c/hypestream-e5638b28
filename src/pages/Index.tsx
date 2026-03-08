@@ -452,6 +452,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden w-full">
+      <PageSEO title="Watch Movies & TV Shows" description="Stream the latest movies, TV shows, and trending content on HypeStream. Discover, watch, and enjoy." path="/" />
       <Navbar />
       <main className="pb-8 pt-16 w-full">
         {!isSearching && (

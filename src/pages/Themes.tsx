@@ -1,4 +1,5 @@
 import React from 'react';
+import PageSEO from '@/components/PageSEO';
 import { Check, Palette, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PageSEO from '@/components/PageSEO';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, User, Calendar, MapPin, Star, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';

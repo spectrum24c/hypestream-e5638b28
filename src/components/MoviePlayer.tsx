@@ -1,11 +1,42 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { imgPath, apiPaths, fetchFromTMDB, fetchGenres } from '@/services/tmdbApi';
-import { Heart, Play, ArrowLeft, Monitor, Download } from 'lucide-react';
+import { Heart, Play, ArrowLeft, Monitor, Download, ShieldCheck } from 'lucide-react';
 import { Button } from './ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useProfile } from '@/contexts/ProfileContext';
 import { trackWatchProgress } from '@/utils/movieDownloader';
+
+const AdShieldOverlay: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) => {
+  const [clicks, setClicks] = useState(0);
+  const REQUIRED_CLICKS = 2;
+
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = clicks + 1;
+    setClicks(next);
+    if (next >= REQUIRED_CLICKS) {
+      onDismiss();
+    }
+  }, [clicks, onDismiss]);
+
+  return (
+    <div
+      className="absolute inset-0 z-40 cursor-pointer flex items-center justify-center"
+      onClick={handleClick}
+      style={{ background: 'transparent' }}
+    >
+      <div className="bg-black/70 backdrop-blur-sm rounded-xl px-6 py-4 text-center pointer-events-none">
+        <ShieldCheck className="h-8 w-8 text-green-400 mx-auto mb-2" />
+        <p className="text-white text-sm font-medium">Ad Shield Active</p>
+        <p className="text-gray-400 text-xs mt-1">
+          Tap {REQUIRED_CLICKS - clicks} more time{REQUIRED_CLICKS - clicks !== 1 ? 's' : ''} to start watching
+        </p>
+      </div>
+    </div>
+  );
+};
 interface MoviePlayerProps {
   movie: {
     id: string;

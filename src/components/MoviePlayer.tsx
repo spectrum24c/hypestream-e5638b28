@@ -432,12 +432,14 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
+            {adShieldActive && <AdShieldOverlay onDismiss={() => setAdShieldActive(false)} />}
             <iframe
               className="w-full h-full"
               src={isTVShow ? `https://vidfast.pro/tv/${movie.id}/${activeEpisode?.season || 1}/${activeEpisode?.episode || 1}` : `https://vidfast.pro/movie/${movie.id}`}
               title={`${title} Stream`}
               frameBorder="0"
               referrerPolicy="origin"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
               allowFullScreen
               style={{ height: '70vh', width: '40%' }}
               loading="lazy"
@@ -451,7 +453,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
-            <iframe className="w-full h-full" src={getAltStreamSrc()} title={`${title} Stream (Alternate)`} frameBorder="0" referrerPolicy="origin" allowFullScreen style={{
+            {adShieldActive && <AdShieldOverlay onDismiss={() => setAdShieldActive(false)} />}
+            <iframe className="w-full h-full" src={getAltStreamSrc()} title={`${title} Stream (Alternate)`} frameBorder="0" referrerPolicy="origin" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allowFullScreen style={{
           height: '70vh',
           width: '40%'
         }} loading="lazy"></iframe>

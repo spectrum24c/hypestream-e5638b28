@@ -339,6 +339,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
     }
     setShowAltStream(true);
     setShowStream(false);
+    setAdShieldActive(true);
     watchStartRef.current = Date.now();
     const episodeInfo = resolveEpisodeInfo(episodeOverride);
     if (episodeInfo) {

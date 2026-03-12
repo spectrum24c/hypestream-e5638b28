@@ -1,11 +1,42 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { imgPath, apiPaths, fetchFromTMDB, fetchGenres } from '@/services/tmdbApi';
-import { Heart, Play, ArrowLeft, Monitor, Download } from 'lucide-react';
+import { Heart, Play, ArrowLeft, Monitor, Download, ShieldCheck } from 'lucide-react';
 import { Button } from './ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useProfile } from '@/contexts/ProfileContext';
 import { trackWatchProgress } from '@/utils/movieDownloader';
+
+const AdShieldOverlay: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) => {
+  const [clicks, setClicks] = useState(0);
+  const REQUIRED_CLICKS = 2;
+
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = clicks + 1;
+    setClicks(next);
+    if (next >= REQUIRED_CLICKS) {
+      onDismiss();
+    }
+  }, [clicks, onDismiss]);
+
+  return (
+    <div
+      className="absolute inset-0 z-40 cursor-pointer flex items-center justify-center"
+      onClick={handleClick}
+      style={{ background: 'transparent' }}
+    >
+      <div className="bg-black/70 backdrop-blur-sm rounded-xl px-6 py-4 text-center pointer-events-none">
+        <ShieldCheck className="h-8 w-8 text-green-400 mx-auto mb-2" />
+        <p className="text-white text-sm font-medium">Ad Shield Active</p>
+        <p className="text-gray-400 text-xs mt-1">
+          Tap {REQUIRED_CLICKS - clicks} more time{REQUIRED_CLICKS - clicks !== 1 ? 's' : ''} to start watching
+        </p>
+      </div>
+    </div>
+  );
+};
 interface MoviePlayerProps {
   movie: {
     id: string;
@@ -42,6 +73,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
   const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(false);
   const [genres, setGenres] = useState<string[]>([]);
   const [activeEpisode, setActiveEpisode] = useState<{ season: number; episode: number } | null>(null);
+  const [adShieldActive, setAdShieldActive] = useState(true);
   const watchStartRef = useRef<number | null>(null);
   const progressTimerRef = useRef<number | null>(null);
   const {
@@ -291,6 +323,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
     }
     setShowStream(true);
     setShowAltStream(false);
+    setAdShieldActive(true);
     watchStartRef.current = Date.now();
     startProgressTracking();
     trackWatchProgress({ ...movie, media_type: isTVShow ? 'tv' : 'movie' }, 0, isTVShow ? 'tv' : 'movie');
@@ -306,6 +339,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
     }
     setShowAltStream(true);
     setShowStream(false);
+    setAdShieldActive(true);
     watchStartRef.current = Date.now();
     const episodeInfo = resolveEpisodeInfo(episodeOverride);
     if (episodeInfo) {
@@ -398,12 +432,14 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
+            {adShieldActive && <AdShieldOverlay onDismiss={() => setAdShieldActive(false)} />}
             <iframe
               className="w-full h-full"
               src={isTVShow ? `https://vidfast.pro/tv/${movie.id}/${activeEpisode?.season || 1}/${activeEpisode?.episode || 1}` : `https://vidfast.pro/movie/${movie.id}`}
               title={`${title} Stream`}
               frameBorder="0"
               referrerPolicy="origin"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
               allowFullScreen
               style={{ height: '70vh', width: '40%' }}
               loading="lazy"
@@ -417,7 +453,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Details
             </Button>
-            <iframe className="w-full h-full" src={getAltStreamSrc()} title={`${title} Stream (Alternate)`} frameBorder="0" referrerPolicy="origin" allowFullScreen style={{
+            {adShieldActive && <AdShieldOverlay onDismiss={() => setAdShieldActive(false)} />}
+            <iframe className="w-full h-full" src={getAltStreamSrc()} title={`${title} Stream (Alternate)`} frameBorder="0" referrerPolicy="origin" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allowFullScreen style={{
           height: '70vh',
           width: '40%'
         }} loading="lazy"></iframe>

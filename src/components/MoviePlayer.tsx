@@ -73,6 +73,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
   const [isLoadingEpisodes, setIsLoadingEpisodes] = useState(false);
   const [genres, setGenres] = useState<string[]>([]);
   const [activeEpisode, setActiveEpisode] = useState<{ season: number; episode: number } | null>(null);
+  const [adShieldActive, setAdShieldActive] = useState(true);
   const watchStartRef = useRef<number | null>(null);
   const progressTimerRef = useRef<number | null>(null);
   const {

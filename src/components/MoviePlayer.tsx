@@ -323,6 +323,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
     }
     setShowStream(true);
     setShowAltStream(false);
+    setAdShieldActive(true);
     watchStartRef.current = Date.now();
     startProgressTracking();
     trackWatchProgress({ ...movie, media_type: isTVShow ? 'tv' : 'movie' }, 0, isTVShow ? 'tv' : 'movie');

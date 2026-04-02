@@ -119,10 +119,9 @@ const Footer = () => {
             </div>
 
             <a
-              href="https://median.co/share/dqnldn"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Download app on Google Play"
+              href="/app-release.apk"
+              download="HypeStream.apk"
+              aria-label="Download HypeStream Android app"
               className="inline-flex items-center gap-3 rounded-full border border-border bg-secondary px-4 py-2 text-xs text-foreground hover:bg-primary/10 hover:border-primary/40 transition-all"
             >
               <div className="flex h-5 w-5 flex-col items-center justify-center rounded-full text-[9px] font-semibold uppercase tracking-wide">

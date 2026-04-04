@@ -155,13 +155,17 @@ Keep responses conversational and friendly.`
           toolResults = `\n\nMovies/shows similar to "${results[0].title}":\n${JSON.stringify(similar, null, 2)}`;
         }
       }
-    } else if (lowerMessage.includes('search') || lowerMessage.includes('find') || lowerMessage.includes('recommend')) {
-      // Try to extract what they're searching for
-      const keywords = lowerMessage.replace(/(?:search|find|recommend|show me|tell me about)/gi, '').trim();
-      if (keywords && keywords.length > 2) {
+    } else {
+      // Always attempt a TMDB search for any message that could reference a title
+      // Strip common filler words to extract potential title/keywords
+      const keywords = lowerMessage
+        .replace(/(?:search|find|recommend|show me|tell me about|what is|who is|have you seen|do you know|can you find|i want to watch|i want|play|watch|show|where can i|how about|let's watch|put on)/gi, '')
+        .replace(/[?!.,]/g, '')
+        .trim();
+      if (keywords && keywords.length > 1) {
         const results = await searchContent(keywords, 'all');
         if (results.length > 0) {
-          toolResults = `\n\nSearch results for "${keywords}":\n${JSON.stringify(results, null, 2)}`;
+          toolResults = `\n\nTMDB results for "${keywords}":\n${JSON.stringify(results, null, 2)}`;
         }
       }
     }

@@ -124,12 +124,14 @@ Your capabilities:
 4. Answer questions about cast, release dates, ratings
 5. Help users discover hidden gems
 
-When recommending content:
+When recommending or discussing ANY specific movie or TV show:
+- ALWAYS format titles as: **Movie Title** (Year) - Brief description
+- This format is REQUIRED so the app can display interactive movie cards
+- Even if the user asks about a single movie, use this format
 - Ask clarifying questions about preferences when needed
-- Suggest 3-5 options with brief descriptions
+- Suggest 3-5 options with brief descriptions when recommending
 - Explain WHY you recommend each title
 - Include variety (different genres/years when appropriate)
-- Format movie suggestions like this: **Movie Title** (Year) - Brief description
 
 Keep responses conversational and friendly.`
       },
@@ -155,13 +157,17 @@ Keep responses conversational and friendly.`
           toolResults = `\n\nMovies/shows similar to "${results[0].title}":\n${JSON.stringify(similar, null, 2)}`;
         }
       }
-    } else if (lowerMessage.includes('search') || lowerMessage.includes('find') || lowerMessage.includes('recommend')) {
-      // Try to extract what they're searching for
-      const keywords = lowerMessage.replace(/(?:search|find|recommend|show me|tell me about)/gi, '').trim();
-      if (keywords && keywords.length > 2) {
+    } else {
+      // Always attempt a TMDB search for any message that could reference a title
+      // Strip common filler words to extract potential title/keywords
+      const keywords = lowerMessage
+        .replace(/(?:search|find|recommend|show me|tell me about|what is|who is|have you seen|do you know|can you find|i want to watch|i want|play|watch|show|where can i|how about|let's watch|put on)/gi, '')
+        .replace(/[?!.,]/g, '')
+        .trim();
+      if (keywords && keywords.length > 1) {
         const results = await searchContent(keywords, 'all');
         if (results.length > 0) {
-          toolResults = `\n\nSearch results for "${keywords}":\n${JSON.stringify(results, null, 2)}`;
+          toolResults = `\n\nTMDB results for "${keywords}":\n${JSON.stringify(results, null, 2)}`;
         }
       }
     }

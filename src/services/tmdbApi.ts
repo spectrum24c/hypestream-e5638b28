@@ -393,6 +393,8 @@ export const fetchPersonData = async (personId: string) => {
       details: null,
       movieCredits: { cast: [], crew: [] },
       tvCredits: { cast: [], crew: [] }
+    };
+  }
 };
 
 // Fetch a YouTube trailer key for a movie or TV show

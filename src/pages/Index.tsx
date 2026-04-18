@@ -146,6 +146,63 @@ const Index = () => {
     loadContinueWatching();
   }, [session]);
 
+  // Load personalized "For You" recommendations from watch history + favorites
+  useEffect(() => {
+    const loadForYou = async () => {
+      if (!session?.user) {
+        setForYouContent([]);
+        return;
+      }
+      try {
+        const [historyRes, favsRes] = await Promise.all([
+          supabase
+            .from('watch_history')
+            .select('movie_id, media_type, last_watched_at')
+            .eq('user_id', session.user.id)
+            .order('last_watched_at', { ascending: false })
+            .limit(10),
+          supabase
+            .from('favorites')
+            .select('movie_id, is_tv_show, created_at')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false })
+            .limit(10),
+        ]);
+
+        const seeds: Array<{ id: string; isTVShow: boolean }> = [];
+        const seen = new Set<string>();
+
+        (historyRes.data || []).forEach((h: any) => {
+          const key = String(h.movie_id);
+          if (!seen.has(key)) {
+            seen.add(key);
+            seeds.push({ id: key, isTVShow: h.media_type === 'tv' });
+          }
+        });
+        (favsRes.data || []).forEach((f: any) => {
+          const key = String(f.movie_id);
+          if (!seen.has(key)) {
+            seen.add(key);
+            seeds.push({ id: key, isTVShow: !!f.is_tv_show });
+          }
+        });
+
+        if (!seeds.length) {
+          setForYouContent([]);
+          return;
+        }
+
+        const recs = await fetchPersonalizedRecommendations(seeds);
+        setForYouContent(recs as Movie[]);
+      } catch (err) {
+        console.error('Error loading For You recommendations:', err);
+        setForYouContent([]);
+      }
+    };
+
+    loadForYou();
+  }, [session]);
+
   useEffect(() => {
     if (selectedMovieIdFromState) {
       const fetchMovieDetails = async () => {

@@ -90,6 +90,10 @@ export const apiPaths = {
   fetchAnime: `${tmdbApiEndpoint}/discover/tv?api_key=${apiKeys.tmdb}&language=en-US&with_keywords=210024`,
   fetchAnimeByGenre: (genreId: number) => `${tmdbApiEndpoint}/discover/tv?api_key=${apiKeys.tmdb}&language=en-US&with_keywords=210024&with_genres=${genreId}`,
   
+  // Recommendations
+  fetchMovieRecommendations: (movieId: string) => `${tmdbApiEndpoint}/movie/${movieId}/recommendations?api_key=${apiKeys.tmdb}&language=en-US`,
+  fetchTVRecommendations: (tvId: string) => `${tmdbApiEndpoint}/tv/${tvId}/recommendations?api_key=${apiKeys.tmdb}&language=en-US`,
+
   // Cast & Crew endpoints
   fetchMovieCredits: (movieId: string) => `${tmdbApiEndpoint}/movie/${movieId}/credits?api_key=${apiKeys.tmdb}&language=en-US`,
   fetchTVCredits: (tvId: string) => `${tmdbApiEndpoint}/tv/${tvId}/credits?api_key=${apiKeys.tmdb}&language=en-US`,

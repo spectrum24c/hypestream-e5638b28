@@ -444,6 +444,36 @@ const Index = () => {
     navigate(`/?category=${categoryId}`);
   };
 
+  // Surprise me — pick a random movie, optionally biased to user's most-watched genre
+  const handleSurpriseMe = async () => {
+    if (surprising) return;
+    setSurprising(true);
+    try {
+      // Pick a preferred genre from current home content if available
+      const pool = [...trendingContent, ...popularMovies, ...forYouContent];
+      const genreCounts = new Map<number, number>();
+      pool.forEach((m) => {
+        (m.genre_ids || []).forEach((g) => genreCounts.set(g, (genreCounts.get(g) || 0) + 1));
+      });
+      let preferredGenre: number | undefined;
+      if (genreCounts.size) {
+        preferredGenre = [...genreCounts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      }
+      const movie = await fetchRandomMovie(preferredGenre);
+      if (movie) {
+        setSelectedMovie(movie as Movie);
+        setShouldPlayMovie(false);
+      } else {
+        toast({ title: "No luck this time", description: "Couldn't find a random pick. Try again!", variant: "destructive" });
+      }
+    } catch (err) {
+      console.error('Surprise me error:', err);
+      toast({ title: "Something went wrong", description: "Could not pick a random movie", variant: "destructive" });
+    } finally {
+      setSurprising(false);
+    }
+  };
+
   // Handle for Advanced Filters
   const handleApplyFilters = (filters: any) => {
     setActiveFilters(filters);

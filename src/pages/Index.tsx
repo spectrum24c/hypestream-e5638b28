@@ -4,12 +4,12 @@ import Navbar from '@/components/Navbar';
 import HeroSection from '@/components/HeroSection';
 import ContentSlider from '@/components/ContentSlider';
 import Footer from '@/components/Footer';
-import { apiPaths, fetchFromTMDB, searchContent, fetchContentByCategory } from '@/services/tmdbApi';
+import { apiPaths, fetchFromTMDB, searchContent, fetchContentByCategory, fetchPersonalizedRecommendations, fetchRandomMovie } from '@/services/tmdbApi';
 import { supabase } from '@/integrations/supabase/client';
 import MovieCard from '@/components/MovieCard';
 import MoviePlayer from '@/components/MoviePlayer';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowDown } from 'lucide-react';
+import { ArrowLeft, ArrowDown, Shuffle } from 'lucide-react';
 import { Movie, WatchHistory } from '@/types/movie';
 import { useToast } from '@/hooks/use-toast';
 import ContinueWatching from '@/components/ContinueWatching';
@@ -49,6 +49,8 @@ const Index = () => {
   const [topRatedShows, setTopRatedShows] = useState<Movie[]>([]);
   const [horrorMovies, setHorrorMovies] = useState<Movie[]>([]);
   const [comedyMovies, setComedyMovies] = useState<Movie[]>([]);
+  const [forYouContent, setForYouContent] = useState<Movie[]>([]);
+  const [surprising, setSurprising] = useState(false);
   const [searchResults, setSearchResults] = useState<Movie[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -142,6 +144,63 @@ const Index = () => {
     };
 
     loadContinueWatching();
+  }, [session]);
+
+  // Load personalized "For You" recommendations from watch history + favorites
+  useEffect(() => {
+    const loadForYou = async () => {
+      if (!session?.user) {
+        setForYouContent([]);
+        return;
+      }
+      try {
+        const [historyRes, favsRes] = await Promise.all([
+          supabase
+            .from('watch_history')
+            .select('movie_id, media_type, last_watched_at')
+            .eq('user_id', session.user.id)
+            .order('last_watched_at', { ascending: false })
+            .limit(10),
+          supabase
+            .from('favorites')
+            .select('movie_id, is_tv_show, created_at')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false })
+            .limit(10),
+        ]);
+
+        const seeds: Array<{ id: string; isTVShow: boolean }> = [];
+        const seen = new Set<string>();
+
+        (historyRes.data || []).forEach((h: any) => {
+          const key = String(h.movie_id);
+          if (!seen.has(key)) {
+            seen.add(key);
+            seeds.push({ id: key, isTVShow: h.media_type === 'tv' });
+          }
+        });
+        (favsRes.data || []).forEach((f: any) => {
+          const key = String(f.movie_id);
+          if (!seen.has(key)) {
+            seen.add(key);
+            seeds.push({ id: key, isTVShow: !!f.is_tv_show });
+          }
+        });
+
+        if (!seeds.length) {
+          setForYouContent([]);
+          return;
+        }
+
+        const recs = await fetchPersonalizedRecommendations(seeds);
+        setForYouContent(recs as Movie[]);
+      } catch (err) {
+        console.error('Error loading For You recommendations:', err);
+        setForYouContent([]);
+      }
+    };
+
+    loadForYou();
   }, [session]);
 
   useEffect(() => {
@@ -385,6 +444,36 @@ const Index = () => {
     navigate(`/?category=${categoryId}`);
   };
 
+  // Surprise me — pick a random movie, optionally biased to user's most-watched genre
+  const handleSurpriseMe = async () => {
+    if (surprising) return;
+    setSurprising(true);
+    try {
+      // Pick a preferred genre from current home content if available
+      const pool = [...trendingContent, ...popularMovies, ...forYouContent];
+      const genreCounts = new Map<number, number>();
+      pool.forEach((m) => {
+        (m.genre_ids || []).forEach((g) => genreCounts.set(g, (genreCounts.get(g) || 0) + 1));
+      });
+      let preferredGenre: number | undefined;
+      if (genreCounts.size) {
+        preferredGenre = [...genreCounts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      }
+      const movie = await fetchRandomMovie(preferredGenre);
+      if (movie) {
+        setSelectedMovie(movie as Movie);
+        setShouldPlayMovie(false);
+      } else {
+        toast({ title: "No luck this time", description: "Couldn't find a random pick. Try again!", variant: "destructive" });
+      }
+    } catch (err) {
+      console.error('Surprise me error:', err);
+      toast({ title: "Something went wrong", description: "Could not pick a random movie", variant: "destructive" });
+    } finally {
+      setSurprising(false);
+    }
+  };
+
   // Handle for Advanced Filters
   const handleApplyFilters = (filters: any) => {
     setActiveFilters(filters);
@@ -539,6 +628,22 @@ const Index = () => {
               {!loading && (
                 <div className="space-y-6 px-0 sm:px-0">
                   {!isSearching && <CategorySection />}
+
+                  {/* Surprise Me */}
+                  <div className="flex justify-center px-3 pt-2">
+                    <Button
+                      onClick={handleSurpriseMe}
+                      disabled={surprising}
+                      className="bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 shadow-elevated"
+                    >
+                      <Shuffle className={`mr-2 h-4 w-4 ${surprising ? 'animate-spin' : ''}`} />
+                      {surprising ? 'Picking…' : 'Surprise Me'}
+                    </Button>
+                  </div>
+
+                  {forYouContent.length > 0 && (
+                    <ContentSlider title="For You" items={forYouContent} onViewAll={() => handleViewAll('trending')} />
+                  )}
                   <ContentSlider title="Trending Now" items={trendingContent} onViewAll={() => handleViewAll('trending')} />
                   <ContentSlider title="New Releases" items={newReleases} onViewAll={() => handleViewAll('new')} />
                   <ContentSlider title="Popular Movies" items={popularMovies} onViewAll={() => handleViewAll('movie')} />

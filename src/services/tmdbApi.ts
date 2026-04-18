@@ -90,6 +90,10 @@ export const apiPaths = {
   fetchAnime: `${tmdbApiEndpoint}/discover/tv?api_key=${apiKeys.tmdb}&language=en-US&with_keywords=210024`,
   fetchAnimeByGenre: (genreId: number) => `${tmdbApiEndpoint}/discover/tv?api_key=${apiKeys.tmdb}&language=en-US&with_keywords=210024&with_genres=${genreId}`,
   
+  // Recommendations
+  fetchMovieRecommendations: (movieId: string) => `${tmdbApiEndpoint}/movie/${movieId}/recommendations?api_key=${apiKeys.tmdb}&language=en-US`,
+  fetchTVRecommendations: (tvId: string) => `${tmdbApiEndpoint}/tv/${tvId}/recommendations?api_key=${apiKeys.tmdb}&language=en-US`,
+
   // Cast & Crew endpoints
   fetchMovieCredits: (movieId: string) => `${tmdbApiEndpoint}/movie/${movieId}/credits?api_key=${apiKeys.tmdb}&language=en-US`,
   fetchTVCredits: (tvId: string) => `${tmdbApiEndpoint}/tv/${tvId}/credits?api_key=${apiKeys.tmdb}&language=en-US`,
@@ -390,5 +394,81 @@ export const fetchPersonData = async (personId: string) => {
       movieCredits: { cast: [], crew: [] },
       tvCredits: { cast: [], crew: [] }
     };
+  }
+};
+
+// Fetch a YouTube trailer key for a movie or TV show
+export const fetchTrailerKey = async (id: string, isTVShow: boolean): Promise<string | null> => {
+  try {
+    const url = isTVShow ? apiPaths.fetchTVTrailer(id) : apiPaths.fetchMovieTrailer(id);
+    const data = await fetchFromTMDB(url);
+    if (!data?.results?.length) return null;
+    const trailer =
+      data.results.find((v: any) => v.site === 'YouTube' && v.type === 'Trailer' && v.official) ||
+      data.results.find((v: any) => v.site === 'YouTube' && v.type === 'Trailer') ||
+      data.results.find((v: any) => v.site === 'YouTube');
+    return trailer?.key || null;
+  } catch (error) {
+    console.error('Error fetching trailer key:', error);
+    return null;
+  }
+};
+
+// Fetch personalized recommendations based on a list of seed items (watch history + favorites)
+export const fetchPersonalizedRecommendations = async (
+  seeds: Array<{ id: string; isTVShow: boolean }>
+): Promise<any[]> => {
+  if (!seeds.length) return [];
+  try {
+    // Take top 5 seeds to limit API calls
+    const limited = seeds.slice(0, 5);
+    const results = await Promise.all(
+      limited.map(async (seed) => {
+        try {
+          const url = seed.isTVShow
+            ? apiPaths.fetchTVRecommendations(seed.id)
+            : apiPaths.fetchMovieRecommendations(seed.id);
+          const data = await fetchFromTMDB(url);
+          return (data?.results || []).slice(0, 8);
+        } catch {
+          return [];
+        }
+      })
+    );
+    // Flatten + dedupe by id
+    const merged: any[] = [];
+    const seen = new Set<string>();
+    const seedIds = new Set(seeds.map((s) => String(s.id)));
+    for (const arr of results) {
+      for (const item of arr) {
+        const key = String(item.id);
+        if (seen.has(key) || seedIds.has(key)) continue;
+        seen.add(key);
+        merged.push(item);
+      }
+    }
+    // Sort by popularity/vote
+    return merged
+      .sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0))
+      .slice(0, 20);
+  } catch (error) {
+    console.error('Error fetching personalized recommendations:', error);
+    return [];
+  }
+};
+
+// Fetch a random movie from popular/trending pages, optionally biased to a genre
+export const fetchRandomMovie = async (preferredGenreId?: number): Promise<any | null> => {
+  try {
+    const randomPage = Math.floor(Math.random() * 10) + 1;
+    let url = `${tmdbApiEndpoint}/discover/movie?api_key=${apiKeys.tmdb}&language=en-US&sort_by=popularity.desc&vote_count.gte=100&page=${randomPage}`;
+    if (preferredGenreId) url += `&with_genres=${preferredGenreId}`;
+    const data = await fetchFromTMDB(url);
+    const results = data?.results || [];
+    if (!results.length) return null;
+    return results[Math.floor(Math.random() * results.length)];
+  } catch (error) {
+    console.error('Error fetching random movie:', error);
+    return null;
   }
 };

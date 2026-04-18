@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { getOptimizedImagePath, fetchTrailerKey } from '@/services/tmdbApi';
 
@@ -40,7 +39,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const [imageError, setImageError] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
-  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const prefetchedRef = useRef(false);
 
   const posterUrl = posterPath
     ? getOptimizedImagePath(posterPath, 'medium')
@@ -61,52 +61,63 @@ const MovieCard: React.FC<MovieCardProps> = ({
     && window.matchMedia('(hover: hover) and (pointer: fine)').matches
     && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  const cacheKey = `${isTVShow ? 'tv' : 'movie'}-${id}`;
+
+  // Prefetch the trailer key as soon as the card is visible (so hover plays instantly)
+  useEffect(() => {
+    if (!isDesktop || prefetchedRef.current) return;
+    if (trailerKeyCache.has(cacheKey)) {
+      setTrailerKey(trailerKeyCache.get(cacheKey) ?? null);
+      prefetchedRef.current = true;
+      return;
+    }
+    if (!cardRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(async (entry) => {
+          if (entry.isIntersecting && !prefetchedRef.current) {
+            prefetchedRef.current = true;
+            try {
+              const key = await fetchTrailerKey(String(id), isTVShow);
+              trailerKeyCache.set(cacheKey, key);
+              setTrailerKey(key);
+            } catch {
+              trailerKeyCache.set(cacheKey, null);
+            }
+            observer.disconnect();
+          }
+        });
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [id, isTVShow, isDesktop, cacheKey]);
+
   const handleMouseEnter = () => {
     if (!isDesktop) return;
-    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    hoverTimerRef.current = setTimeout(async () => {
-      const cacheKey = `${isTVShow ? 'tv' : 'movie'}-${id}`;
-      if (trailerKeyCache.has(cacheKey)) {
-        const cached = trailerKeyCache.get(cacheKey) ?? null;
-        setTrailerKey(cached);
-        if (cached) setShowTrailer(true);
-        return;
-      }
-      try {
-        const key = await fetchTrailerKey(String(id), isTVShow);
-        trailerKeyCache.set(cacheKey, key);
-        if (key) {
-          setTrailerKey(key);
-          setShowTrailer(true);
-        }
-      } catch {
-        trailerKeyCache.set(cacheKey, null);
-      }
-    }, 1000);
+    if (trailerKey) {
+      setShowTrailer(true);
+      window.dispatchEvent(new CustomEvent('trailer-hover-start'));
+    }
   };
 
   const handleMouseLeave = () => {
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current);
-      hoverTimerRef.current = null;
-    }
+    if (!isDesktop) return;
     setShowTrailer(false);
+    window.dispatchEvent(new CustomEvent('trailer-hover-end'));
   };
-
-  useEffect(() => {
-    return () => {
-      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    };
-  }, []);
 
   return (
     <div
-      className="group flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] rounded-md overflow-hidden transition-all duration-300 cursor-pointer bg-card hover:scale-105 hover:shadow-elevated hover:z-10"
+      ref={cardRef}
+      className="group relative flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] rounded-md overflow-hidden transition-all duration-300 cursor-pointer bg-card hover:scale-105 hover:shadow-elevated hover:z-10"
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="relative aspect-[2/3] w-full bg-muted">
+      <div className="relative aspect-[2/3] w-full bg-muted overflow-hidden">
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-t-transparent border-primary rounded-full animate-spin"></div>
@@ -124,22 +135,25 @@ const MovieCard: React.FC<MovieCardProps> = ({
         />
 
         {showTrailer && trailerKey && (
-          <iframe
-            className="absolute inset-0 w-full h-full pointer-events-none animate-fade-in"
-            src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1&rel=0&loop=1&playlist=${trailerKey}`}
-            title={`${title} trailer preview`}
-            allow="autoplay; encrypted-media"
-            loading="lazy"
-          />
+          <div className="absolute inset-0 z-20 overflow-hidden bg-background animate-fade-in pointer-events-none">
+            {/* Scale up to crop YouTube's letterboxing so the 16:9 trailer fills the 2:3 poster */}
+            <iframe
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[300%]"
+              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=0&controls=0&modestbranding=1&playsinline=1&rel=0&loop=1&playlist=${trailerKey}&iv_load_policy=3&disablekb=1&fs=0`}
+              title={`${title} trailer preview`}
+              allow="autoplay; encrypted-media"
+              loading="lazy"
+            />
+          </div>
         )}
 
         {isNewSeason && (
-          <div className="absolute top-2 left-2 bg-primary px-2 py-1 rounded text-xs font-bold text-primary-foreground z-10">
+          <div className="absolute top-2 left-2 bg-primary px-2 py-1 rounded text-xs font-bold text-primary-foreground z-30">
             NEW SEASON
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" />
       </div>
       <div className="p-2 md:p-3">
         <h3 className="font-semibold text-xs md:text-sm mb-1 truncate text-foreground">{title}</h3>

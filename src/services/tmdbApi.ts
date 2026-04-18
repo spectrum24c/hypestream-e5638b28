@@ -470,5 +470,3 @@ export const fetchRandomMovie = async (preferredGenreId?: number): Promise<any |
     return null;
   }
 };
-  }
-};

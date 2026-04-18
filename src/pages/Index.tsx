@@ -628,6 +628,22 @@ const Index = () => {
               {!loading && (
                 <div className="space-y-6 px-0 sm:px-0">
                   {!isSearching && <CategorySection />}
+
+                  {/* Surprise Me */}
+                  <div className="flex justify-center px-3 pt-2">
+                    <Button
+                      onClick={handleSurpriseMe}
+                      disabled={surprising}
+                      className="bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90 shadow-elevated"
+                    >
+                      <Shuffle className={`mr-2 h-4 w-4 ${surprising ? 'animate-spin' : ''}`} />
+                      {surprising ? 'Picking…' : 'Surprise Me'}
+                    </Button>
+                  </div>
+
+                  {forYouContent.length > 0 && (
+                    <ContentSlider title="For You" items={forYouContent} onViewAll={() => handleViewAll('trending')} />
+                  )}
                   <ContentSlider title="Trending Now" items={trendingContent} onViewAll={() => handleViewAll('trending')} />
                   <ContentSlider title="New Releases" items={newReleases} onViewAll={() => handleViewAll('new')} />
                   <ContentSlider title="Popular Movies" items={popularMovies} onViewAll={() => handleViewAll('movie')} />

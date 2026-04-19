@@ -143,8 +143,8 @@ const MovieCard: React.FC<MovieCardProps> = ({
       }}
       className={`group relative flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] cursor-pointer bg-card outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all duration-[400ms] ${
         isExpanded
-          ? 'z-[999] scale-[1.35] origin-center rounded-lg'
-          : 'rounded-md hover:scale-105 hover:z-10 overflow-hidden'
+          ? 'z-[999] origin-top rounded-lg'
+          : 'rounded-md hover:z-10 overflow-hidden'
       }`}
       onClick={onClick}
       onKeyDown={(e) => {

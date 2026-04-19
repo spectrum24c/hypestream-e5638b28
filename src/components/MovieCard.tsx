@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getOptimizedImagePath, fetchTrailerKey } from '@/services/tmdbApi';
 
 interface MovieCardProps {
@@ -20,6 +20,8 @@ interface MovieCardProps {
 // Module-level cache so we don't refetch trailers across cards/sessions
 const trailerKeyCache = new Map<string, string | null>();
 
+const HOVER_INTENT_DELAY = 400; // ms — Netflix-style hover intent
+
 const MovieCard: React.FC<MovieCardProps> = ({
   id,
   title,
@@ -38,9 +40,11 @@ const MovieCard: React.FC<MovieCardProps> = ({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showTrailer, setShowTrailer] = useState(false);
+  const [trailerLoaded, setTrailerLoaded] = useState(false);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const prefetchedRef = useRef(false);
+  const hoverTimerRef = useRef<number | null>(null);
 
   const posterUrl = posterPath
     ? getOptimizedImagePath(posterPath, 'medium')
@@ -63,7 +67,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
   const cacheKey = `${isTVShow ? 'tv' : 'movie'}-${id}`;
 
-  // Prefetch the trailer key as soon as the card is visible (so hover plays instantly)
+  // Prefetch trailer key when card enters viewport (lazy load video source)
   useEffect(() => {
     if (!isDesktop || prefetchedRef.current) return;
     if (trailerKeyCache.has(cacheKey)) {
@@ -95,33 +99,57 @@ const MovieCard: React.FC<MovieCardProps> = ({
     return () => observer.disconnect();
   }, [id, isTVShow, isDesktop, cacheKey]);
 
-  const handleMouseEnter = () => {
+  const clearHoverTimer = useCallback(() => {
+    if (hoverTimerRef.current !== null) {
+      window.clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+  }, []);
+
+  const triggerExpand = useCallback(() => {
     if (!isDesktop) return;
-    if (trailerKey) {
+    clearHoverTimer();
+    hoverTimerRef.current = window.setTimeout(() => {
       setShowTrailer(true);
       window.dispatchEvent(new CustomEvent('trailer-hover-start'));
-    }
-  };
+    }, HOVER_INTENT_DELAY);
+  }, [isDesktop, clearHoverTimer]);
 
-  const handleMouseLeave = () => {
+  const collapse = useCallback(() => {
     if (!isDesktop) return;
+    clearHoverTimer();
     setShowTrailer(false);
+    setTrailerLoaded(false);
     window.dispatchEvent(new CustomEvent('trailer-hover-end'));
-  };
+  }, [isDesktop, clearHoverTimer]);
 
-  const isExpanded = showTrailer && trailerKey;
+  // Cleanup timer on unmount
+  useEffect(() => () => clearHoverTimer(), [clearHoverTimer]);
+
+  const isExpanded = showTrailer && !!trailerKey;
 
   return (
     <div
       ref={cardRef}
-      className={`group relative flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] rounded-md cursor-pointer bg-card transition-all duration-300 ${
+      role="button"
+      tabIndex={0}
+      aria-label={`${title}${year !== 'N/A' ? `, ${year}` : ''}. Press Enter to view details.`}
+      className={`group relative flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] rounded-md cursor-pointer bg-card transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-primary ${
         isExpanded
           ? 'z-30 scale-[1.6] shadow-elevated origin-center'
           : 'hover:scale-105 hover:shadow-elevated hover:z-10 overflow-hidden'
       }`}
       onClick={onClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      onMouseEnter={triggerExpand}
+      onMouseLeave={collapse}
+      onFocus={triggerExpand}
+      onBlur={collapse}
     >
       <div className={`relative w-full bg-muted overflow-hidden transition-all duration-300 ${isExpanded ? 'aspect-video rounded-md' : 'aspect-[2/3]'}`}>
         {!imageLoaded && !imageError && (
@@ -130,11 +158,12 @@ const MovieCard: React.FC<MovieCardProps> = ({
           </div>
         )}
 
+        {/* Poster — fades out (crossfade) when trailer is ready */}
         <img
           src={imageError ? '/placeholder.svg' : posterUrl}
           alt={title}
-          className={`w-full h-full object-cover transition-opacity duration-300 ${
-            imageLoaded && !isExpanded ? 'opacity-100' : 'opacity-0'
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+            imageLoaded && !(isExpanded && trailerLoaded) ? 'opacity-100' : 'opacity-0'
           }`}
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
@@ -142,14 +171,16 @@ const MovieCard: React.FC<MovieCardProps> = ({
           decoding="async"
         />
 
+        {/* Trailer iframe — only mounted when expanded (lazy), unmounted on leave to truly pause */}
         {isExpanded && (
           <div className="absolute inset-0 z-20 overflow-hidden bg-background animate-fade-in pointer-events-none">
             <iframe
-              className="absolute inset-0 w-full h-full"
-              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=0&controls=0&modestbranding=1&playsinline=1&rel=0&loop=1&playlist=${trailerKey}&iv_load_policy=3&disablekb=1&fs=0&vq=hd1080&hd=1`}
+              className={`absolute inset-0 w-full h-full transition-opacity duration-500 ${trailerLoaded ? 'opacity-100' : 'opacity-0'}`}
+              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1&rel=0&loop=1&playlist=${trailerKey}&iv_load_policy=3&disablekb=1&fs=0&vq=hd1080&hd=1`}
               title={`${title} trailer preview`}
               allow="autoplay; encrypted-media"
               loading="lazy"
+              onLoad={() => setTrailerLoaded(true)}
             />
           </div>
         )}

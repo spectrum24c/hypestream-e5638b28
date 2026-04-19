@@ -136,9 +136,11 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
         {showTrailer && trailerKey && (
           <div className="absolute inset-0 z-20 overflow-hidden bg-background animate-fade-in pointer-events-none">
-            {/* Scale up to crop YouTube's letterboxing so the 16:9 trailer fills the 2:3 poster */}
+            {/* Card is 2:3 (aspect 0.667), video is 16:9 (aspect 1.778).
+                Scale width by 1.778/0.667 ≈ 2.67 of card width to fill height with minimal crop. */}
             <iframe
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[300%]"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-full"
+              style={{ width: '267%' }}
               src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=0&controls=0&modestbranding=1&playsinline=1&rel=0&loop=1&playlist=${trailerKey}&iv_load_policy=3&disablekb=1&fs=0`}
               title={`${title} trailer preview`}
               allow="autoplay; encrypted-media"

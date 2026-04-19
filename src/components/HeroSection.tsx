@@ -154,7 +154,11 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
     : 'https://images.unsplash.com/photo-1578632767115-351597cf2477?ixlib=rb-4.0.3&auto=format&fit=crop';
 
   return (
-    <div className="relative h-[85vh] min-h-[600px] w-full overflow-hidden">
+    <div
+      className="relative h-[85vh] min-h-[600px] w-full overflow-hidden"
+      onMouseEnter={handleHeroMouseEnter}
+      onMouseLeave={handleHeroMouseLeave}
+    >
       {/* Background Image */}
       <div className={`absolute inset-0 transition-opacity duration-700 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
         <img
@@ -165,9 +169,21 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
         />
       </div>
 
+      {/* Trailer overlay on hover */}
+      {showTrailer && trailerKey && (
+        <div className="absolute inset-0 z-[1] overflow-hidden bg-background animate-fade-in pointer-events-none">
+          <iframe
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full min-w-[177.78vh] min-h-[56.25vw]"
+            src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=0&controls=0&modestbranding=1&playsinline=1&rel=0&loop=1&playlist=${trailerKey}&iv_load_policy=3&disablekb=1&fs=0`}
+            title={`${title} trailer preview`}
+            allow="autoplay; encrypted-media"
+          />
+        </div>
+      )}
+
       {/* Gradient Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent z-[2]" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-[2]" />
 
       {/* Content */}
       <div className="container mx-auto px-4 md:px-8 relative h-full flex items-center z-20">

@@ -174,7 +174,7 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
         <div className="absolute inset-0 z-[1] overflow-hidden bg-background animate-fade-in pointer-events-none">
           <iframe
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full min-w-[177.78vh] min-h-[56.25vw]"
-            src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=0&controls=0&modestbranding=1&playsinline=1&rel=0&loop=1&playlist=${trailerKey}&iv_load_policy=3&disablekb=1&fs=0`}
+            src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=0&controls=0&modestbranding=1&playsinline=1&rel=0&loop=1&playlist=${trailerKey}&iv_load_policy=3&disablekb=1&fs=0&vq=hd1080&hd=1`}
             title={`${title} trailer preview`}
             allow="autoplay; encrypted-media"
           />
@@ -182,12 +182,14 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
       )}
 
       {/* Gradient Overlays */}
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent z-[2]" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-[2]" />
+      <div className={`absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent z-[2] transition-opacity duration-500 ${showTrailer && trailerKey ? 'opacity-0' : 'opacity-100'}`} />
+      <div className={`absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-[2] transition-opacity duration-500 ${showTrailer && trailerKey ? 'opacity-0' : 'opacity-100'}`} />
 
       {/* Content */}
-      <div className="container mx-auto px-4 md:px-8 relative h-full flex items-center z-20">
-        <div className={`max-w-2xl transition-all duration-700 ${isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+      <div className="container mx-auto px-4 md:px-8 relative h-full flex items-center z-20 pointer-events-none">
+        <div className={`max-w-2xl transition-all duration-500 pointer-events-auto ${
+          showTrailer && trailerKey ? 'opacity-0 translate-y-4 pointer-events-none' : isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
+        }`}>
           {/* Category & Rating */}
           <div className="flex items-center gap-4 mb-4">
             <span className="inline-flex items-center px-3 py-1 bg-primary/90 text-primary-foreground text-xs font-bold tracking-wider rounded">

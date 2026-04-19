@@ -109,15 +109,21 @@ const MovieCard: React.FC<MovieCardProps> = ({
     window.dispatchEvent(new CustomEvent('trailer-hover-end'));
   };
 
+  const isExpanded = showTrailer && trailerKey;
+
   return (
     <div
       ref={cardRef}
-      className="group relative flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] rounded-md overflow-hidden transition-all duration-300 cursor-pointer bg-card hover:scale-105 hover:shadow-elevated hover:z-10"
+      className={`group relative flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] rounded-md cursor-pointer bg-card transition-all duration-300 ${
+        isExpanded
+          ? 'z-30 scale-[1.6] shadow-elevated origin-center'
+          : 'hover:scale-105 hover:shadow-elevated hover:z-10 overflow-hidden'
+      }`}
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="relative aspect-[2/3] w-full bg-muted overflow-hidden">
+      <div className={`relative w-full bg-muted overflow-hidden transition-all duration-300 ${isExpanded ? 'aspect-video rounded-md' : 'aspect-[2/3]'}`}>
         {!imageLoaded && !imageError && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-t-transparent border-primary rounded-full animate-spin"></div>
@@ -127,21 +133,20 @@ const MovieCard: React.FC<MovieCardProps> = ({
         <img
           src={imageError ? '/placeholder.svg' : posterUrl}
           alt={title}
-          className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full h-full object-cover transition-opacity duration-300 ${
+            imageLoaded && !isExpanded ? 'opacity-100' : 'opacity-0'
+          }`}
           loading="lazy"
           onLoad={() => setImageLoaded(true)}
           onError={() => setImageError(true)}
           decoding="async"
         />
 
-        {showTrailer && trailerKey && (
+        {isExpanded && (
           <div className="absolute inset-0 z-20 overflow-hidden bg-background animate-fade-in pointer-events-none">
-            {/* Card is 2:3 (aspect 0.667), video is 16:9 (aspect 1.778).
-                Scale width by 1.778/0.667 ≈ 2.67 of card width to fill height with minimal crop. */}
             <iframe
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-full"
-              style={{ width: '267%' }}
-              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=0&controls=0&modestbranding=1&playsinline=1&rel=0&loop=1&playlist=${trailerKey}&iv_load_policy=3&disablekb=1&fs=0`}
+              className="absolute inset-0 w-full h-full"
+              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=0&controls=0&modestbranding=1&playsinline=1&rel=0&loop=1&playlist=${trailerKey}&iv_load_policy=3&disablekb=1&fs=0&vq=hd1080&hd=1`}
               title={`${title} trailer preview`}
               allow="autoplay; encrypted-media"
               loading="lazy"
@@ -149,7 +154,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           </div>
         )}
 
-        {isNewSeason && (
+        {isNewSeason && !isExpanded && (
           <div className="absolute top-2 left-2 bg-primary px-2 py-1 rounded text-xs font-bold text-primary-foreground z-30">
             NEW SEASON
           </div>
@@ -157,7 +162,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
 
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" />
       </div>
-      <div className="p-2 md:p-3">
+      <div className={`p-2 md:p-3 transition-opacity duration-300 ${isExpanded ? 'opacity-0' : 'opacity-100'}`}>
         <h3 className="font-semibold text-xs md:text-sm mb-1 truncate text-foreground">{title}</h3>
         <div className="flex justify-between text-muted-foreground text-xs mb-1">
           <span>{year}</span>

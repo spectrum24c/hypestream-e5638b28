@@ -31,6 +31,11 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [showTrailer, setShowTrailer] = useState(false);
+  const [trailerKey, setTrailerKey] = useState<string | null>(null);
+  const trailerCacheRef = useRef<Map<string, string | null>>(new Map());
+  const hoverTimerRef = useRef<number | null>(null);
   
   const { toast } = useToast();
   

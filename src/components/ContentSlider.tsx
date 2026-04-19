@@ -20,6 +20,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
   const sliderRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const scroll = (direction: 'left' | 'right') => {

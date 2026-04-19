@@ -258,6 +258,24 @@ html, body, #root {
   z-index: 9999;
 }
 
+/* Netflix-style hover card easing & dimming */
+:root {
+  --netflix-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.netflix-row {
+  transition: opacity 250ms var(--netflix-ease);
+}
+.netflix-row.has-hovered-card > *:not(.is-hovered-card) {
+  opacity: 0.55;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .netflix-row.has-hovered-card > *:not(.is-hovered-card) {
+    opacity: 1;
+  }
+}
+
 /* Stream and Trailer styles */
 .stream iframe, .trailer-cont iframe {
   width: 100% !important;

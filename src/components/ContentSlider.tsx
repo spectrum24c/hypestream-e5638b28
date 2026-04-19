@@ -87,7 +87,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
           </button>
         )}
 
-        <div ref={sliderRef} className="flex space-x-2 overflow-x-auto pb-4 px-2 hide-scrollbar md:snap-x md:snap-mandatory" onScroll={() => {
+        <div ref={sliderRef} className={`netflix-row flex space-x-2 overflow-x-auto pb-4 px-2 hide-scrollbar md:snap-x md:snap-mandatory ${hoveredId ? 'has-hovered-card' : ''}`} onScroll={() => {
           if (sliderRef.current && sliderRef.current.scrollLeft > 20) {
             setShowLeftArrow(true);
           } else {
@@ -95,7 +95,12 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
           }
         }}>
           {items.map(item => (
-            <div key={item.id} className="md:snap-start shrink-0 basis-[calc(50%-0.25rem)] sm:basis-auto">
+            <div
+              key={item.id}
+              className={`md:snap-start shrink-0 basis-[calc(50%-0.25rem)] sm:basis-auto transition-opacity duration-300 ${hoveredId === item.id ? 'is-hovered-card' : ''}`}
+              onMouseEnter={() => setHoveredId(item.id)}
+              onMouseLeave={() => setHoveredId(prev => (prev === item.id ? null : prev))}
+            >
               <MovieCard
                 id={item.id}
                 title={item.title || item.name || 'Unknown Title'}

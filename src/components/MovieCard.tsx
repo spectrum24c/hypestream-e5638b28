@@ -273,7 +273,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
           <h3 className="font-semibold text-[11px] mb-1 truncate text-foreground">{title}</h3>
           <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-1">
             {matchPct !== null && (
-              <span className="text-green-500 font-semibold">{matchPct}% Match</span>
+              <span className="text-accent font-semibold">{matchPct}% Match</span>
             )}
             <span>{year}</span>
             {durationInfo && <span>• {durationInfo}</span>}

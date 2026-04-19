@@ -74,10 +74,52 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
   }, [featuredContent.length, isTransitioning]);
   
   useEffect(() => {
-    if (featuredContent.length <= 1) return;
+    if (featuredContent.length <= 1 || isHovering) return;
     const interval = setInterval(goToNextSlide, 10000);
     return () => clearInterval(interval);
-  }, [goToNextSlide, featuredContent.length]);
+  }, [goToNextSlide, featuredContent.length, isHovering]);
+
+  // Prefetch trailer for the current slide
+  useEffect(() => {
+    const movie = featuredContent[currentIndex];
+    if (!movie) return;
+    setShowTrailer(false);
+    setTrailerKey(null);
+    const isTV = movie.media_type === 'tv' || !!movie.first_air_date;
+    const cacheKey = `${isTV ? 'tv' : 'movie'}-${movie.id}`;
+    if (trailerCacheRef.current.has(cacheKey)) {
+      setTrailerKey(trailerCacheRef.current.get(cacheKey) ?? null);
+      return;
+    }
+    let cancelled = false;
+    fetchTrailerKey(String(movie.id), isTV)
+      .then((key) => {
+        if (cancelled) return;
+        trailerCacheRef.current.set(cacheKey, key);
+        setTrailerKey(key);
+      })
+      .catch(() => {
+        trailerCacheRef.current.set(cacheKey, null);
+      });
+    return () => { cancelled = true; };
+  }, [currentIndex, featuredContent]);
+
+  const handleHeroMouseEnter = () => {
+    setIsHovering(true);
+    if (hoverTimerRef.current) window.clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = window.setTimeout(() => {
+      if (trailerKey) setShowTrailer(true);
+    }, 600);
+  };
+
+  const handleHeroMouseLeave = () => {
+    setIsHovering(false);
+    if (hoverTimerRef.current) {
+      window.clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    setShowTrailer(false);
+  };
 
   const handlePlayTrailer = () => {
     if (!featuredContent[currentIndex]) return;

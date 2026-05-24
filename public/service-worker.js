@@ -169,3 +169,42 @@ self.addEventListener('sync', event => {
     console.log('Background sync triggered');
   }
 });
+
+// ============= PUSH NOTIFICATIONS =============
+self.addEventListener('push', event => {
+  let data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (e) { data = { title: 'HypeStream', body: event.data && event.data.text() }; }
+
+  const title = data.title || 'HypeStream';
+  const options = {
+    body: data.body || '',
+    icon: '/lovable-uploads/8eee155a-5511-42f0-83bb-7ef906513992.png',
+    badge: '/lovable-uploads/8eee155a-5511-42f0-83bb-7ef906513992.png',
+    image: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : undefined,
+    data: {
+      movie_id: data.movie_id,
+      media_type: data.media_type || 'movie',
+      log_id: data.log_id,
+    },
+    tag: data.movie_id ? `hypestream-${data.movie_id}` : undefined,
+    renotify: false,
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const { movie_id, media_type } = event.notification.data || {};
+  const url = movie_id
+    ? `/?notif=${encodeURIComponent(movie_id)}&type=${encodeURIComponent(media_type || 'movie')}`
+    : '/';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      for (const client of clientList) {
+        if ('focus' in client) { client.navigate(url); return client.focus(); }
+      }
+      return self.clients.openWindow(url);
+    })
+  );
+});
+

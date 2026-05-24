@@ -128,6 +128,102 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          min_match_score: number
+          new_releases_enabled: boolean
+          new_releases_per_day: number
+          preferred_day_of_week: number
+          preferred_genres: number[]
+          quiet_hours_end: number
+          quiet_hours_start: number
+          recommendations_enabled: boolean
+          recommendations_per_week: number
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          min_match_score?: number
+          new_releases_enabled?: boolean
+          new_releases_per_day?: number
+          preferred_day_of_week?: number
+          preferred_genres?: number[]
+          quiet_hours_end?: number
+          quiet_hours_start?: number
+          recommendations_enabled?: boolean
+          recommendations_per_week?: number
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          min_match_score?: number
+          new_releases_enabled?: boolean
+          new_releases_per_day?: number
+          preferred_day_of_week?: number
+          preferred_genres?: number[]
+          quiet_hours_end?: number
+          quiet_hours_start?: number
+          recommendations_enabled?: boolean
+          recommendations_per_week?: number
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications_log: {
+        Row: {
+          body: string | null
+          clicked_at: string | null
+          delivered_via: string | null
+          id: string
+          kind: string
+          movie_id: string | null
+          payload: Json | null
+          poster_path: string | null
+          read_at: string | null
+          sent_at: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          clicked_at?: string | null
+          delivered_via?: string | null
+          id?: string
+          kind: string
+          movie_id?: string | null
+          payload?: Json | null
+          poster_path?: string | null
+          read_at?: string | null
+          sent_at?: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          clicked_at?: string | null
+          delivered_via?: string | null
+          id?: string
+          kind?: string
+          movie_id?: string | null
+          payload?: Json | null
+          poster_path?: string | null
+          read_at?: string | null
+          sent_at?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -161,6 +257,45 @@ export type Database = {
           selected_theme?: string | null
           user_id?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string | null
+          created_at: string
+          device_token: string | null
+          endpoint: string | null
+          id: string
+          last_used_at: string
+          p256dh: string | null
+          platform: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth?: string | null
+          created_at?: string
+          device_token?: string | null
+          endpoint?: string | null
+          id?: string
+          last_used_at?: string
+          p256dh?: string | null
+          platform: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string | null
+          created_at?: string
+          device_token?: string | null
+          endpoint?: string | null
+          id?: string
+          last_used_at?: string
+          p256dh?: string | null
+          platform?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }

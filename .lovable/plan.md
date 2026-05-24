@@ -1,82 +1,86 @@
+# Notification System Plan
 
-
-## HypeStream — Improvement Ideas
-
-Here's a curated list of upgrades grouped by impact area. These are based on what already exists in your codebase (TMDB integration, Supabase auth, watchlist, watch history, HYPE chatbot, newsletter, APK download, multi-profile support).
-
----
-
-### 1. Engagement & Retention (high impact)
-
-- **Personalized "For You" row** — Build a recommendations row on the home page that uses the user's `watch_history` + `favorites` to call TMDB's `/recommendations` endpoint per watched title and merge results. Most-watched genre weighting.
-- **"Because you watched X" sections** — Netflix-style dynamic rows tied to recent watch history items.
-- **Trailer-on-hover previews** — On desktop MovieCard hover (after 1s delay), autoplay a muted YouTube trailer in the card. Big perceived-quality boost.
-- **Daily "Trending Now" push notification** — Use existing `notifications` system + a scheduled edge function to drop one fresh recommendation per day.
-
-### 2. Social & Community
-
-- **Public profiles + sharable watchlists** — Let users share `/u/:username` with their watchlist & favorites publicly.
-- **Reviews & ratings feed** — You already have `RatingReviews.tsx` — surface a global "Recent Reviews" page so reviews are discoverable, not just per-movie.
-- **Friends / follow system** — Follow other users, see what they're watching (opt-in).
-- **Watch parties** — Synced playback rooms via Supabase Realtime (channel per room, broadcast play/pause/seek events).
-
-### 3. Discovery improvements
-
-- **"Random pick" / "Surprise me" button** — One-click random movie from filtered preferences. Solves the "what to watch" paralysis.
-- **Mood-based browsing** — Curated rows like "Feel-good", "Mind-bending", "Date night", "Under 90 minutes" using TMDB filters + runtime.
-- **Streaming availability badges** — Use TMDB's `/watch/providers` endpoint to show where each title is officially streaming (Netflix, Prime, etc.) per region.
-- **Coming soon / Calendar page** — Upcoming releases with reminder buttons that hook into your notifications system.
-
-### 4. Player & viewing experience
-
-- **Skip intro / outro markers** — Manual or community-sourced timestamps stored in Supabase per episode.
-- **Subtitles upload + sync** — Allow users to attach `.srt` files; render via the player.
-- **Playback speed + quality memory** — Persist per-user preferences across sessions.
-- **"Next episode" autoplay** — For TV shows, auto-queue the next episode with a 10s countdown overlay.
-
-### 5. Monetization (optional)
-
-- **Premium tier via Stripe** — Ad-free, early access to new releases row, unlimited profiles, 4K toggle. You already have `payments--enable_stripe_payments` available.
-- **Referral program** — Invite friends, both get a free month.
-
-### 6. Quality, performance & SEO
-
-- **Replace document.title hack with `react-helmet-async`** — Your `PageSEO` component manually patches the head; helmet is more robust for crawlers and handles SSR-friendly rendering if you ever migrate.
-- **Image optimization** — Serve TMDB images with `loading="lazy"` (verify it's set everywhere) and `srcSet` for responsive sizing. Consider a Cloudflare/Imgix proxy for further wins.
-- **Skeleton loaders everywhere** — Some sections currently show empty space during fetch; consistent skeletons feel faster.
-- **Service worker caching strategy review** — Cache TMDB responses with stale-while-revalidate for instant repeat loads.
-- **Lighthouse pass** — Run an audit and fix CLS/LCP issues, especially around the Hero section image swap.
-
-### 7. Accessibility & polish
-
-- **Keyboard navigation for sliders** — Arrow-key support on `ContentSlider`.
-- **ARIA labels audit** — Many icon-only buttons (e.g., notifications, search toggle) need proper labels for screen readers.
-- **Reduced-motion support** — Respect `prefers-reduced-motion` for the Framer Motion welcome screen and slider transitions.
-- **Light theme polish** — Verify the Themes page actually has a usable light theme; many movie sites only ship dark.
-
-### 8. Admin & operations
-
-- **Admin analytics dashboard** — On `AdminSettings`, add metrics: total users, signups/week, most-watched titles, newsletter conversion. Pull from Supabase.
-- **Content moderation queue** — Approve/hide user reviews from the admin panel.
-- **Newsletter composer UI** — Right now newsletters seem code-driven; an admin form to compose & send ad-hoc campaigns would be valuable.
-
-### 9. Mobile / PWA
-
-- **Install prompt banner** — Custom "Add to Home Screen" prompt for PWA users on mobile web.
-- **Offline favorites view** — Cache favorites list and posters via service worker so users can browse offline.
-- **Native share sheet** — On mobile, the `SocialShare` component should call `navigator.share` for a native UX.
+## Goals
+1. Real device notifications (browser + native Android/iOS via Capacitor)
+2. Stop spam — replace timer-based blasts with watch-pattern-aware logic
+3. Per-user control over what & how often
 
 ---
 
-### My top 5 recommendations (best ROI for a streaming site)
+## 1. Database changes (Supabase migration)
 
-1. **Trailer-on-hover previews** — single biggest "wow" factor.
-2. **Personalized "For You" row** — drives session length.
-3. **Watch parties (Supabase Realtime)** — unique, sharable, viral.
-4. **Streaming availability badges** — instantly more useful than competitors.
-5. **Stripe premium tier** — unlocks revenue without much new infra.
+**New tables**
+- `push_subscriptions` — stores Web Push endpoints and FCM/APNs tokens
+  - `user_id`, `platform` ('web'|'android'|'ios'), `endpoint`, `p256dh`, `auth`, `device_token`, `user_agent`, `created_at`, `last_used_at`
+  - RLS: user can CRUD their own rows
+- `notification_preferences` — user-chosen cadence
+  - `user_id` (unique), `new_releases_enabled`, `new_releases_per_day` (0-5), `recommendations_enabled`, `recommendations_per_week` (0-7), `quiet_hours_start`, `quiet_hours_end`, `preferred_genres` (int[]), `min_match_score` (1-5)
+  - RLS: user CRUD own
+- `notifications_log` — every notification sent (dedupe + history)
+  - `user_id`, `kind` ('new_release'|'recommendation'|'system'), `movie_id`, `title`, `body`, `poster_path`, `sent_at`, `clicked_at`, `delivered_via` ('web'|'native'|'in_app')
+  - Unique index on `(user_id, kind, movie_id)` → prevents duplicate sends
+  - RLS: user reads own; service role inserts
+
+## 2. Secrets needed
+- `VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY` — Web Push (I'll generate these and ask you to paste)
+- `VAPID_SUBJECT` — `mailto:awokojorichmond@gmail.com`
+- `FCM_SERVER_KEY` — Firebase Cloud Messaging (for Android via Capacitor) — added when user is ready
+- (iOS APNs handled later via Firebase too)
+
+## 3. Edge functions
+- **`subscribe-push`** — client posts subscription/token, stores in `push_subscriptions`
+- **`send-push`** — internal helper: takes user_id + payload, fans out to all that user's web + native subscriptions
+- **`smart-notify`** — the brain. Cron-triggered hourly. For each user:
+  1. Load `notification_preferences` + `watch_history` + `favorites`
+  2. Check quiet hours, daily/weekly caps via `notifications_log`
+  3. **New release branch** — query TMDB "now playing"/"airing today", filter by release_date == today + genre match with watch history, skip already-logged movie_ids
+  4. **Recommendation branch** — only on user's chosen day; extract top 3 genres from last 20 watch_history, query TMDB recommendations off their top-watched title, filter out anything in watch_history/favorites, rank by genre overlap, pick top 1
+  5. Insert into `notifications_log` → call `send-push`
+- **`vapid-public-key`** — returns public key to frontend (no secret leak)
+
+## 4. Service worker (`public/service-worker.js`)
+Extend existing worker with `push` + `notificationclick` handlers. Guard registration so it only runs on production host (not Lovable preview iframe — per project PWA rules).
+
+## 5. Capacitor native push
+- Add `@capacitor/push-notifications`
+- On native launch: request permission → register → send FCM token to `subscribe-push` with `platform: 'android'`
+- Handle `pushNotificationReceived` → in-app toast; tap → deep link to movie
+
+## 6. UI
+- **`NotificationPreferences.tsx`** — new section in `UserSettings`:
+  - Toggle: Enable browser notifications (triggers permission + subscribe)
+  - Toggle: New releases on/off + slider (0-5/day)
+  - Toggle: Recommendations on/off + slider (0-7/week) + preferred day
+  - Quiet hours pickers
+  - Min match-score slider
+  - List of registered devices with revoke buttons
+- Welcome screen: keep existing first-time prompt, but route the "yes" through new subscribe flow
+- **`NotificationsList`** (existing): pull from `notifications_log` instead of local state
+
+## 7. Cron
+Hourly cron via `pg_cron` + `pg_net` → invokes `smart-notify` (uses anon key, function validates internally).
+
+## 8. Dedupe + anti-spam rules baked into `smart-notify`
+- Skip if `(user_id, kind, movie_id)` already in log
+- Skip if today's `new_release` count ≥ user's daily cap
+- Skip if this week's `recommendation` count ≥ user's weekly cap
+- Skip if `now()` inside user's quiet hours (timezone-aware via stored offset)
+- Skip if user has no `push_subscriptions` AND `in_app_only` is false
 
 ---
 
-**Next step:** pick any item(s) above and I'll plan the implementation in detail before building.
+## Rollout order (so you can test as we go)
+1. Migration: 3 new tables + RLS
+2. Generate VAPID keys → I'll request them as secrets
+3. Edge functions + service worker push handlers
+4. NotificationPreferences UI in UserSettings
+5. Capacitor native registration (only fires on the built APK)
+6. Cron job
+7. Test by manually invoking `smart-notify` for your user
 
+## Technical notes
+- `pg_cron` + `pg_net` already used in this project pattern — will enable if not on
+- Service worker registration must check `!window.self !== window.top && !hostname.includes('lovableproject.com')` to avoid the preview-iframe stale-cache trap
+- Web Push payload max 4KB → only send `{title, body, icon, movie_id}`, fetch full data on click
+- FCM/native lib is added but actual push won't reach the APK until you rebuild & ship a new version (Capacitor sync required on your machine)
+- Lovable preview will NOT show real push notifications — only the published site can. In-app toast fallback will still work everywhere.

@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import UserPreferences from '@/components/UserPreferences';
+import NotificationPreferences from '@/components/NotificationPreferences';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { UserPreference } from '@/types/movie';
@@ -172,6 +173,7 @@ const UserSettingsPage: React.FC = () => {
             <div className="flex items-center justify-end mb-6">
               <TabsList>
                 <TabsTrigger value="preferences">Preferences</TabsTrigger>
+                <TabsTrigger value="notifications">Notifications</TabsTrigger>
                 <TabsTrigger value="account">Account</TabsTrigger>
               </TabsList>
             </div>
@@ -183,6 +185,10 @@ const UserSettingsPage: React.FC = () => {
                 languages={mockLanguages}
                 onSave={handleSavePreferences}
               />
+            </TabsContent>
+
+            <TabsContent value="notifications" className="mt-0">
+              <NotificationPreferences />
             </TabsContent>
             
             <TabsContent value="account" className="mt-0">

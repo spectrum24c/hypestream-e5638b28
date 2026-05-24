@@ -199,12 +199,12 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
   const getAltStreamSrc = (override?: { season: number; episode: number }) => {
     if (!movie) return '';
     if (!isTVShow) {
-      return `https://vidsrc.vip/embed/movie/${movie.id}`;
+      return `https://vidnest.fun/movie/${movie.id}`;
     }
     const episodeInfo = resolveEpisodeInfo(override);
     const season = episodeInfo?.season ?? 1;
     const episode = episodeInfo?.episode ?? 1;
-    return `https://vidsrc.vip/embed/tv/${movie.id}/${season}/${episode}`;
+    return `https://vidnest.fun/tv/${movie.id}/${season}/${episode}`;
   };
   const handleDownload = (seasonNumber?: number, episodeNumber?: number) => {
     if (!session) {
@@ -222,13 +222,14 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
     if (isTV) {
       const season = seasonNumber || 1;
       const episode = episodeNumber || 1;
-      const baseUrl = `https://dl.vidsrc.vip/tv/${movie.id}/${season}/${episode}`;
+      const baseUrl = `https://vidvault.ru/tv/${movie.id}/${season}/${episode}`;
       window.open(baseUrl, '_blank');
     } else {
-      const baseUrl = `https://dl.vidsrc.vip/movie/${movie.id}`;
+      const baseUrl = `https://vidvault.ru/movie/${movie.id}`;
       window.open(baseUrl, '_blank');
     }
   };
+
   const handleAddToFavorites = async () => {
     const session = await supabase.auth.getSession();
     if (!session.data.session) {

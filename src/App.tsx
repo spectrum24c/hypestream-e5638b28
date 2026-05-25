@@ -28,6 +28,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { useHardwareBackButton, useStatusBarCustomization } from '@/utils/mobileUtils';
 import { useUnifiedBackButton } from '@/utils/backButtonHandler';
 import { useToast } from "@/hooks/use-toast";
+import { useNativePushRegistration } from '@/hooks/useNativePushRegistration';
 
 function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -36,6 +37,8 @@ function App() {
   
   // Unified back button handler (browser + hybrid/PWA)
   useUnifiedBackButton();
+  // Register for native push (no-op on web)
+  useNativePushRegistration();
   
   // Use mobile-specific hooks with error handling
   try {

@@ -2,9 +2,11 @@ import React from 'react';
 import { User, LogOut, Trash2, Bookmark, Settings, History, UserPlus } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useProfile } from '@/contexts/ProfileContext';
 interface UserMenuProps {
   session: any;
   onSignOut: () => Promise<void>;
@@ -18,6 +20,9 @@ const UserMenu: React.FC<UserMenuProps> = ({
   const {
     toast
   } = useToast();
+  const { currentProfile } = useProfile();
+  const avatarUrl = currentProfile?.avatar_url;
+
   const handleSignOut = async () => {
     try {
       const {
@@ -97,7 +102,16 @@ const UserMenu: React.FC<UserMenuProps> = ({
   return <Popover>
       <PopoverTrigger asChild>
         <Button variant="ghost" className="rounded-full p-2 flex items-center space-x-2">
-          <User className="h-5 w-5" />
+          {avatarUrl ? (
+            <Avatar className="h-8 w-8 border border-border/60">
+              <AvatarImage src={avatarUrl} alt={currentProfile?.username || 'Profile'} className="object-cover" />
+              <AvatarFallback>
+                <User className="h-4 w-4" />
+              </AvatarFallback>
+            </Avatar>
+          ) : (
+            <User className="h-5 w-5" />
+          )}
           <span className="hidden md:inline-block">Account</span>
         </Button>
       </PopoverTrigger>

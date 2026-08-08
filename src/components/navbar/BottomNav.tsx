@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Layers, List, User, Bot } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useProfile } from '@/contexts/ProfileContext';
 
 const BottomNav: React.FC = () => {
   const location = useLocation();
   const pathname = location.pathname;
   const search = location.search;
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const { currentProfile } = useProfile();
+  const avatarUrl = currentProfile?.avatar_url;
   const isActive = (matcher: (path: string, search: string) => boolean) => matcher(pathname, search);
 
   const shouldHide = pathname === '/auth' || isSearchActive;
@@ -85,7 +89,16 @@ const BottomNav: React.FC = () => {
         </li>
         <li className="flex items-center justify-center">
           <Link to="/profile" className={itemCls(isActive(p => p === '/profile'))} aria-current={pathname === '/profile' ? 'page' : undefined}>
-            <User className="h-5 w-5" />
+            {avatarUrl ? (
+              <Avatar className="h-5 w-5 border border-border/40">
+                <AvatarImage src={avatarUrl} alt={currentProfile?.username || 'Profile'} className="object-cover" />
+                <AvatarFallback>
+                  <User className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <User className="h-5 w-5" />
+            )}
             <span>Profile</span>
           </Link>
         </li>

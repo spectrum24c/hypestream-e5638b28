@@ -240,8 +240,8 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
   };
 
   const handleAddToFavorites = async () => {
-    const session = await supabase.auth.getSession();
-    if (!session.data.session) {
+    const { data: { session: s } } = await supabase.auth.getSession();
+    if (!s) {
       toast({
         title: "Authentication required",
         description: "Please login to add to favorites",
@@ -249,22 +249,39 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
       });
       return;
     }
-    
+
     setIsLoading(true);
     try {
-      const {
-        error
-      } = await supabase.from('favorites').insert({
-        user_id: session.data.session.user.id,
-        movie_id: movie.id,
+      // Already there? Don't try to insert a duplicate.
+      const { data: existing } = await supabase
+        .from('favorites')
+        .select('id')
+        .eq('user_id', s.user.id)
+        .eq('movie_id', String(movie.id))
+        .limit(1);
+
+      if (existing && existing.length > 0) {
+        setIsFavorite(true);
+        toast({
+          title: "Already in favorites",
+          description: "This title is already in your favorites"
+        });
+        return;
+      }
+
+      const { error } = await supabase.from('favorites').insert({
+        user_id: s.user.id,
+        movie_id: String(movie.id),
         title: title,
         poster_path: movie.poster_path,
-        release_date: releaseDate,
-        vote_average: movie.vote_average,
+        release_date: releaseDate ?? null,
+        vote_average: movie.vote_average ?? null,
         is_tv_show: isTVShow
       });
+
       if (error) {
         if (error.code === '23505') {
+          setIsFavorite(true);
           toast({
             title: "Already in favorites",
             description: "This title is already in your favorites"
@@ -279,17 +296,18 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
           description: `"${title}" has been added to your favorites!`
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding to favorites:', error);
       toast({
         title: "Error",
-        description: "Failed to add to favorites",
+        description: error?.message || "Failed to add to favorites",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
+
   const watchNow = () => {
     if (!session) {
       toast({

@@ -79,12 +79,21 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
 
     // Check if movie is in favorites
     const checkFavorite = async () => {
-      if (!movie || !session) return;
-      const {
-        data
-      } = await supabase.from('favorites').select('*').eq('user_id', session.user.id).eq('movie_id', movie.id).maybeSingle();
-      setIsFavorite(!!data);
+      if (!movie) return;
+      const { data: { session: s } } = await supabase.auth.getSession();
+      if (!s) {
+        setIsFavorite(false);
+        return;
+      }
+      const { data } = await supabase
+        .from('favorites')
+        .select('id')
+        .eq('user_id', s.user.id)
+        .eq('movie_id', String(movie.id))
+        .limit(1);
+      setIsFavorite(!!(data && data.length > 0));
     };
+
 
     // Load trailer
     const loadTrailer = async () => {

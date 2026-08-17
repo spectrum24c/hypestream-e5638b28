@@ -11,7 +11,6 @@ import { ArrowLeft, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
-import { useProfile } from '@/contexts/ProfileContext';
 
 interface Favorite {
   id: string;
@@ -41,7 +40,6 @@ const Favorites = () => {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMovie, setSelectedMovie] = useState<MovieDetails | null>(null);
-  const { currentProfile } = useProfile();
   const navigate = useNavigate();
 
   useEffect(() => {

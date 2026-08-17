@@ -51,12 +51,10 @@ const Favorites = () => {
         navigate('/auth');
         return;
       }
-      
-      if (currentProfile) {
-        fetchFavorites();
-      }
 
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+      fetchFavorites();
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
         if (event === 'SIGNED_OUT') {
           navigate('/auth');
         }
@@ -66,25 +64,26 @@ const Favorites = () => {
     };
 
     checkSession();
-  }, [navigate, currentProfile]);
+  }, [navigate]);
 
   const fetchFavorites = async () => {
-    if (!currentProfile?.id) {
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setFavorites([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('favorites')
         .select('*')
-        .eq('user_id', currentProfile.id)
+        .eq('user_id', session.user.id)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
-      
-      setFavorites(data as Favorite[]);
+
+      setFavorites((data || []) as Favorite[]);
     } catch (error) {
       console.error('Error fetching favorites:', error);
       toast({
@@ -96,6 +95,7 @@ const Favorites = () => {
       setLoading(false);
     }
   };
+
 
   const removeFavorite = async (id: string) => {
     try {

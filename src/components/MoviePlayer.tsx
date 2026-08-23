@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useProfile } from '@/contexts/ProfileContext';
 import { trackWatchProgress } from '@/utils/movieDownloader';
+import { addFavorite, FavoritesAuthError, isFavorite as fetchIsFavorite } from '@/services/favoritesService';
 interface MoviePlayerProps {
   movie: {
     id: string;
@@ -80,18 +81,14 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
     // Check if movie is in favorites
     const checkFavorite = async () => {
       if (!movie) return;
-      const { data: { session: s } } = await supabase.auth.getSession();
-      if (!s) {
+      try {
+        setIsFavorite(await fetchIsFavorite(String(movie.id)));
+      } catch (error) {
+        if (!(error instanceof FavoritesAuthError)) {
+          console.error('Error checking favorite:', error);
+        }
         setIsFavorite(false);
-        return;
       }
-      const { data } = await supabase
-        .from('favorites')
-        .select('id')
-        .eq('user_id', s.user.id)
-        .eq('movie_id', String(movie.id))
-        .limit(1);
-      setIsFavorite(!!(data && data.length > 0));
     };
 
 
@@ -240,67 +237,35 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
   };
 
   const handleAddToFavorites = async () => {
-    const { data: { session: s } } = await supabase.auth.getSession();
-    if (!s) {
-      toast({
-        title: "Authentication required",
-        description: "Please login to add to favorites",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setIsLoading(true);
     try {
-      // Already there? Don't try to insert a duplicate.
-      const { data: existing } = await supabase
-        .from('favorites')
-        .select('id')
-        .eq('user_id', s.user.id)
-        .eq('movie_id', String(movie.id))
-        .limit(1);
-
-      if (existing && existing.length > 0) {
-        setIsFavorite(true);
-        toast({
-          title: "Already in favorites",
-          description: "This title is already in your favorites"
-        });
-        return;
-      }
-
-      const { error } = await supabase.from('favorites').insert({
-        user_id: s.user.id,
+      const result = await addFavorite({
         movie_id: String(movie.id),
-        title: title,
+        title,
         poster_path: movie.poster_path,
         release_date: releaseDate ?? null,
         vote_average: movie.vote_average ?? null,
         is_tv_show: isTVShow
       });
 
-      if (error) {
-        if (error.code === '23505') {
-          setIsFavorite(true);
-          toast({
-            title: "Already in favorites",
-            description: "This title is already in your favorites"
-          });
-        } else {
-          throw error;
-        }
-      } else {
-        setIsFavorite(true);
-        toast({
-          title: "Added to favorites",
-          description: `"${title}" has been added to your favorites!`
-        });
-      }
-    } catch (error: any) {
+      setIsFavorite(true);
+      toast(result.alreadyExisted ? {
+        title: "Already in favorites",
+        description: "This title is already in your favorites"
+      } : {
+        title: "Added to favorites",
+        description: `"${title}" has been added to your favorites!`
+      });
+    } catch (error: unknown) {
       console.error('Error adding to favorites:', error);
+      const description = error instanceof FavoritesAuthError
+        ? error.message
+        : error instanceof Error
+          ? error.message
+          : "Failed to add to favorites";
       toast({
-        title: "Error",
-        description: error?.message || "Failed to add to favorites",
+        title: error instanceof FavoritesAuthError ? "Authentication required" : "Error",
+        description,
         variant: "destructive"
       });
     } finally {

@@ -49,7 +49,7 @@ const sections: Section[] = [
     title: 'Tracking & other technologies',
     body: (
       <>
-        <P><strong>Cookies and other technologies.</strong> Some of our automatic data collection is facilitated by cookies, browser storage and similar technologies. For more information, see our <a href="/cookie-policy" className="text-primary underline">Cookie Policy</a>.</P>
+        <P><strong>Cookies and other technologies.</strong> Some of our automatic data collection is facilitated by cookies, browser storage and similar technologies. For more information, see our <a href="/cookie-policy" className="text-primary-bright underline">Cookie Policy</a>.</P>
         <P><strong>Chat and AI technologies.</strong> Our HYPE assistant is powered by third-party generative AI providers. Messages you type into the chat, together with related context (such as titles you ask about), are sent to these providers to generate responses. Please do not share sensitive personal information in the chat.</P>
       </>
     ),

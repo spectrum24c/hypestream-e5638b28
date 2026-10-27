@@ -11,15 +11,48 @@ html, body, #root {
   overflow-x: hidden;
 }
 
-*::-webkit-scrollbar {
-  display: none;
-  scroll-behavior: smooth;
+/* Scrollbars: thin & themed on desktop (pointer: fine), hidden on touch (pointer: coarse) */
+* {
+  box-sizing: border-box;
 }
 
-* {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  box-sizing: border-box;
+@media (pointer: fine) {
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted));
+    border-radius: 9999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.6);
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) transparent;
+  }
+}
+
+@media (pointer: coarse) {
+  *::-webkit-scrollbar {
+    display: none;
+  }
+  * {
+    scrollbar-width: none;
+  }
+}
+
+::selection {
+  background: hsl(var(--primary) / 0.85);
+  color: white;
 }
 
 @layer base {
@@ -35,6 +68,8 @@ html, body, #root {
 
     --primary: 0 72% 51%;
     --primary-foreground: 0 0% 100%;
+    /* Brighter red for small text & active states — 5.8:1 on background (AA) */
+    --primary-bright: 0 94% 66%;
 
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 95%;
@@ -42,8 +77,11 @@ html, body, #root {
     --muted: 0 0% 18%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 45 100% 50%;
-    --accent-foreground: 0 0% 5%;
+    /* Accent = neutral hover surface (shadcn semantics); ratings get their own token */
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 95%;
+    /* Amber reserved for star ratings */
+    --rating: 43 96% 56%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -100,12 +138,17 @@ html, body, #root {
     --popover-foreground: 0 0% 95%;
     --primary: 0 72% 51%;
     --primary-foreground: 0 0% 100%;
+    /* Brighter red for small text & active states — 5.8:1 on background (AA) */
+    --primary-bright: 0 94% 66%;
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 95%;
     --muted: 0 0% 18%;
     --muted-foreground: 0 0% 60%;
-    --accent: 45 100% 50%;
-    --accent-foreground: 0 0% 5%;
+    /* Accent = neutral hover surface (shadcn semantics); ratings get their own token */
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 95%;
+    /* Amber reserved for star ratings */
+    --rating: 43 96% 56%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 18%;
@@ -273,6 +316,17 @@ html, body, #root {
 @media (prefers-reduced-motion: reduce) {
   .netflix-row.has-hovered-card > *:not(.is-hovered-card) {
     opacity: 1;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  html {
+    scroll-behavior: auto;
   }
 }
 

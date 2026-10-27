@@ -75,7 +75,7 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
     <div className="py-3">
       <div className="flex items-center justify-between mb-2 px-[9px] mx-0">
         <h2 className="text-xl md:text-2xl font-bold text-foreground">{title}</h2>
-        <Button variant="ghost" onClick={handleViewAll} className="text-sm text-primary hover:text-primary/80">
+        <Button variant="ghost" onClick={handleViewAll} className="text-sm text-primary-bright hover:text-primary-bright/80">
           View All
         </Button>
       </div>

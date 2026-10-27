@@ -196,12 +196,12 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
               {category.toUpperCase()}
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-accent font-semibold">{rating}</span>
+              <span className="text-rating font-semibold tabular-nums">{rating}</span>
               <div className="flex">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <svg 
                     key={star} 
-                    className={`h-4 w-4 ${star <= Math.floor(parseFloat(rating) / 2) ? 'text-accent' : 'text-muted-foreground/30'}`}
+                    className={`h-4 w-4 ${star <= Math.floor(parseFloat(rating) / 2) ? 'text-rating' : 'text-muted-foreground/30'}`}
                     fill="currentColor" 
                     viewBox="0 0 20 20"
                   >

@@ -160,7 +160,7 @@ const AdminSettings = () => {
                   To set this up:
                 </p>
                 <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1 mt-2">
-                  <li>Go to <a href="https://zapier.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Zapier.com</a></li>
+                  <li>Go to <a href="https://zapier.com" target="_blank" rel="noopener noreferrer" className="text-primary-bright hover:underline">Zapier.com</a></li>
                   <li>Create a new Zap with a "Webhooks by Zapier" trigger</li>
                   <li>Choose "Catch Hook" as the trigger event</li>
                   <li>Copy the webhook URL provided by Zapier</li>

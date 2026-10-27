@@ -72,28 +72,28 @@ const Footer = () => {
           <div className="md:col-span-3">
             <h3 className="text-xl font-bold mb-4 text-foreground">Explore</h3>
             <ul className="space-y-2">
-              <li><Link to="/" className="text-muted-foreground hover:text-primary transition-colors">Home</Link></li>
-              <li><Link to="/?category=movie" className="text-muted-foreground hover:text-primary transition-colors">Movies</Link></li>
-              <li><Link to="/?category=tv" className="text-muted-foreground hover:text-primary transition-colors">TV Shows</Link></li>
-              <li><Link to="/favorites" className="text-muted-foreground hover:text-primary transition-colors">My List</Link></li>
+              <li><Link to="/" className="text-muted-foreground hover:text-primary-bright transition-colors">Home</Link></li>
+              <li><Link to="/?category=movie" className="text-muted-foreground hover:text-primary-bright transition-colors">Movies</Link></li>
+              <li><Link to="/?category=tv" className="text-muted-foreground hover:text-primary-bright transition-colors">TV Shows</Link></li>
+              <li><Link to="/favorites" className="text-muted-foreground hover:text-primary-bright transition-colors">My List</Link></li>
             </ul>
           </div>
           
           <div className="md:col-span-2">
             <h3 className="text-xl font-bold mb-4 text-foreground">Help</h3>
             <ul className="space-y-2">
-              <li><Link to="/faqs" className="text-muted-foreground hover:text-primary transition-colors">FAQs</Link></li>
-              <li><Link to="/support" className="text-muted-foreground hover:text-primary transition-colors">Support</Link></li>
-              <li><a href="mailto:hypestream127@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">Contact Us</a></li>
+              <li><Link to="/faqs" className="text-muted-foreground hover:text-primary-bright transition-colors">FAQs</Link></li>
+              <li><Link to="/support" className="text-muted-foreground hover:text-primary-bright transition-colors">Support</Link></li>
+              <li><a href="mailto:hypestream127@gmail.com" className="text-muted-foreground hover:text-primary-bright transition-colors">Contact Us</a></li>
             </ul>
           </div>
           
           <div className="md:col-span-2">
             <h3 className="text-xl font-bold mb-4 text-foreground">Legal</h3>
             <ul className="space-y-2">
-              <li><Link to="/terms-of-use" className="text-muted-foreground hover:text-primary transition-colors">Terms of Use</Link></li>
-              <li><Link to="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/cookie-policy" className="text-muted-foreground hover:text-primary transition-colors">Cookie Policy</Link></li>
+              <li><Link to="/terms-of-use" className="text-muted-foreground hover:text-primary-bright transition-colors">Terms of Use</Link></li>
+              <li><Link to="/privacy-policy" className="text-muted-foreground hover:text-primary-bright transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/cookie-policy" className="text-muted-foreground hover:text-primary-bright transition-colors">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>
@@ -101,19 +101,19 @@ const Footer = () => {
         <div className="border-t border-border pt-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-col items-center gap-4 md:flex-row md:items-center">
             <div className="flex space-x-4">
-              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all">
+              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary-bright transition-all">
                 <Facebook size={18} />
               </a>
-              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all">
+              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary-bright transition-all">
                 <Twitter size={18} />
               </a>
-              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all">
+              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary-bright transition-all">
                 <Instagram size={18} />
               </a>
-              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all">
+              <a href="#" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary-bright transition-all">
                 <Youtube size={18} />
               </a>
-              <a href="mailto:hypestream127@gmail.com" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary transition-all">
+              <a href="mailto:hypestream127@gmail.com" className="p-2 rounded-full bg-secondary hover:bg-primary/20 text-muted-foreground hover:text-primary-bright transition-all">
                 <Mail size={18} />
               </a>
             </div>

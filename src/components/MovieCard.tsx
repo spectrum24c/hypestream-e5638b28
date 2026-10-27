@@ -90,7 +90,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
         <h3 className="font-semibold text-xs md:text-sm mb-1 truncate text-foreground">{title}</h3>
         <div className="flex justify-between text-muted-foreground text-xs mb-1">
           <span>{year}</span>
-          <span className="text-accent">★ {rating}</span>
+          <span className="text-rating tabular-nums">★ {rating}</span>
         </div>
         <div className="text-muted-foreground text-xs mb-1">{durationInfo}</div>
       </div>

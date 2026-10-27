@@ -338,7 +338,7 @@ const Auth = () => {
                     <div className="mt-6 text-center">
                       <button
                         onClick={() => setShowForgotPassword(false)}
-                        className="text-sm text-primary hover:underline"
+                        className="text-sm text-primary-bright hover:underline"
                       >
                         Back to Sign In
                       </button>
@@ -422,7 +422,7 @@ const Auth = () => {
                           setNewPassword('');
                           setConfirmPassword('');
                         }}
-                        className="text-sm text-primary hover:underline"
+                        className="text-sm text-primary-bright hover:underline"
                       >
                         Back to Email Check
                       </button>
@@ -507,7 +507,7 @@ const Auth = () => {
                 <div className="mt-6 text-center space-y-2">
                   <button
                     onClick={switchMode}
-                    className="text-sm text-primary hover:underline block w-full"
+                    className="text-sm text-primary-bright hover:underline block w-full"
                   >
                     {isSignUp
                       ? 'Already have an account? Sign In'
@@ -517,7 +517,7 @@ const Auth = () => {
                   {!isSignUp && (
                     <button
                       onClick={() => setShowForgotPassword(true)}
-                      className="text-sm text-muted-foreground hover:text-primary hover:underline block w-full"
+                      className="text-sm text-muted-foreground hover:text-primary-bright hover:underline block w-full"
                     >
                       Forgot your password?
                     </button>

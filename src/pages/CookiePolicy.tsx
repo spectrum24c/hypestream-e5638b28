@@ -71,7 +71,7 @@ const CookiePolicy = () => {
                 <li><strong>Third-party opt-outs.</strong> Use the privacy settings offered by the third parties listed above.</li>
                 <li><strong>Mobile settings.</strong> Your device settings may let you limit use of your advertising ID and disable notifications.</li>
               </ul>
-              <p className="mt-2">You will need to apply these settings on each device and browser you use. For more about how we collect, use and share information, see our <a href="/privacy-policy" className="text-primary underline">Privacy Policy</a>.</p>
+              <p className="mt-2">You will need to apply these settings on each device and browser you use. For more about how we collect, use and share information, see our <a href="/privacy-policy" className="text-primary-bright underline">Privacy Policy</a>.</p>
             </section>
 
             <section>

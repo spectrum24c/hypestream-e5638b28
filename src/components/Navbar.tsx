@@ -198,7 +198,7 @@ const Navbar = () => {
         <div className="container mx-auto px-4 md:px-8">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex-shrink-0 group">
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-wide text-foreground">
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
                 HYPE<span className="text-primary">STREAM</span>
               </h1>
             </Link>

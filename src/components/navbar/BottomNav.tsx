@@ -43,7 +43,7 @@ const BottomNav: React.FC = () => {
 
   const itemCls = (active: boolean) => 
     `flex flex-col items-center justify-center gap-1 text-xs font-medium transition-all duration-200 ${
-      active ? 'text-primary scale-105' : 'text-muted-foreground hover:text-foreground'
+      active ? 'text-primary-bright' : 'text-muted-foreground hover:text-foreground'
     }`;
 
   return (
@@ -78,7 +78,7 @@ const BottomNav: React.FC = () => {
             <div className="p-2 rounded-full bg-primary text-primary-foreground">
               <Bot className="h-5 w-5" />
             </div>
-            <span className="text-primary">AI</span>
+            <span className="text-primary-bright">AI</span>
           </button>
         </li>
         <li className="flex items-center justify-center">

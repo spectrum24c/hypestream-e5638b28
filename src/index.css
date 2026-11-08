@@ -488,3 +488,192 @@ html, body, #root {
     box-shadow: inset 0 0 0 1px hsl(var(--border));
   }
 }
+
+/* ============================================================
+   HERO — signature: "the blurred portal"
+   Legibility comes from a masked blur veil, not from stacked black
+   gradients, so the artwork keeps its colour. Motion is transform,
+   opacity and filter only: nothing here triggers layout.
+   ============================================================ */
+
+@layer components {
+  .hero-stage {
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* Slow cinematic push. One authored moment, not a busy loop. */
+  .hero-backdrop img,
+  .hero-backdrop .hero-frame {
+    animation: heroKenBurns 28s var(--ease-ios) infinite alternate;
+    transform-origin: 62% 42%;
+    will-change: transform;
+  }
+
+  @keyframes heroKenBurns {
+    from { transform: scale(1.015); }
+    to   { transform: scale(1.075); }
+  }
+
+  /* The veil: a bottom-weighted blur that fades out before the middle,
+     plus a soft directional shade for text contrast. */
+  .hero-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      linear-gradient(to right,
+        hsl(var(--background)) 0%,
+        hsl(var(--background) / 0.82) 26%,
+        hsl(var(--background) / 0.34) 52%,
+        hsl(var(--background) / 0) 76%);
+  }
+
+  .hero-veil-blur {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    -webkit-backdrop-filter: blur(18px) saturate(115%);
+    backdrop-filter: blur(18px) saturate(115%);
+    -webkit-mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.6) 26%, transparent 54%);
+    mask-image: linear-gradient(to top, #000 0%, rgba(0, 0, 0, 0.6) 26%, transparent 54%);
+  }
+
+  .hero-foot {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 34%;
+    z-index: 3;
+    pointer-events: none;
+    background: linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.55) 42%, transparent 100%);
+  }
+
+  /* Staggered blur-rise. Delays live in CSS so the markup stays clean. */
+  .hero-stagger > * {
+    animation: heroBlurRise 760ms var(--ease-out) both;
+  }
+  .hero-stagger > *:nth-child(1) { animation-delay: 60ms; }
+  .hero-stagger > *:nth-child(2) { animation-delay: 140ms; }
+  .hero-stagger > *:nth-child(3) { animation-delay: 220ms; }
+  .hero-stagger > *:nth-child(4) { animation-delay: 300ms; }
+  .hero-stagger > *:nth-child(5) { animation-delay: 380ms; }
+
+  @keyframes heroBlurRise {
+    from { opacity: 0; filter: blur(16px); transform: translateY(26px); }
+    to   { opacity: 1; filter: blur(0); transform: translateY(0); }
+  }
+
+  /* Liquid glass: a real material with a lit edge, not a flat translucent box */
+  .liquid-glass {
+    position: relative;
+    overflow: hidden;
+    background: hsl(0 0% 100% / 0.055);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    backdrop-filter: blur(10px) saturate(160%);
+    box-shadow: inset 0 1px 1px hsl(0 0% 100% / 0.14), 0 8px 30px hsl(0 0% 0% / 0.35);
+  }
+  .liquid-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.2px;
+    background: linear-gradient(180deg,
+      hsl(0 0% 100% / 0.42) 0%,
+      hsl(0 0% 100% / 0.14) 22%,
+      hsl(0 0% 100% / 0) 45%,
+      hsl(0 0% 100% / 0) 62%,
+      hsl(0 0% 100% / 0.14) 82%,
+      hsl(0 0% 100% / 0.34) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Slide indicator: the active pill fills over the autoplay interval */
+  .hero-dot {
+    position: relative;
+    height: 3px;
+    border-radius: 9999px;
+    background: hsl(0 0% 100% / 0.22);
+    overflow: hidden;
+    transition: width var(--dur-hover) var(--ease-ui), background-color var(--dur-hover) var(--ease-ui);
+  }
+  .hero-dot[aria-current="true"] { width: 56px; background: hsl(0 0% 100% / 0.28); }
+  .hero-dot[aria-current="true"]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: hsl(var(--primary));
+    transform-origin: left center;
+    animation: heroDotFill 10s linear both;
+  }
+  @keyframes heroDotFill {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-backdrop img,
+  .hero-backdrop .hero-frame { animation: none; }
+  .hero-stagger > * { animation: none; opacity: 1; filter: none; transform: none; }
+  .hero-dot[aria-current="true"]::after { animation: none; transform: scaleX(1); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .liquid-glass {
+    background: hsl(var(--card));
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .hero-veil-blur {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: hsl(var(--background) / 0.55);
+  }
+}
+
+@layer components {
+  /* Loading state mirrors the real layout, so nothing shifts when data lands.
+     No spinner: a spinner says "wait", a skeleton says "almost there". */
+  .hero-skeleton {
+    position: relative;
+    overflow: hidden;
+    background: hsl(var(--card));
+  }
+  .hero-skeleton::after,
+  .sk-bar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg,
+      transparent 20%,
+      hsl(var(--foreground) / 0.06) 42%,
+      hsl(var(--foreground) / 0.10) 50%,
+      hsl(var(--foreground) / 0.06) 58%,
+      transparent 80%);
+    transform: translateX(-100%);
+    animation: heroSweep 1.6s var(--ease-ios) infinite;
+  }
+  @keyframes heroSweep {
+    to { transform: translateX(100%); }
+  }
+
+  .sk-bar {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    background: hsl(var(--muted) / 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-skeleton::after,
+  .sk-bar::after { animation: none; opacity: 0.4; }
+}

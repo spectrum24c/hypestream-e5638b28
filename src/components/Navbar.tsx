@@ -189,9 +189,9 @@ const Navbar = () => {
     <>
       <header 
         className={cn(
-          "fixed top-0 left-0 w-full z-40 transition-all duration-300",
+          "fixed top-0 left-0 w-full z-40 transition-[background-color,box-shadow,padding] duration-300 ease-[var(--ease-ios)]",
           isScrolled 
-            ? "bg-background/95 backdrop-blur-sm shadow-lg py-2" 
+            ? "material-chrome py-2" 
             : "bg-gradient-to-b from-background/80 to-transparent py-4"
         )}
       >

@@ -137,23 +137,8 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
 
   if (loading || featuredContent.length === 0) {
     return (
-      <div className="relative h-[85vh] min-h-[600px] w-full overflow-hidden hero-skeleton" aria-busy="true" aria-label="Loading featured titles">
-        <div className="container mx-auto px-4 md:px-8 relative h-full flex items-center">
-          <div className="max-w-2xl w-full space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="sk-bar h-6 w-20" />
-              <div className="sk-bar h-4 w-10" />
-              <div className="sk-bar h-4 w-12" />
-            </div>
-            <div className="sk-bar h-[clamp(2.5rem,6.4vw,5rem)] w-[85%]" />
-            <div className="sk-bar h-4 w-full max-w-xl" />
-            <div className="sk-bar h-4 w-[70%] max-w-md" />
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4">
-              <div className="sk-bar h-14 w-full sm:w-40" />
-              <div className="sk-bar h-14 w-full sm:w-44" />
-            </div>
-          </div>
-        </div>
+      <div className="h-[80vh] flex items-center justify-center bg-background">
+        <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -174,12 +159,12 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
       onMouseEnter={handleHeroMouseEnter}
       onMouseLeave={handleHeroMouseLeave}
     >
-      {/* Background — slow cinematic push, no layout cost */}
-      <div className={`hero-backdrop absolute inset-0 transition-[opacity,transform] duration-700 ease-[var(--ease-ios)] ${isTransitioning ? 'opacity-0 scale-[1.03]' : 'opacity-100 scale-100'}`}>
+      {/* Background Image */}
+      <div className={`absolute inset-0 transition-opacity duration-700 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
         <img
           src={backdropUrl}
           alt={title}
-          className="h-full w-full object-cover object-[62%_center] sm:object-center"
+          className="h-full w-full object-cover object-center"
           loading="eager"
         />
       </div>
@@ -196,17 +181,15 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
         </div>
       )}
 
-      {/* The veil: masked blur does the legibility work, so the artwork keeps its colour */}
-      <div className={`hero-veil transition-opacity duration-500 ${showTrailer && trailerKey ? 'opacity-0' : 'opacity-100'}`} aria-hidden="true" />
-      <div className={`hero-veil-blur transition-opacity duration-500 ${showTrailer && trailerKey ? 'opacity-0' : 'opacity-100'}`} aria-hidden="true" />
-      <div className={`hero-foot transition-opacity duration-500 ${showTrailer && trailerKey ? 'opacity-0' : 'opacity-100'}`} aria-hidden="true" />
+      {/* Gradient Overlays */}
+      <div className={`absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent z-[2] transition-opacity duration-500 ${showTrailer && trailerKey ? 'opacity-0' : 'opacity-100'}`} />
+      <div className={`absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent z-[2] transition-opacity duration-500 ${showTrailer && trailerKey ? 'opacity-0' : 'opacity-100'}`} />
 
       {/* Content */}
       <div className="container mx-auto px-4 md:px-8 relative h-full flex items-center z-20 pointer-events-none">
         <div className={`max-w-2xl transition-all duration-500 pointer-events-auto ${
           showTrailer && trailerKey ? 'opacity-0 translate-y-4 pointer-events-none' : isTransitioning ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
         }`}>
-          <div className="hero-stagger" key={isTransitioning ? 'out' : `slide-${currentIndex}`}>
           {/* Category & Rating */}
           <div className="flex items-center gap-4 mb-4">
             <span className="inline-flex items-center px-3 py-1 bg-primary/90 text-primary-foreground text-xs font-bold tracking-wider rounded">
@@ -231,20 +214,20 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
           </div>
 
           {/* Title */}
-          <h1 className="text-[clamp(2.5rem,6.4vw,5rem)] font-extrabold tracking-[-0.03em] text-foreground mb-6 leading-[0.95]">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-foreground mb-6 leading-none">
             {title}
           </h1>
 
           {/* Description */}
-          <p className="text-base md:text-lg text-foreground/75 mb-8 max-w-xl line-clamp-2 sm:line-clamp-3 leading-relaxed">
+          <p className="text-base md:text-lg text-muted-foreground mb-8 max-w-xl line-clamp-3 leading-relaxed">
             {currentMovie.overview || 'No description available.'}
           </p>
 
           {/* Buttons */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex items-center gap-4">
             <Button 
               onClick={handlePlayTrailer}
-              className="bg-primary hover:brightness-110 text-primary-foreground px-8 py-6 text-lg font-semibold rounded shadow-[0_10px_40px_-12px_hsl(var(--primary)/0.8)] w-full sm:w-auto"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-lg font-semibold rounded transition-all duration-200 hover:scale-105"
               size="lg"
             >
               <Play className="mr-2 h-6 w-6 fill-current" /> Play
@@ -252,12 +235,11 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
             <Button 
               variant="secondary"
               size="lg" 
-              className="liquid-glass hover:brightness-125 px-8 py-6 text-lg font-semibold rounded text-foreground w-full sm:w-auto"
+              className="bg-secondary/80 hover:bg-secondary px-8 py-6 text-lg font-semibold rounded text-foreground"
               onClick={handleMoreInfo}
             >
               <Info className="mr-2 h-6 w-6" /> More Info
             </Button>
-          </div>
           </div>
         </div>
       </div>
@@ -267,8 +249,11 @@ const HeroSection: React.FC<HeroSectionProps> = memo(({ onWatchNow, onMoreInfo, 
         {featuredContent.map((_, i) => (
           <button
             key={i}
-            aria-current={i === currentIndex}
-            className={`hero-dot ${i === currentIndex ? 'w-14' : 'w-4 hover:bg-foreground/40'}`}
+            className={`h-1 transition-all duration-300 rounded-full ${
+              i === currentIndex 
+                ? 'bg-primary w-8' 
+                : 'bg-foreground/20 w-4 hover:bg-foreground/40'
+            }`}
             onClick={() => !isTransitioning && setCurrentIndex(i)}
             aria-label={`Go to slide ${i + 1}`}
           />

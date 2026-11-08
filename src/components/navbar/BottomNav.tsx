@@ -49,7 +49,7 @@ const BottomNav: React.FC = () => {
   return (
     <nav 
       aria-label="Bottom navigation" 
-      className="material-chrome--top md:hidden fixed bottom-0 left-0 right-0 z-50" 
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border" 
       style={{
         position: 'fixed',
         bottom: 0,

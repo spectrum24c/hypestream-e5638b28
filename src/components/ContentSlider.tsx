@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import MovieCard from './MovieCard';
 import MoviePlayer from './MoviePlayer';
+import { Button } from './ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Movie } from '@/types/movie';
 
@@ -18,7 +19,6 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
 }) => {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(true);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -60,19 +60,6 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
     return new Date(releaseDate).getFullYear().toString();
   };
   
-  // A rail that fits entirely should not offer a dead right arrow
-  useEffect(() => {
-    const update = () => {
-      const el = sliderRef.current;
-      if (!el) return;
-      setShowRightArrow(el.scrollWidth > el.clientWidth + 20);
-      setShowLeftArrow(el.scrollLeft > 20);
-    };
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, [items.length]);
-
   const closeMoviePlayer = () => setSelectedMovie(null);
 
   const handleViewAll = () => {
@@ -86,26 +73,26 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
 
   return (
     <div className="py-3">
-      <div className="container mx-auto flex items-end justify-between gap-4 mb-3">
-        <h2 className="rail-title">{title}</h2>
-        <button type="button" onClick={handleViewAll} className="rail-more">
-          View all
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </button>
+      <div className="flex items-center justify-between mb-2 px-[9px] mx-0">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground">{title}</h2>
+        <Button variant="ghost" onClick={handleViewAll} className="text-sm text-primary-bright hover:text-primary-bright/80">
+          View All
+        </Button>
       </div>
 
-      <div className="container mx-auto relative group rail">
+      <div className="relative group">
         {showLeftArrow && (
-          <button onClick={() => scroll('left')} className="rail-arrow rail-arrow--left" aria-label="Scroll left">
-            <ChevronLeft className="h-5 w-5 text-foreground" />
+          <button onClick={() => scroll('left')} className="absolute left-0 top-1/2 z-10 -translate-y-1/2 bg-background/80 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background" aria-label="Scroll left">
+            <ChevronLeft className="h-6 w-6 text-foreground" />
           </button>
         )}
 
-        <div ref={sliderRef} className={`netflix-row flex space-x-2 overflow-x-auto pb-4 hide-scrollbar md:snap-x md:snap-mandatory ${hoveredId ? 'has-hovered-card' : ''}`} onScroll={() => {
-          const el = sliderRef.current;
-          if (!el) return;
-          setShowLeftArrow(el.scrollLeft > 20);
-          setShowRightArrow(el.scrollLeft + el.clientWidth < el.scrollWidth - 20);
+        <div ref={sliderRef} className={`netflix-row flex space-x-2 overflow-x-auto pb-4 px-2 hide-scrollbar md:snap-x md:snap-mandatory ${hoveredId ? 'has-hovered-card' : ''}`} onScroll={() => {
+          if (sliderRef.current && sliderRef.current.scrollLeft > 20) {
+            setShowLeftArrow(true);
+          } else {
+            setShowLeftArrow(false);
+          }
         }}>
           {items.map(item => (
             <div
@@ -133,11 +120,9 @@ const ContentSlider: React.FC<ContentSliderProps> = ({
           ))}
         </div>
 
-        {showRightArrow && (
-          <button onClick={() => scroll('right')} className="rail-arrow rail-arrow--right" aria-label="Scroll right">
-            <ChevronRight className="h-5 w-5 text-foreground" />
-          </button>
-        )}
+        <button onClick={() => scroll('right')} className="absolute right-0 top-1/2 z-10 -translate-y-1/2 bg-background/80 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background" aria-label="Scroll right">
+          <ChevronRight className="h-6 w-6 text-foreground" />
+        </button>
       </div>
 
       {selectedMovie && <MoviePlayer movie={selectedMovie} onClose={closeMoviePlayer} />}

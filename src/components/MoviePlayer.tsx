@@ -322,30 +322,6 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
       }));
     }, 100);
   };
-  // Dialog behaviour: the page behind must not scroll, Escape must close,
-  // and focus should land on the first control rather than the document.
-  const shellRef = useRef<HTMLDivElement | null>(null);
-  const backButtonRef = useRef<HTMLButtonElement | null>(null);
-  const closeRef = useRef<() => void>(() => {});
-
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    backButtonRef.current?.focus({ preventScroll: true });
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        closeRef.current();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, []);
-
   const handleClose = () => {
     const finalProgress = computeProgressPercent();
     const episodeInfo = isTVShow ? (activeEpisode || { season: 1, episode: 1 }) : undefined;
@@ -353,8 +329,6 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
     stopProgressTracking();
     onClose();
   };
-
-  closeRef.current = handleClose;
 
   const getDurationMinutes = () => {
     if (isTVShow) {
@@ -399,23 +373,14 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
     backgroundRepeat: 'no-repeat'
   } : undefined;
 
-  return <div
-      className="player-cont player-shell"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${title} details`}
-      ref={shellRef}
-    >
-      {/* Ambient poster: the title's own artwork, dimmed behind the sheet */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.22]" style={backgroundStyle} aria-hidden="true" />
-      <div className="relative w-full min-h-screen flex flex-col bg-transparent player-panel">
+  return <div className="fixed inset-0 z-50 player-cont overflow-y-auto" style={backgroundStyle}>
+      <div className="relative w-full min-h-screen flex flex-col bg-black/80">
         <button
           onClick={handleClose}
-          ref={backButtonRef}
-          className="glass-chip absolute top-4 left-4 z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-          aria-label="Close details"
+          className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-black/60 rounded-full px-3 py-1.5 text-sm text-white hover:bg-black/80 transition"
+          aria-label="Back"
         >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          <ArrowLeft className="h-4 w-4" />
           <span>Back</span>
         </button>
         
@@ -468,7 +433,7 @@ const MoviePlayer: React.FC<MoviePlayerProps> = ({
               </div>}
             <div className="relative px-4 py-8 md:py-10 max-w-6xl mx-auto">
               <div className="text-left mb-6">
-                <h2 className="player-title mb-3">{title}</h2>
+                <h2 className="text-3xl md:text-4xl font-extrabold mb-3">{title}</h2>
                 <div className="flex flex-wrap items-center gap-4 mb-3 text-gray-300 text-sm md:text-base">
                   <span className="font-semibold">{year}</span>
                   <span className="px-1.5 py-0.5 rounded bg-white/20 text-xs md:text-sm">★ {rating}</span>

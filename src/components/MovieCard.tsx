@@ -51,7 +51,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
       role="button"
       tabIndex={0}
       aria-label={`${title}${year !== 'N/A' ? `, ${year}` : ''}. Press Enter to view details.`}
-      className="group relative flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] cursor-pointer bg-card rounded-md overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-primary card-motion hover:z-10 tappable"
+      className="group relative flex-shrink-0 w-[160px] sm:w-[176px] md:w-[198px] cursor-pointer bg-card rounded-md overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-primary transition-transform duration-300 hover:scale-[1.03] hover:z-10"
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {

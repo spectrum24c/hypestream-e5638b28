@@ -1,0 +1,2 @@
+- [ ] Install ECC frontend design-direction skill and apply its onboarding review process.
+- [ ] Improve the HypeStream first-visit welcome flow and verify mobile and desktop rendering.

@@ -11,9 +11,9 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    // Faster loading for mobile devices (4 seconds instead of 6)
-    const isMobile = window.innerWidth < 768;
-    const duration = isMobile ? 4000 : 6000;
+    // A splash exists to cover real startup work, not to hold people hostage.
+    // 1.4s is enough to land the brand, then onboarding starts immediately.
+    const duration = 1400;
     const updateInterval = 50; // Update every 50ms for smoother animation
     const totalSteps = duration / updateInterval;
     const increment = 100 / totalSteps;

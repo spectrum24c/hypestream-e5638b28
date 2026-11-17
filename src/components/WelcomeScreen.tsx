@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Bell, Check, Sparkles } from 'lucide-react';
+import {
+  ArrowLeft, ArrowRight, Bell, Check, Clapperboard, Eye, Gavel, Ghost, Heart, Laugh,
+  Palette, Rocket, Search, Sparkles, Theater, Zap,
+} from 'lucide-react';
 import onboardingCinematic from '@/assets/onboarding-cinematic.jpg';
 
 /* ------------------------------------------------------------------ *
@@ -41,20 +44,22 @@ const STORAGE = {
   userPreferences: 'userPreferences',
 };
 
-/* TMDB genre ids, so this plugs into the rest of the app's preferences */
+/* TMDB genre ids, so this plugs into the rest of the app's preferences.
+   Icons are stroke SVGs, not emoji: a missing emoji font turns a picker
+   into a grid of empty boxes. */
 const GENRES = [
-  { id: 28, label: 'Action', glyph: '💥' },
-  { id: 35, label: 'Comedy', glyph: '😄' },
-  { id: 18, label: 'Drama', glyph: '🎭' },
-  { id: 878, label: 'Sci-Fi', glyph: '🚀' },
-  { id: 53, label: 'Thriller', glyph: '🕵️' },
-  { id: 27, label: 'Horror', glyph: '🩸' },
-  { id: 16, label: 'Animation', glyph: '🎨' },
-  { id: 9648, label: 'Mystery', glyph: '🔍' },
-  { id: 10749, label: 'Romance', glyph: '💞' },
-  { id: 10765, label: 'Fantasy', glyph: '🐉' },
-  { id: 99, label: 'Docs', glyph: '🎥' },
-  { id: 80, label: 'Crime', glyph: '🚔' },
+  { id: 28, label: 'Action', Icon: Zap },
+  { id: 35, label: 'Comedy', Icon: Laugh },
+  { id: 18, label: 'Drama', Icon: Theater },
+  { id: 878, label: 'Sci-Fi', Icon: Rocket },
+  { id: 53, label: 'Thriller', Icon: Eye },
+  { id: 27, label: 'Horror', Icon: Ghost },
+  { id: 16, label: 'Animation', Icon: Palette },
+  { id: 9648, label: 'Mystery', Icon: Search },
+  { id: 10749, label: 'Romance', Icon: Heart },
+  { id: 10765, label: 'Fantasy', Icon: Sparkles },
+  { id: 99, label: 'Docs', Icon: Clapperboard },
+  { id: 80, label: 'Crime', Icon: Gavel },
 ];
 
 const FORMATS: { value: OnboardingProfile['format']; title: string; blurb: string }[] = [
@@ -108,14 +113,20 @@ const copy: Record<StepId, { title: string; sub: string; quip: string }> = {
 const Poppy: React.FC<{ mood: 'idle' | 'happy' | 'party' }> = ({ mood }) => (
   <motion.div
     className="onb-poppy"
+    /* hops travel along an arc, never straight up: x drifts while y rises */
     animate={
       mood === 'party'
-        ? { y: [0, -10, 0], rotate: [0, -4, 4, 0] }
+        ? { y: [0, -12, 0], x: [0, 6, 0], rotate: [0, -5, 5, 0], scaleY: [1, 1.04, 0.97, 1] }
         : mood === 'happy'
-          ? { y: [0, -6, 0], scale: [1, 1.06, 1] }
-          : { y: [0, -3, 0] }
+          ? { y: [0, -7, 0], x: [0, 4, 0], rotate: [0, -3, 2, 0], scaleY: [1, 1.05, 0.96, 1] }
+          : { y: [0, -4, 0], x: [0, 2, 0], rotate: [0, 1.5, 0] }
     }
-    transition={{ duration: mood === 'party' ? 1.1 : 2.4, repeat: Infinity, ease: 'easeInOut' }}
+    transition={{
+      duration: mood === 'party' ? 1.1 : mood === 'happy' ? 0.72 : 2.6,
+      repeat: Infinity,
+      ease: 'easeInOut',
+      times: mood === 'idle' ? undefined : [0, 0.42, 0.72, 1],
+    }}
     aria-hidden="true"
   >
     <svg viewBox="0 0 120 120" width="100%" height="100%" role="presentation">
@@ -237,10 +248,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
   const tap = useCallback(() => {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) navigator.vibrate(6);
     setMood('happy');
-    window.setTimeout(() => setMood((current) => (current === 'happy' ? 'idle' : current)), 420);
+    window.setTimeout(() => setMood((current) => (current === 'happy' ? 'idle' : current)), 380);
   }, []);
 
-  const canAdvance = step === 'genres' ? genres.length > 0 : true;
+  /* Postel's law: accept whatever the person gives. Zero genres is a valid
+     answer, so the CTA offers to skip instead of refusing to move. */
 
   const next = useCallback(() => {
     setStepIndex((index) => Math.min(index + 1, STEPS.length - 1));
@@ -257,7 +269,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
       apply();
       tap();
       if (advanceTimer.current) window.clearTimeout(advanceTimer.current);
-      advanceTimer.current = window.setTimeout(next, reduceMotion ? 60 : 260);
+      advanceTimer.current = window.setTimeout(next, reduceMotion ? 60 : 150);
     },
     [next, reduceMotion, tap],
   );
@@ -371,7 +383,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             className="onb-fill"
             initial={false}
             animate={{ width: `${Math.max(progress * 100, 4)}%` }}
-            transition={{ duration: reduceMotion ? 0 : 0.45, ease: [0.32, 0.72, 0, 1] }}
+            transition={
+              reduceMotion
+                ? { duration: 0 }
+                : { type: 'spring', stiffness: 320, damping: 30, restDelta: 0.5 }
+            }
           />
         </div>
 
@@ -393,7 +409,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: reduceMotion ? 0 : 0.26, ease: [0.32, 0.72, 0, 1] }}
+            transition={{ duration: reduceMotion ? 0 : 0.18, ease: [0.32, 0.72, 0, 1] }}
             onAnimationComplete={focusHeading}
             className="flex flex-1 flex-col"
           >
@@ -432,13 +448,14 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
                       type="button"
                       onClick={() => toggleGenre(genre.id)}
                       aria-pressed={selected}
+                      whileTap={reduceMotion ? undefined : { scale: 0.94 }}
                       initial={reduceMotion ? false : { opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: reduceMotion ? 0 : index * 0.025, duration: 0.22 }}
                       className={`onb-tile ${skipFocusRing} ${selected ? 'is-selected' : ''}`}
                     >
-                      <span className="onb-tile-glyph" aria-hidden="true">
-                        {genre.glyph}
+                      <span className={`onb-tile-glyph ${selected ? 'is-on' : ''}`} aria-hidden="true">
+                        <genre.Icon className="h-5 w-5" strokeWidth={1.9} />
                       </span>
                       <span className="onb-tile-label">{genre.label}</span>
                       {selected && (
@@ -572,7 +589,6 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             if (step === 'done') finish();
             else next();
           }}
-          disabled={!canAdvance && step === 'genres'}
           className={`onb-cta ${skipFocusRing}`}
         >
           {step === 'welcome' && (
@@ -580,7 +596,24 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
               Let&rsquo;s go <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
             </>
           )}
-          {step === 'genres' && (genres.length ? `Continue · ${genres.length} picked` : 'Pick at least one')}
+          {step === 'genres' &&
+            (genres.length ? (
+              <>
+                Continue ·{' '}
+                <motion.span
+                  key={genres.length}
+                  className="inline-block tabular-nums"
+                  initial={reduceMotion ? false : { scale: 0.6, opacity: 0.5 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 620, damping: 20 }}
+                >
+                  {genres.length}
+                </motion.span>{' '}
+                picked
+              </>
+            ) : (
+              'Skip this step'
+            ))}
           {(step === 'format' || step === 'goal') && (
             <>
               Continue <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { BellRing, Check, ChevronLeft, ChevronRight, Film, Play, Sparkles, Tv } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import onboardingCinema from '@/assets/onboarding-cinematic.jpg';
 
 interface WelcomeScreenProps {
   onComplete: (preferences: { movies: boolean; series: boolean }) => void;
@@ -54,7 +55,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
           <span className="text-sm text-muted-foreground">{step + 1} of {steps.length}</span>
         </header>
 
-        <div className="mb-9 flex gap-2" aria-label={`Step ${step + 1} of ${steps.length}`}>
+        <div className="mb-9 flex gap-2" role="progressbar" aria-label="Onboarding progress" aria-valuemin={1} aria-valuemax={steps.length} aria-valuenow={step + 1}>
           {steps.map((item, index) => (
             <div key={item.label} className="h-1 flex-1 overflow-hidden rounded-full bg-muted" aria-current={step === index ? 'step' : undefined}>
               <motion.div className="h-full bg-primary" initial={false} animate={{ width: index <= step ? '100%' : '0%' }} transition={{ duration: reduceMotion ? 0 : 0.25 }} />
@@ -71,12 +72,14 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             transition={{ duration: reduceMotion ? 0 : 0.2 }}
           >
             <p className="mb-3 text-xs font-semibold uppercase text-primary">{current.label}</p>
-            <h1 className="mb-3 font-display text-4xl leading-tight sm:text-5xl">{current.title}</h1>
-            <p className="mb-8 max-w-lg text-base leading-relaxed text-muted-foreground">{current.description}</p>
+            <h1 id="welcome-step-title" className="mb-3 font-display text-4xl leading-tight sm:text-5xl">{current.title}</h1>
+            <p id="welcome-step-description" className="mb-8 max-w-lg text-base leading-relaxed text-muted-foreground">{current.description}</p>
 
             {step === 0 && (
               <div className="relative mb-8 flex aspect-[16/8] items-end overflow-hidden rounded-lg border border-border bg-card p-6 sm:p-8">
-                <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(90deg,hsl(var(--background)/0.94),hsl(var(--background)/0.24)),linear-gradient(0deg,hsl(var(--background)/0.88),transparent_70%)]" />
+                <img src={onboardingCinema} alt="" aria-hidden="true" width={1600} height={900} className="absolute inset-0 h-full w-full object-cover object-center" />
+                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/35 to-transparent" />
+                <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
                 <div className="relative flex max-w-sm items-end gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"><Play className="ml-0.5 h-5 w-5 fill-current" /></div>
                   <div><p className="mb-1 text-xs uppercase text-muted-foreground">Made for your next watch</p><p className="font-display text-2xl">Press play on something great.</p></div>

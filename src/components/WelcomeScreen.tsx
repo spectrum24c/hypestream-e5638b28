@@ -441,6 +441,12 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
   return (
     <div className="onboarding fixed inset-0 z-[100] flex flex-col bg-background text-foreground">
       <div className="onb-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden="true" />
+      {step === 'welcome' && (
+        <div className="onb-hero-bg" aria-hidden="true">
+          <img src={onboardingCinematic} alt="" width={1600} height={900} />
+          <div className="onb-hero-scrim" />
+        </div>
+      )}
       {step === 'done' && <Confetti pieces={confetti} />}
 
       {/* header: back, progress, count */}
@@ -463,27 +469,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
           </button>
         )}
 
-        <div
-          className="onb-track"
-          role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(progress * 100)}
-          aria-label="Onboarding progress"
-        >
-          <motion.div
-            className="onb-fill"
-            initial={false}
-            animate={{ width: `${Math.max(progress * 100, 4)}%` }}
-            transition={
-              reduceMotion
-                ? { duration: 0 }
-                : { type: 'spring', stiffness: 320, damping: 30, restDelta: 0.5 }
-            }
-          />
-        </div>
-
-        <span className="w-9 text-right text-xs font-medium tabular-nums text-muted-foreground">
+        <div className="flex-1" />
+        <span className="text-xs font-medium tabular-nums text-muted-foreground">
           {stepIndex + 1}/{STEPS.length}
         </span>
       </header>
@@ -517,17 +504,6 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             </h1>
             <p className="onb-sub">{copy[step].sub}</p>
 
-            {step === 'welcome' && (
-              <motion.div
-                className="onb-art"
-                initial={reduceMotion ? false : { opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1], delay: reduceMotion ? 0 : 0.08 }}
-              >
-                <img src={onboardingCinematic} alt="" aria-hidden="true" width={1600} height={900} />
-                <div className="onb-art-scrim" aria-hidden="true" />
-              </motion.div>
-            )}
 
             {/* ---------------- step bodies ---------------- */}
             {step === 'genres' && (
@@ -778,6 +754,22 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
 
       {/* footer */}
       <footer className="onb-footer relative mx-auto w-full max-w-[560px] px-5">
+        <div
+          className="onb-dots"
+          role="progressbar"
+          aria-valuemin={1}
+          aria-valuemax={STEPS.length}
+          aria-valuenow={stepIndex + 1}
+          aria-label="Onboarding progress"
+        >
+          {STEPS.map((id, index) => (
+            <span
+              key={id}
+              aria-hidden="true"
+              className={`onb-dot ${index === stepIndex ? 'is-current' : ''} ${index < stepIndex ? 'is-done' : ''}`}
+            />
+          ))}
+        </div>
         <button
           type="button"
           onClick={() => {
@@ -831,7 +823,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             ))}
           {step === 'done' && (
             <>
-              Start watching <Sparkles className="ml-2 h-5 w-5" aria-hidden="true" />
+              Let&rsquo;s get started <Sparkles className="ml-2 h-5 w-5" aria-hidden="true" />
             </>
           )}
         </button>

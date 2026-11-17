@@ -423,6 +423,27 @@ html, body, #root {
 .onb-back:hover { color: hsl(var(--foreground)); background: hsl(var(--accent)); }
 .onb-back:active { transform: scale(0.94); }
 
+.onb-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px 0 10px;
+}
+.onb-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: hsl(var(--muted-foreground) / 0.32);
+  transition: width var(--onb-mid) var(--onb-ease), background-color var(--onb-mid) var(--onb-ease);
+}
+.onb-dot.is-done { background: hsl(var(--primary) / 0.55); }
+.onb-dot.is-current {
+  width: 22px;
+  background: hsl(var(--primary));
+  box-shadow: 0 0 12px hsl(var(--primary) / 0.55);
+}
+
 .onb-track {
   position: relative;
   flex: 1;
@@ -732,6 +753,34 @@ html, body, #root {
   .onb-confetti { animation: none; }
   .onb-confetti { display: none; }
   .onb-fill { transition: none; }
+}
+
+/* welcome: the still runs full bleed behind the first screen, so the
+   flow opens on an image rather than a form, as the reference does */
+.onb-hero-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.onb-hero-bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.62;
+  filter: saturate(1.05);
+}
+.onb-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    hsl(var(--background) / 0.5) 0%,
+    hsl(var(--background) / 0.72) 38%,
+    hsl(var(--background) / 0.94) 66%,
+    hsl(var(--background)) 88%
+  );
 }
 
 /* welcome artwork: their cinematic still, carried into the new flow */

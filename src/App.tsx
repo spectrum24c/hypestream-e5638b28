@@ -21,7 +21,7 @@ import CastCrew from '@/pages/CastCrew';
 import PersonDetails from '@/pages/PersonDetails';
 import AdminSettings from '@/pages/AdminSettings';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import WelcomeScreen from '@/components/WelcomeScreen';
+import WelcomeScreen, { ONBOARDING_VERSION } from '@/components/WelcomeScreen';
 
 import './App.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -50,10 +50,14 @@ function App() {
   
   const { toast } = useToast();
 
-  // Check if user has completed welcome screen
+  // Onboarding is the first screen for anyone who has not finished this
+  // version of it, signed in or not. Auth state plays no part here: a stale
+  // flag from the old two-screen flow must not silently skip the flow.
   useEffect(() => {
-    const hasCompletedWelcome = localStorage.getItem('hypestream_welcome_completed');
-    setShowWelcome(!hasCompletedWelcome);
+    const completed = localStorage.getItem('hypestream_welcome_completed');
+    const version = localStorage.getItem('hypestream_onboarding_version');
+    const profile = localStorage.getItem('hypestream_onboarding');
+    setShowWelcome(!(completed && version === ONBOARDING_VERSION && profile));
     setIsCheckingWelcome(false);
   }, []);
 

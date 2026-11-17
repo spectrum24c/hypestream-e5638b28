@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
-  ArrowLeft, ArrowRight, Bell, Check, Clapperboard, Eye, Gavel, Ghost, Heart, Laugh,
-  Palette, Rocket, Search, Sparkles, Theater, Zap,
+  ArrowLeft, ArrowRight, Bell, Check, Clapperboard, Eye, EyeOff, Gavel, Ghost, Heart,
+  Laugh, Loader2, Lock, Mail, Palette, Rocket, Search, Sparkles, Theater, Zap,
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import onboardingCinematic from '@/assets/onboarding-cinematic.jpg';
 
 /* ------------------------------------------------------------------ *
@@ -30,13 +31,16 @@ interface WelcomeScreenProps {
   onComplete: (preferences: { movies: boolean; series: boolean }) => void;
 }
 
-type StepId = 'welcome' | 'genres' | 'format' | 'goal' | 'alerts' | 'done';
+type StepId = 'welcome' | 'genres' | 'format' | 'goal' | 'alerts' | 'account' | 'done';
 
-const STEPS: StepId[] = ['welcome', 'genres', 'format', 'goal', 'alerts', 'done'];
+const STEPS: StepId[] = ['welcome', 'genres', 'format', 'goal', 'alerts', 'account', 'done'];
 
 const BRAND_LOGO = '/lovable-uploads/7ea3104a-6d4d-4bbd-b3c1-0aac01fc7026.png';
 
+export const ONBOARDING_VERSION = '2';
+
 const STORAGE = {
+  version: 'hypestream_onboarding_version',
   completed: 'hypestream_welcome_completed',
   notification: 'hypestream_notification_prefs',
   profile: 'hypestream_onboarding',
@@ -100,6 +104,11 @@ const copy: Record<StepId, { title: string; sub: string; quip: string }> = {
     title: "Don't miss the good ones",
     sub: 'We can ping you when something lands you would want.',
     quip: "I'll only speak up when it matters.",
+  },
+  account: {
+    title: 'Keep your picks',
+    sub: 'An account saves your taste profile and syncs it to your other devices.',
+    quip: 'Last bit, then the fun starts.',
   },
   done: {
     title: "You're all set",
@@ -198,9 +207,32 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
   const [notifyMovies, setNotifyMovies] = useState(true);
   const [notifySeries, setNotifySeries] = useState(true);
 
+  /* account step */
+  const [authMode, setAuthMode] = useState<'signup' | 'login'>('signup');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [authBusy, setAuthBusy] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+
   const step = STEPS[stepIndex];
   const headingRef = useRef<HTMLHeadingElement>(null);
   const advanceTimer = useRef<number | null>(null);
+
+  /* a signed-in visitor should never be asked to sign up again */
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session?.user?.email) setSessionEmail(data.session.user.email);
+    }).catch(() => {
+      /* offline: the step still offers sign-up and skip */
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   /* resume a half-finished run instead of starting over */
   useEffect(() => {
@@ -278,6 +310,62 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
     if (advanceTimer.current) window.clearTimeout(advanceTimer.current);
   }, []);
 
+  /* Account creation is a step, not a wall: it can be done here, or later. */
+  const submitAccount = useCallback(async () => {
+    if (sessionEmail || authNotice) {
+      next();
+      return;
+    }
+    setAuthError(null);
+    const cleanEmail = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(cleanEmail)) {
+      setAuthError('That email looks incomplete. Check it and try again.');
+      return;
+    }
+    if (authMode === 'signup' && password.length < 8) {
+      setAuthError('Use at least 8 characters for your password.');
+      return;
+    }
+    if (authMode === 'login' && password.length === 0) {
+      setAuthError('Enter your password to sign in.');
+      return;
+    }
+
+    setAuthBusy(true);
+    try {
+      if (authMode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({ email: cleanEmail, password });
+        if (error) {
+          setAuthError(error.message);
+          return;
+        }
+        if (data.session?.user?.email) {
+          setSessionEmail(data.session.user.email);
+          tap();
+          next();
+          return;
+        }
+        setAuthNotice(`We sent a confirmation link to ${cleanEmail}. Confirm it whenever you like.`);
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+      if (error) {
+        setAuthError(error.message);
+        return;
+      }
+      if (data.session?.user?.email) {
+        setSessionEmail(data.session.user.email);
+        tap();
+        next();
+      }
+    } catch {
+      setAuthError('We could not reach the server. Check your connection and try again.');
+    } finally {
+      setAuthBusy(false);
+    }
+  }, [authMode, authNotice, email, next, password, sessionEmail, tap]);
+
   const finish = useCallback(
     (skipped = false) => {
       const finalProfile: OnboardingProfile = skipped
@@ -285,12 +373,16 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
         : draft;
 
       try {
+        localStorage.setItem(STORAGE.version, ONBOARDING_VERSION);
         localStorage.setItem(STORAGE.completed, 'true');
         localStorage.setItem(
           STORAGE.notification,
           JSON.stringify({ movies: finalProfile.notifyMovies, series: finalProfile.notifySeries }),
         );
-        localStorage.setItem(STORAGE.profile, JSON.stringify({ ...finalProfile, completedAt: new Date().toISOString() }));
+        localStorage.setItem(
+          STORAGE.profile,
+          JSON.stringify({ ...finalProfile, signedIn: Boolean(sessionEmail), completedAt: new Date().toISOString() }),
+        );
         localStorage.removeItem(STORAGE.draft);
 
         /* merge into the preferences the rest of the app already reads */
@@ -314,7 +406,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
         series: finalProfile.format !== 'movies',
       });
     },
-    [draft, onComplete],
+    [draft, onComplete, sessionEmail],
   );
 
   const toggleGenre = (id: number) => {
@@ -557,6 +649,105 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
               </div>
             )}
 
+            {step === 'account' && (
+              <div className="onb-form">
+                {sessionEmail ? (
+                  <div className="onb-notice">
+                    <Check className="h-4 w-4 shrink-0 text-primary-bright" aria-hidden="true" />
+                    <span>
+                      You are signed in as <strong className="text-foreground">{sessionEmail}</strong>. Your picks are already
+                      saved.
+                    </span>
+                  </div>
+                ) : authNotice ? (
+                  <div className="onb-notice" role="status">
+                    <Mail className="h-4 w-4 shrink-0 text-primary-bright" aria-hidden="true" />
+                    <span>{authNotice}</span>
+                  </div>
+                ) : (
+                  <>
+                    <label className="onb-field">
+                      <span className="onb-field-label">Email</span>
+                      <span className="onb-input-wrap">
+                        <Mail className="onb-input-icon" aria-hidden="true" />
+                        <input
+                          type="email"
+                          inputMode="email"
+                          autoComplete="email"
+                          spellCheck={false}
+                          value={email}
+                          onChange={(event) => {
+                            setEmail(event.target.value);
+                            if (authError) setAuthError(null);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') void submitAccount();
+                          }}
+                          placeholder="you@example.com"
+                          className="onb-input"
+                          aria-invalid={Boolean(authError)}
+                        />
+                      </span>
+                    </label>
+
+                    <label className="onb-field">
+                      <span className="onb-field-label">Password</span>
+                      <span className="onb-input-wrap">
+                        <Lock className="onb-input-icon" aria-hidden="true" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'}
+                          value={password}
+                          onChange={(event) => {
+                            setPassword(event.target.value);
+                            if (authError) setAuthError(null);
+                          }}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter') void submitAccount();
+                          }}
+                          placeholder={authMode === 'signup' ? 'At least 8 characters' : 'Your password'}
+                          className="onb-input onb-input-pw"
+                          aria-invalid={Boolean(authError)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((value) => !value)}
+                          className="onb-eye"
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                          aria-pressed={showPassword}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </span>
+                    </label>
+
+                    {authError && (
+                      <p className="onb-error" role="alert">
+                        {authError}
+                      </p>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMode((mode) => (mode === 'signup' ? 'login' : 'signup'));
+                        setAuthError(null);
+                      }}
+                      className="onb-alt"
+                    >
+                      {authMode === 'signup' ? 'I already have an account' : 'Create a new account instead'}
+                    </button>
+                  </>
+                )}
+
+                {!sessionEmail && (
+                  <button type="button" onClick={next} className="onb-skip">
+                    {authNotice ? 'Continue' : 'Not now, let me look around first'}
+                  </button>
+                )}
+              </div>
+            )}
+
             {step === 'done' && (
               <div className="onb-summary">
                 {[
@@ -568,6 +759,10 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
                   {
                     label: 'Typical night',
                     value: GOALS.find((option) => option.value === goal)?.blurb ?? 'About 30 minutes',
+                  },
+                  {
+                    label: 'Saved to',
+                    value: sessionEmail ?? (authNotice ? 'Confirm your email' : 'This device only'),
                   },
                 ].map((row) => (
                   <div key={row.label} className="onb-summary-row">
@@ -587,8 +782,10 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
           type="button"
           onClick={() => {
             if (step === 'done') finish();
+            else if (step === 'account') void submitAccount();
             else next();
           }}
+          disabled={step === 'account' && authBusy && !sessionEmail && !authNotice}
           className={`onb-cta ${skipFocusRing}`}
         >
           {step === 'welcome' && (
@@ -620,6 +817,18 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             </>
           )}
           {step === 'alerts' && (notifyMovies || notifySeries ? 'Turn on alerts' : 'Skip alerts')}
+          {step === 'account' &&
+            (sessionEmail || authNotice ? (
+              'Continue'
+            ) : authBusy ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> Working
+              </>
+            ) : authMode === 'signup' ? (
+              'Create my account'
+            ) : (
+              'Sign in'
+            ))}
           {step === 'done' && (
             <>
               Start watching <Sparkles className="ml-2 h-5 w-5" aria-hidden="true" />
@@ -637,7 +846,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
           </button>
         ) : (
           <p className="onb-footnote">
-            {step === 'done' ? 'Change any of this later in your profile.' : 'Takes about 30 seconds.'}
+            {step === 'done'
+              ? 'Change any of this later in your profile.'
+              : step === 'account'
+                ? 'You can also create one later from your profile.'
+                : 'Takes about 30 seconds.'}
           </p>
         )}
       </footer>

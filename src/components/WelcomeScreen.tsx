@@ -440,24 +440,21 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
 
   return (
     <div className="onboarding fixed inset-0 z-[100] flex flex-col bg-background text-foreground">
-      <div className="onb-glow pointer-events-none absolute inset-x-0 top-0 h-72" aria-hidden="true" />
-      {step === 'welcome' && (
-        <div className="onb-hero-bg" aria-hidden="true">
-          <img src={onboardingCinematic} alt="" width={1600} height={900} />
-          <div className="onb-hero-scrim" />
-        </div>
-      )}
-      {step === 'done' && <Confetti pieces={confetti} />}
+      {/* one poster all the way through, scrimmed harder behind the questions */}
+      <div
+        className={`onb-bg ${step === 'welcome' || step === 'done' ? 'is-poster' : 'is-soft'}`}
+        data-step={step}
+        aria-hidden="true"
+      >
+        <img src={onboardingCinematic} alt="" width={1600} height={900} />
+        <div className="onb-bg-scrim" />
+      </div>
+      {step === 'done' && !reduceMotion && <Confetti pieces={confetti} />}
 
-      {/* header: back, progress, count */}
-      <header className="relative mx-auto flex w-full max-w-[560px] items-center gap-3 px-5 pt-5">
+      {/* header: back left, brand centred, Skip right, as the reference does */}
+      <header className="onb-top relative z-10">
         {stepIndex === 0 ? (
-          <div className="flex items-center gap-2.5">
-            <img src={BRAND_LOGO} alt="" aria-hidden="true" className="h-9 w-9 rounded-lg object-cover" />
-            <span className="font-display text-base tracking-wide">
-              HYPE<span className="text-primary">STREAM</span>
-            </span>
-          </div>
+          <span className="onb-top-slot" aria-hidden="true" />
         ) : (
           <button
             type="button"
@@ -469,10 +466,20 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
           </button>
         )}
 
-        <div className="flex-1" />
-        <span className="text-xs font-medium tabular-nums text-muted-foreground">
-          {stepIndex + 1}/{STEPS.length}
-        </span>
+        <div className="onb-brand">
+          <img src={BRAND_LOGO} alt="" aria-hidden="true" className="h-7 w-7 rounded-md object-cover" />
+          <span className="font-display text-sm tracking-[0.12em]">
+            HYPE<span className="text-primary-bright">STREAM</span>
+          </span>
+        </div>
+
+        {stepIndex > 0 && step !== 'account' && step !== 'done' ? (
+          <button type="button" onClick={() => finish()} className={`onb-skip-pill ${skipFocusRing}`}>
+            Skip
+          </button>
+        ) : (
+          <span className="onb-top-slot" aria-hidden="true" />
+        )}
       </header>
 
       <p className="sr-only" aria-live="polite">
@@ -480,7 +487,11 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
       </p>
 
       {/* body */}
-      <main className="onb-body relative mx-auto flex w-full max-w-[560px] flex-1 flex-col overflow-y-auto px-5 pb-2 pt-4">
+      <main
+        className={`onb-body relative mx-auto flex w-full max-w-[560px] flex-1 flex-col overflow-y-auto px-5 pb-2 pt-4 ${
+          step === 'welcome' || step === 'done' ? 'is-poster' : ''
+        }`}
+      >
         <AnimatePresence mode="wait" initial={false}>
           <motion.section
             key={step}
@@ -490,14 +501,16 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             exit="exit"
             transition={{ duration: reduceMotion ? 0 : 0.18, ease: [0.32, 0.72, 0, 1] }}
             onAnimationComplete={focusHeading}
-            className="flex flex-1 flex-col"
+            className={`flex flex-1 flex-col ${step === 'welcome' || step === 'done' ? 'justify-end' : ''}`}
           >
-            <div className="onb-head">
-              <Poppy mood={mood} />
-              <div className="onb-quip">
-                <span>{copy[step].quip}</span>
+            {step === 'welcome' && (
+              <div className="onb-head">
+                <Poppy mood={mood} />
+                <div className="onb-quip">
+                  <span>{copy[step].quip}</span>
+                </div>
               </div>
-            </div>
+            )}
 
             <h1 ref={headingRef} tabIndex={-1} className="onb-title font-display" data-step={step}>
               {copy[step].title}
@@ -753,23 +766,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
       </main>
 
       {/* footer */}
-      <footer className="onb-footer relative mx-auto w-full max-w-[560px] px-5">
-        <div
-          className="onb-dots"
-          role="progressbar"
-          aria-valuemin={1}
-          aria-valuemax={STEPS.length}
-          aria-valuenow={stepIndex + 1}
-          aria-label="Onboarding progress"
-        >
-          {STEPS.map((id, index) => (
-            <span
-              key={id}
-              aria-hidden="true"
-              className={`onb-dot ${index === stepIndex ? 'is-current' : ''} ${index < stepIndex ? 'is-done' : ''}`}
-            />
-          ))}
-        </div>
+      <footer className={`onb-footer relative mx-auto w-full max-w-[560px] px-5 ${step === 'welcome' || step === 'done' ? 'is-poster' : ''}`}>
         <button
           type="button"
           onClick={() => {
@@ -782,13 +779,13 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
         >
           {step === 'welcome' && (
             <>
-              Let&rsquo;s go <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+              Let&rsquo;s get started <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
             </>
           )}
           {step === 'genres' &&
             (genres.length ? (
               <>
-                Continue ·{' '}
+                Next ·{' '}
                 <motion.span
                   key={genres.length}
                   className="inline-block tabular-nums"
@@ -805,7 +802,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             ))}
           {(step === 'format' || step === 'goal') && (
             <>
-              Continue <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
+              Next <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
             </>
           )}
           {step === 'alerts' && (notifyMovies || notifySeries ? 'Turn on alerts' : 'Skip alerts')}
@@ -823,28 +820,35 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
             ))}
           {step === 'done' && (
             <>
-              Let&rsquo;s get started <Sparkles className="ml-2 h-5 w-5" aria-hidden="true" />
+              Start watching <Sparkles className="ml-2 h-5 w-5" aria-hidden="true" />
             </>
           )}
         </button>
 
+        <div
+          className="onb-dots"
+          role="progressbar"
+          aria-valuemin={1}
+          aria-valuemax={STEPS.length}
+          aria-valuenow={stepIndex + 1}
+          aria-label={`Step ${stepIndex + 1} of ${STEPS.length}`}
+        >
+          {STEPS.map((id, index) => (
+            <span
+              key={id}
+              aria-hidden="true"
+              className={`onb-dot ${index === stepIndex ? 'is-current' : ''} ${index < stepIndex ? 'is-done' : ''}`}
+            />
+          ))}
+        </div>
+
         {step === 'welcome' ? (
-          <button
-            type="button"
-            onClick={() => finish(true)}
-            className={`onb-skip ${skipFocusRing}`}
-          >
+          <button type="button" onClick={() => finish(true)} className={`onb-skip ${skipFocusRing}`}>
             Skip for now
           </button>
-        ) : (
-          <p className="onb-footnote">
-            {step === 'done'
-              ? 'Change any of this later in your profile.'
-              : step === 'account'
-                ? 'You can also create one later from your profile.'
-                : 'Takes about 30 seconds.'}
-          </p>
-        )}
+        ) : step === 'done' ? (
+          <p className="onb-footnote">Change any of this later in your profile.</p>
+        ) : null}
       </footer>
     </div>
   );
